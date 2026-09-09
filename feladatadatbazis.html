@@ -3,7 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Feladatadatbázis — Matematika Felvételi Felkészítő Pápán</title>
+<title>Matematika felvételi feladatbank 2005–2026 – feladatsorok, megoldókulcsok, témakör szerint | papaimatek.hu</title>
+<meta name="description" content="Ingyenes matematika felvételi feladatbank: az összes központi írásbeli felvételi feladatsor és megoldókulcs (javítási-értékelési útmutató) 2005–2026, 8. osztályosoknak. Keresés év, dátum és feladat szerint, valamint témakör szerinti szűrővel.">
+<meta name="keywords" content="matematika felvételi feladatok, központi írásbeli felvételi feladatsorok, felvételi megoldókulcs, javítási értékelési útmutató, 8. osztályos matek felvételi, 9. évfolyamra felvételi, felvételi feladatbank, témakör szerinti gyakorlás, matek felvételi 2024, matek felvételi 2025, matek felvételi 2026">
+<meta name="author" content="Zámbó Zsombor">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#241150">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.png" sizes="48x48" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="canonical" href="https://papaimatek.hu/feladatadatbazis.html">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="hu_HU">
+<meta property="og:site_name" content="papaimatek.hu">
+<meta property="og:title" content="Matematika felvételi feladatbank 2005–2026 – témakör szerint is">
+<meta property="og:description" content="Az összes központi írásbeli felvételi matematika feladatsor és megoldókulcs 2005–2026. Keress év, dátum és feladat szerint, vagy szűrj témakörre. Ingyenes.">
+<meta property="og:url" content="https://papaimatek.hu/feladatadatbazis.html">
+<meta property="og:image" content="https://papaimatek.hu/elonezet.png">
+<meta property="og:image:width" content="2000">
+<meta property="og:image:height" content="1414">
+<meta property="og:image:alt" content="Matematika felvételi feladatbank – papaimatek.hu">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Matematika felvételi feladatbank 2005–2026 – témakör szerint is">
+<meta name="twitter:description" content="Központi írásbeli felvételi feladatsorok és megoldókulcsok 2005–2026, kereshető témakör szerinti szűrővel. Ingyenes.">
+<meta name="twitter:image" content="https://papaimatek.hu/elonezet.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -227,12 +251,13 @@
   .pdf-scroll .page-wrap{position:relative;margin:0 auto;max-width:100%;max-height:100%;
     box-shadow:0 6px 18px rgba(0,0,0,0.28);border-radius:2px;}
   .pdf-scroll canvas{display:block;border-radius:2px;max-width:100%;max-height:100%;}
-  .task-marker{position:absolute;left:0;right:0;height:34px;pointer-events:none;border-radius:2px;
-    background:linear-gradient(90deg, rgba(245,228,99,0.45), rgba(245,228,99,0.08));
-    border-left:5px solid var(--yellow);box-shadow:inset 0 0 0 1px rgba(245,228,99,0.35);
-    animation:markerPulse 1.4s ease-out 1;}
-  @keyframes markerPulse{0%{background:linear-gradient(90deg, rgba(245,228,99,0.75), rgba(245,228,99,0.2));}
-    100%{background:linear-gradient(90deg, rgba(245,228,99,0.45), rgba(245,228,99,0.08));}}
+  .task-marker{position:absolute;left:8px;width:4px;height:42px;pointer-events:none;
+    background:var(--yellow);border-radius:999px;
+    box-shadow:0 0 10px rgba(245,228,99,0.6);
+    animation:markerIn .35s cubic-bezier(.16,.84,.44,1);}
+  @keyframes markerIn{0%{opacity:0;transform:translateX(-7px) scaleY(.55);}
+    100%{opacity:1;transform:translateX(0) scaleY(1);}}
+  @media (prefers-reduced-motion: reduce){ .task-marker{animation:none;} }
   .pager{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
     display:flex;align-items:center;gap:6px;background:rgba(36,17,80,0.92);
     border:1px solid rgba(255,255,255,0.14);border-radius:999px;padding:5px 8px;
@@ -273,7 +298,67 @@
     .viewer-bar{gap:10px;}
     .tabs{width:100%;justify-content:center;}
   }
+  .seo-info{max-width:1080px;margin:28px auto 0;color:var(--cream-dim);font-size:14.5px;line-height:1.65;}
+  .seo-info h2{color:var(--cream);font-size:20px;font-weight:700;margin-bottom:10px;}
+  .seo-info h3{color:var(--cream);font-size:15px;font-weight:700;margin:18px 0 8px;}
+  .seo-info strong{color:var(--cream);}
+  .seo-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
+  .seo-tags span,.seo-tags a{background:var(--purple-800);border:1px solid rgba(255,255,255,0.10);
+    color:var(--cream-dim);font-size:12.5px;padding:4px 11px;border-radius:999px;
+    text-decoration:none;display:inline-block;transition:border-color .15s ease,color .15s ease;}
+  .seo-tags a:hover{border-color:var(--yellow);color:var(--cream);}
+  .seo-faq{margin-top:8px;}
+  .seo-faq p{margin:10px 0;}
+  .seo-faq strong{color:var(--cream);}
+  .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Főoldal", "item": "https://papaimatek.hu/" },
+        { "@type": "ListItem", "position": 2, "name": "Feladatadatbázis", "item": "https://papaimatek.hu/feladatadatbazis.html" }
+      ]
+    },
+    {
+      "@type": "Dataset",
+      "name": "Matematika felvételi feladatbank (2005–2026)",
+      "description": "Központi írásbeli felvételi matematika feladatsorok és javítási-értékelési útmutatók (megoldókulcsok), 8. évfolyamosoknak (9. évfolyamra), 2005–2026. Kereshető év, dátum, feladat és témakör szerint.",
+      "url": "https://papaimatek.hu/feladatadatbazis.html",
+      "keywords": ["matematika felvételi", "központi írásbeli felvételi", "felvételi feladatsorok", "megoldókulcs", "javítási-értékelési útmutató", "8. osztályos matek felvételi", "témakör szerinti gyakorlás"],
+      "temporalCoverage": "2005/2026",
+      "inLanguage": "hu",
+      "isAccessibleForFree": true,
+      "educationalLevel": "8. évfolyam",
+      "creator": { "@type": "Person", "name": "Zámbó Zsombor" },
+      "publisher": { "@type": "Organization", "name": "papaimatek.hu" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Hol találom a központi írásbeli felvételi matematika feladatsorokat?",
+          "acceptedAnswer": { "@type": "Answer", "text": "A papaimatek.hu feladatadatbázisában az összes központi írásbeli felvételi matematika feladatsor elérhető 2005-től 2026-ig, a hozzájuk tartozó javítási-értékelési útmutatókkal (megoldókulcsokkal) együtt." }
+        },
+        {
+          "@type": "Question",
+          "name": "Lehet témakör szerint gyakorolni a felvételi feladatokat?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Igen. A feladatbank témakör szerinti szűrővel is használható: kiválasztod a témakört (például síkgeometria, térgeometria, szöveges egyenlet, kombinatorika), és a rendszer kilistázza az összes ilyen feladatot, egy kattintással megnyitva." }
+        },
+        {
+          "@type": "Question",
+          "name": "Ingyenes a matematika felvételi feladatbank?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Igen, a feladatbank ingyenesen elérhető. A feladatsorok és megoldókulcsok az Oktatási Hivatal hivatalos, nyilvános dokumentumai." }
+        }
+      ]
+    }
+  ]
+}
+</script>
 </head>
 <body>
 
@@ -378,6 +463,25 @@
     </div>
 
     <p class="hint">A nézegető a kiválasztott feladat oldalát teljes egészében megjeleníti. Ha a beépített megjelenítő nem érhető el, a böngésző saját PDF-nézője nyílik meg ugyanarra az oldalra.</p>
+
+    <section class="seo-info">
+      <h2>Matematika felvételi feladatbank (2005–2026)</h2>
+      <p>Ebben az ingyenes feladatbankban a <strong>központi írásbeli felvételi</strong> matematika <strong>feladatsorok</strong> és a hozzájuk tartozó <strong>javítási-értékelési útmutatók (megoldókulcsok)</strong> érhetők el a 8. évfolyamos, <strong>9. évfolyamra</strong> jelentkező diákok számára, <strong>2005-től 2026-ig</strong>. Böngészhetsz <strong>év, dátum és feladat</strong> szerint, vagy szűrhetsz <strong>témakör szerint</strong>, hogy célzottan azt gyakorold, ami még nem megy. A feladatsorok és megoldókulcsok forrása az <strong>Oktatási Hivatal</strong> hivatalos, nyilvános dokumentumai. Kiváló segítség a <strong>felvételi felkészüléshez</strong> és az otthoni gyakorláshoz.</p>
+      <h3>Elérhető évek</h3>
+      <div class="seo-tags"><span>2005</span> <span>2006</span> <span>2007</span> <span>2008</span> <span>2009</span> <span>2010</span> <span>2011</span> <span>2012</span> <span>2013</span> <span>2014</span> <span>2015</span> <span>2016</span> <span>2017</span> <span>2018</span> <span>2019</span> <span>2020</span> <span>2021</span> <span>2022</span> <span>2023</span> <span>2024</span> <span>2025</span> <span>2026</span></div>
+      <h3>Témakörök, amelyek szerint szűrhetsz</h3>
+      <div class="seo-tags"><a href="?temakor=Alapm%C5%B1veletek%2C%20sz%C3%A1melm%C3%A9let">Alapműveletek, számelmélet</a> <a href="?temakor=M%C3%A9rt%C3%A9kegys%C3%A9g%20%C3%A1tv%C3%A1lt%C3%A1sok">Mértékegység-váltás</a> <a href="?temakor=Kombinatorika%2C%20logika">Kombinatorika, logika</a> <a href="?temakor=Feleletv%C3%A1laszt%C3%B3s%20feladatok%20%28karik%C3%A1z%C3%B3s%2C%20igaz-hamis%29">Feleletválasztós (igaz-hamis)</a> <a href="?temakor=A%20bek%C3%B6vetkez%C3%A9s%20val%C3%B3sz%C3%ADn%C5%B1s%C3%A9ge">Valószínűség</a> <a href="?temakor=Sorozatok">Sorozatok</a> <a href="?temakor=grafikonok%2C%20diagramok%2C%20t%C3%A1bl%C3%A1zatok">Grafikonok, diagramok</a> <a href="?temakor=F%C3%BCggv%C3%A9nyek%2C%20koordin%C3%A1ta-rendszer%2C%20kapcsol%C3%B3d%C3%B3%20egyenletek">Függvények, koordináta-geometria</a> <a href="?temakor=Egyenletek">Egyenletek</a> <a href="?temakor=S%C3%ADkgeometria">Síkgeometria</a> <a href="?temakor=T%C3%A9rgeometria">Térgeometria</a> <a href="?temakor=Ar%C3%A1ny%2C%20sz%C3%A1zal%C3%A9k">Arány, százalék</a> <a href="?temakor=%C3%81tlag">Átlag</a> <a href="?temakor=Egyenlettel%20megoldhat%C3%B3%20feladatok%20%28egyenes%20ar%C3%A1nyoss%C3%A1g%2C%20logika%29">Szöveges: arányosság, logika</a> <a href="?temakor=Egyenlettel%20megoldhat%C3%B3%20feladatok%20%28hozz%C3%A1ad%2C%20elvesz%2C%20t%C3%B6bb%2C%20kevesebb%20stb.%29">Szöveges: több–kevesebb</a> <a href="?temakor=Egy%C3%A9b%20egyenlettel%20megoldhat%C3%B3%20feladatok">Egyéb szöveges egyenlet</a></div>
+      <div class="seo-faq">
+        <h3>Gyakori kérdések</h3>
+        <p><strong>Hol találom a központi írásbeli felvételi matematika feladatsorokat?</strong><br>
+        A papaimatek.hu feladatadatbázisában az összes központi írásbeli felvételi matematika feladatsor elérhető 2005-től 2026-ig, a hozzájuk tartozó javítási-értékelési útmutatókkal (megoldókulcsokkal) együtt.</p>
+        <p><strong>Lehet témakör szerint gyakorolni a felvételi feladatokat?</strong><br>
+        Igen. A feladatbank témakör szerinti szűrővel is használható: kiválasztod a témakört (például síkgeometria, térgeometria, szöveges egyenlet, kombinatorika), és a rendszer kilistázza az összes ilyen feladatot, egy kattintással megnyitva.</p>
+        <p><strong>Ingyenes a matematika felvételi feladatbank?</strong><br>
+        Igen, a feladatbank ingyenesen elérhető. A feladatsorok és megoldókulcsok az Oktatási Hivatal hivatalos, nyilvános dokumentumai.</p>
+      </div>
+      <p style="margin-top:16px;">Kapcsolódó keresések: matek felvételi feladatok megoldással, központi felvételi matematika 8. osztály, felvételi feladatsorok PDF, matematika felvételi megoldókulcs, felvételi gyakorló feladatok témakör szerint. Vissza a <a href="index.html">főoldalra</a>.</p>
+    </section>
   </div>
 </main>
 
@@ -684,6 +788,27 @@
     clearTimeout(rzT);
     rzT=setTimeout(function(){ showPage(view.page); },300);
   });
+
+  /* ---- Mélylink: ?temakor=... automatikus szűrés + SEO cím/canonical ---- */
+  function setMeta(n,v){var m=document.querySelector('meta[name="'+n+'"]');if(m)m.setAttribute('content',v);}
+  function setCanon(u){var l=document.querySelector('link[rel=canonical]');if(l)l.setAttribute('href',u);}
+  function applyDeepLink(){
+    try{
+      var q=new URLSearchParams(location.search);
+      var t=q.get('temakor');
+      if(t){
+        setMode('topic');
+        els.topic.value=t;
+        if(els.topic.value===t){
+          els.topic.dispatchEvent(new Event('change'));
+          document.title=t+' – felvételi feladatok és megoldások | papaimatek.hu';
+          setMeta('description', t+' témakörű központi írásbeli felvételi matematika feladatok megoldással (2005–2026). Gyakorolj célzottan a papaimatek.hu ingyenes feladatbankjában.');
+          setCanon('https://papaimatek.hu/feladatadatbazis.html?temakor='+encodeURIComponent(t));
+        }
+      }
+    }catch(e){}
+  }
+  applyDeepLink();
 })();
 </script>
 
