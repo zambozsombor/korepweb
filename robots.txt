@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://papaimatek.hu/sitemap.xml
+Sitemap: https://www.papaimatek.hu/sitemap.xml
