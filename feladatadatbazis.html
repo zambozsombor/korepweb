@@ -302,10 +302,18 @@
     .topic-row{grid-template-columns:1fr;}
     .result-count{padding-bottom:0;}
     .pdf-scroll,.frame-wrap iframe,.frame-wrap{height:78vh;min-height:78vh;}
-    .header-inner{padding:14px 18px;}
-    .header-cta{display:none;}
+    .header-inner{padding:14px 16px;}
+    .header-left{gap:9px;}
+    .logo{font-size:17px;}
+    .header-cta{display:inline-block;font-size:12.5px;padding:8px 14px;}
+    .mode-switch{width:100%;max-width:440px;box-sizing:border-box;}
+    .mode-btn{flex:1 1 0;padding:10px 8px;font-size:12.5px;white-space:normal;line-height:1.15;}
     .viewer-bar{gap:10px;}
     .tabs{width:100%;justify-content:center;}
+  }
+  @media (max-width:380px){
+    .logo{font-size:15.5px;}
+    .header-cta{font-size:11.5px;padding:7px 11px;}
   }
   .seo-info{max-width:1080px;margin:28px auto 0;color:var(--cream-dim);font-size:14.5px;line-height:1.65;}
   .seo-info h2{color:var(--cream);font-size:20px;font-weight:700;margin-bottom:10px;}
