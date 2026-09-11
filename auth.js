@@ -188,8 +188,18 @@
     sb.from('profiles').select('*').eq('id', user.id).single().then(function (res) {
       curProfile = (res && res.data) || {};
       renderAvatar(user);
+      ensureEmailSaved(user);
       if (curProfile.parental_consent === false) openConsentModal(user);
-    }).catch(function () { curProfile = {}; renderAvatar(user); });
+    }).catch(function () { curProfile = {}; renderAvatar(user); ensureEmailSaved(user); });
+  }
+
+  // Az e-mail cím mentése a profiles táblába (ha még nincs ott, vagy megváltozott)
+  function ensureEmailSaved(user) {
+    if (!user || !user.email) return;
+    if (curProfile && curProfile.email === user.email) return;
+    sb.from('profiles').update({ email: user.email }).eq('id', user.id).then(function () {
+      if (curProfile) curProfile.email = user.email;
+    }).catch(function () {});
   }
 
   function displayName(user) { return (curProfile && curProfile.display_name) || firstName(user); }
