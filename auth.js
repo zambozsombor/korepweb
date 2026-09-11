@@ -14,7 +14,9 @@
     return;
   }
 
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
+  });
   var PM = window.PM = window.PM || {};
   PM.sb = sb;
 
@@ -98,7 +100,7 @@
   function loginGoogle() {
     sb.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + window.location.pathname }
+      options: { redirectTo: window.location.origin + window.location.pathname + window.location.search }
     }).then(function (res) {
       if (res && res.error) alert('Hiba a belépésnél: ' + res.error.message);
     });
