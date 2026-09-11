@@ -19,6 +19,7 @@
   });
   var PM = window.PM = window.PM || {};
   PM.sb = sb;
+  var curProfile = null;
 
   var listeners = [];
   PM.onChange = function (cb) { if (typeof cb === 'function') listeners.push(cb); };
@@ -34,6 +35,7 @@
     if (user && user.email) return user.email.split('@')[0];
     return 'Diák';
   }
+  var TOPICS = ['Alapműveletek, számelmélet', 'Mértékegység átváltások', 'Kombinatorika, logika', 'Feleletválasztós feladatok (karikázós, igaz-hamis)', 'A bekövetkezés valószínűsége', 'Sorozatok', 'Grafikonok, diagramok, táblázatok', 'Függvények, koordináta-rendszer, kapcsolódó egyenletek', 'Egyenletek', 'Síkgeometria', 'Térgeometria', 'Arány, százalék', 'Átlag', 'Egyenlettel megoldható feladatok (egyenes arányosság, logika)', 'Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)', 'Egyéb egyenlettel megoldható feladatok'];
 
   /* ---------- stílus (téma-illesztéssel) ---------- */
   (function injectStyles() {
@@ -48,7 +50,8 @@
       + '.pm-logout{background:transparent;border:1.5px solid rgba(255,255,255,.28);color:var(--cream,#f6efdd);padding:7px 13px;font-size:13px;}'
       + '.pm-overlay{position:fixed;inset:0;background:rgba(10,4,28,.68);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s ease;}'
       + '.pm-overlay.open{opacity:1;pointer-events:auto;}'
-      + '.pm-card{background:var(--purple-800,#2f1a63);color:var(--cream,#f6efdd);border:1px solid rgba(255,255,255,.10);border-radius:24px;box-shadow:0 24px 60px rgba(0,0,0,.45);max-width:420px;width:100%;padding:30px 26px;position:relative;transform:translateY(8px);transition:transform .2s ease;}'
+      + '.pm-card{background:var(--purple-800,#2f1a63);color:var(--cream,#f6efdd);border:1px solid rgba(255,255,255,.10);border-radius:24px;box-shadow:0 24px 60px rgba(0,0,0,.45);max-width:420px;width:100%;max-height:88vh;overflow:auto;padding:30px 26px;position:relative;transform:translateY(8px);transition:transform .2s ease;}'
+      + '.pm-acc-label select{display:block;width:100%;margin-top:6px;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.18);background:var(--purple-950,#241150);color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-size:15px;box-sizing:border-box;}'
       + '.pm-overlay.open .pm-card{transform:translateY(0);}'
       + '.pm-card h3{font-family:"Baloo 2",sans-serif;margin:0 0 8px;font-size:23px;color:var(--cream,#f6efdd);}'
       + '.pm-card p{margin:0 0 18px;font-size:14.5px;line-height:1.55;color:var(--cream-dim,#cdc3e6);}'
@@ -62,7 +65,26 @@
       + '.pm-primary{width:100%;background:var(--coral,#ff7a66);color:var(--purple-950,#160a34);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15.5px;border:none;border-radius:999px;padding:13px 18px;cursor:pointer;}'
       + '.pm-primary:disabled{opacity:.5;cursor:not-allowed;}'
       + '.pm-linkbtn{display:inline-block;background:none;border:none;color:var(--cream-dim,#cdc3e6);font-size:12.5px;text-decoration:underline;cursor:pointer;margin-top:12px;padding:0;}'
-      + '@media(max-width:760px){.pm-hi{display:none;}.header-right{gap:6px;}.pm-login{padding:7px 12px;font-size:12px;}.header-cta{font-size:11.5px;padding:7px 11px;}}';
+      + '.pm-user{position:relative;display:flex;align-items:center;}'
+      + '.pm-avatar{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.28);background:var(--yellow,#f5e463);color:var(--yellow-ink,#2f1866);font-family:"Baloo 2",sans-serif;font-weight:800;font-size:17px;cursor:pointer;overflow:hidden;padding:0;display:flex;align-items:center;justify-content:center;}'
+      + '.pm-avatar img{width:100%;height:100%;object-fit:cover;display:block;}'
+      + '.pm-avatar:hover{filter:brightness(1.05);}'
+      + '.pm-menu{position:absolute;top:calc(100% + 10px);right:0;background:var(--purple-800,#3a1f80);border:1px solid rgba(255,255,255,.10);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.4);padding:8px;min-width:210px;display:flex;flex-direction:column;gap:2px;z-index:300;}'
+      + '.pm-menu-name{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:14px;color:var(--cream,#f6efdd);padding:8px 12px 8px;border-bottom:1px solid rgba(255,255,255,.10);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'
+      + '.pm-menu-item{display:block;text-align:left;background:transparent;border:none;color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-weight:600;font-size:14.5px;padding:11px 12px;border-radius:10px;cursor:pointer;text-decoration:none;}'
+      + '.pm-menu-item:hover{background:var(--purple-700,#4a2aa0);}'
+      + '.pm-menu-item.pm-danger{color:#ff9a86;}'
+      + '.pm-acc-av{display:flex;align-items:center;gap:16px;margin:6px 0 18px;}'
+      + '.pm-acc-avpic{width:72px;height:72px;border-radius:50%;overflow:hidden;background:var(--yellow,#f5e463);color:var(--yellow-ink,#2f1866);display:flex;align-items:center;justify-content:center;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:30px;flex:none;}'
+      + '.pm-acc-avpic img{width:100%;height:100%;object-fit:cover;}'
+      + '.pm-acc-upload{background:transparent;border:1.5px solid rgba(255,255,255,.28);color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:13.5px;padding:9px 14px;border-radius:999px;cursor:pointer;display:inline-block;}'
+      + '.pm-acc-label{display:block;font-size:13px;color:var(--cream-dim,#cdc3e6);margin-bottom:16px;font-weight:600;}'
+      + '.pm-acc-label input{display:block;width:100%;margin-top:6px;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.18);background:var(--purple-950,#241150);color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-size:15px;box-sizing:border-box;}'
+      + '.pm-login-cta{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg,var(--purple-800,#3a1f80),var(--purple-700,#4a2aa0));border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px 20px;margin:0 auto 18px;max-width:680px;text-align:center;}'
+      + '.pm-login-cta .cta-txt{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15px;color:var(--cream,#f6efdd);}'
+      + '.pm-cta-login{background:var(--mint,#c7f3ec);color:var(--mint-ink,#123b34);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:14px;border:none;border-radius:999px;padding:9px 18px;cursor:pointer;white-space:nowrap;}'
+      + '.pm-cta-login:hover{filter:brightness(1.05);}'
+      + '@media(max-width:760px){.header-right{gap:8px;}.pm-login{padding:7px 12px;font-size:12px;}.header-cta{font-size:11.5px;padding:7px 11px;}}';
     var st = document.createElement('style');
     st.id = 'pm-auth-style';
     st.textContent = css;
@@ -139,19 +161,149 @@
   }
 
   /* ---------- fejléc UI ---------- */
+  function toggleWhen(loggedIn) {
+    var outs = document.querySelectorAll('.pm-when-out');
+    for (var i = 0; i < outs.length; i++) outs[i].hidden = loggedIn;
+    var ins = document.querySelectorAll('.pm-when-in');
+    for (var j = 0; j < ins.length; j++) ins[j].hidden = !loggedIn;
+  }
+
   function render(session) {
-    var area = document.getElementById('authArea');
-    if (!area) return;
     var user = session && session.user;
+    toggleWhen(!!user);
+    var area = document.getElementById('authArea');
     if (user) {
-      area.innerHTML = '<div class="pm-user"><span class="pm-hi">Szia, ' + esc(firstName(user)) + '!</span>'
-        + '<button class="pm-btn pm-logout" type="button">Kilépés</button></div>';
-      area.querySelector('.pm-logout').addEventListener('click', function () { sb.auth.signOut(); });
-      maybeConsent(user);
+      if (area) loadProfileThenRender(user);
     } else {
-      area.innerHTML = '<button class="pm-btn pm-login" type="button">Belépés</button>';
-      area.querySelector('.pm-login').addEventListener('click', openLoginModal);
+      curProfile = null;
+      if (area) {
+        area.innerHTML = '<button class="pm-btn pm-login" type="button">Belépés</button>';
+        area.querySelector('.pm-login').addEventListener('click', openLoginModal);
+      }
     }
+  }
+
+  function loadProfileThenRender(user) {
+    sb.from('profiles').select('*').eq('id', user.id).single().then(function (res) {
+      curProfile = (res && res.data) || {};
+      renderAvatar(user);
+      if (curProfile.parental_consent === false) openConsentModal(user);
+    }).catch(function () { curProfile = {}; renderAvatar(user); });
+  }
+
+  function displayName(user) { return (curProfile && curProfile.display_name) || firstName(user); }
+  function avatarInner(user) {
+    var av = curProfile && curProfile.avatar;
+    if (av) return '<img src="' + esc(av) + '" alt="">';
+    return esc((displayName(user) || 'D').trim().charAt(0).toUpperCase());
+  }
+
+  function renderAvatar(user) {
+    var area = document.getElementById('authArea'); if (!area) return;
+    var name = displayName(user);
+    area.innerHTML = ''
+      + '<div class="pm-user">'
+      +   '<button class="pm-avatar" id="pmAvatar" aria-haspopup="true" aria-expanded="false" title="' + esc(name) + '">' + avatarInner(user) + '</button>'
+      +   '<div class="pm-menu" id="pmMenu" hidden>'
+      +     '<div class="pm-menu-name">' + esc(name) + '</div>'
+      +     '<a class="pm-menu-item" href="haladas.html">📊 Haladásom</a>'
+      +     '<button class="pm-menu-item" id="pmAccount" type="button">👤 Saját fiók</button>'
+      +     '<button class="pm-menu-item pm-danger" id="pmLogout" type="button">Kijelentkezés</button>'
+      +   '</div>'
+      + '</div>';
+    var avBtn = area.querySelector('#pmAvatar');
+    var menu = area.querySelector('#pmMenu');
+    avBtn.addEventListener('click', function (e) { e.stopPropagation(); menu.hidden = !menu.hidden; avBtn.setAttribute('aria-expanded', menu.hidden ? 'false' : 'true'); });
+    area.querySelector('#pmLogout').addEventListener('click', function () { sb.auth.signOut(); });
+    area.querySelector('#pmAccount').addEventListener('click', function () { menu.hidden = true; openAccountModal(user); });
+  }
+
+  /* ---------- Saját fiók (név + profilkép) ---------- */
+  function resizeToDataUrl(file, cb) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var img = new Image();
+      img.onload = function () {
+        var size = 160, c = document.createElement('canvas'); c.width = size; c.height = size;
+        var ctx = c.getContext('2d');
+        var s = Math.min(img.width, img.height), sx = (img.width - s) / 2, sy = (img.height - s) / 2;
+        ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+        cb(c.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = function () { cb(null); };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function openAccountModal(user) {
+    var name = displayName(user);
+    var av = (curProfile && curProfile.avatar) || '';
+    var pending = { avatar: av, changed: false };
+    var pr = curProfile || {};
+    function opt(v, label, sel) { return '<option value="' + esc(v) + '"' + (String(sel) === String(v) && v !== '' ? ' selected' : '') + '>' + esc(label) + '</option>'; }
+    var evfSel = (pr.evfolyam != null ? String(pr.evfolyam) : '');
+    var evfOpts = '<option value="">Válassz…</option>';
+    [5, 6, 7, 8, 9].forEach(function (g) { evfOpts += opt(String(g), g + '. osztály', evfSel); });
+    var topicOpts = '<option value="">Válassz…</option>';
+    TOPICS.forEach(function (t) { topicOpts += opt(t, t, pr.kedvenc_temakor || ''); });
+    var ov = makeOverlay(
+      '<button class="pm-x" type="button" aria-label="Bezárás">&times;</button>'
+      + '<h3>Saját fiók</h3>'
+      + '<div class="pm-acc-av"><div class="pm-acc-avpic" id="accPic">' + (av ? '<img src="' + esc(av) + '" alt="">' : esc((name || 'D').charAt(0).toUpperCase())) + '</div>'
+      +   '<label class="pm-acc-upload">Kép módosítása<input type="file" accept="image/*" id="accFile" hidden></label></div>'
+      + '<label class="pm-acc-label">Megjelenített név<input type="text" id="accName" maxlength="40" value="' + esc(name) + '"></label>'
+      + '<label class="pm-acc-label">Évfolyam<select id="accEvf">' + evfOpts + '</select></label>'
+      + '<label class="pm-acc-label">Iskola<input type="text" id="accIskola" maxlength="80" value="' + esc(pr.iskola || '') + '" placeholder="pl. Petőfi Sándor Általános Iskola"></label>'
+      + '<label class="pm-acc-label">Kedvenc témakör<select id="accTopic">' + topicOpts + '</select></label>'
+      + '<label class="pm-acc-label">Kitűzött cél<input type="text" id="accCel" maxlength="120" value="' + esc(pr.cel || '') + '" placeholder="pl. 40+ pont a felvételin, jobb matekjegy"></label>'
+      + '<button class="pm-primary" type="button" id="accSave">Mentés</button>'
+      + '<div class="pm-note" id="accNote"></div>'
+    );
+    ov.querySelector('.pm-x').addEventListener('click', function () { close(ov); });
+    var accPic = ov.querySelector('#accPic'), accNote = ov.querySelector('#accNote');
+    ov.querySelector('#accFile').addEventListener('change', function () {
+      var f = this.files && this.files[0]; if (!f) return;
+      accNote.textContent = 'Kép feldolgozása…';
+      resizeToDataUrl(f, function (dataUrl) {
+        if (!dataUrl) { accNote.textContent = 'Nem sikerült a képet betölteni.'; return; }
+        pending.avatar = dataUrl; pending.changed = true;
+        accPic.innerHTML = '<img src="' + dataUrl + '" alt="">'; accNote.textContent = '';
+      });
+    });
+    ov.querySelector('#accSave').addEventListener('click', function () {
+      var btn = this;
+      var newName = (ov.querySelector('#accName').value || '').trim() || name;
+      var evfRaw = ov.querySelector('#accEvf').value;
+      var payload = {
+        display_name: newName,
+        evfolyam: evfRaw ? parseInt(evfRaw, 10) : null,
+        iskola: (ov.querySelector('#accIskola').value || '').trim() || null,
+        kedvenc_temakor: ov.querySelector('#accTopic').value || null,
+        cel: (ov.querySelector('#accCel').value || '').trim() || null
+      };
+      if (pending.changed) payload.avatar = pending.avatar;
+      btn.disabled = true; accNote.textContent = 'Mentés…';
+      sb.from('profiles').update(payload).eq('id', user.id).then(function (res) {
+        if (res && res.error) {
+          // Hiányzó oszlop(ok): mentsük legalább a biztosan létező mezőket (név, évfolyam)
+          sb.from('profiles').update({ display_name: newName, evfolyam: payload.evfolyam }).eq('id', user.id).then(function () {
+            curProfile.display_name = newName; curProfile.evfolyam = payload.evfolyam;
+            renderAvatar(user); close(ov);
+            showBanner('A név és évfolyam mentve. A profilkép, iskola, kedvenc témakör és cél tárolásához a Supabase SQL Editorban futtasd le egyszer: alter table profiles add column if not exists avatar text, add column if not exists iskola text, add column if not exists kedvenc_temakor text, add column if not exists cel text;');
+          }).catch(function () { btn.disabled = false; accNote.textContent = 'Hiba: ' + res.error.message; });
+          return;
+        }
+        curProfile.display_name = newName;
+        curProfile.evfolyam = payload.evfolyam;
+        curProfile.iskola = payload.iskola;
+        curProfile.kedvenc_temakor = payload.kedvenc_temakor;
+        curProfile.cel = payload.cel;
+        if (payload.avatar !== undefined) curProfile.avatar = payload.avatar;
+        renderAvatar(user); close(ov);
+      });
+    });
+    open(ov);
   }
 
   /* ---------- haladás API (interaktív feladatokhoz) ---------- */
@@ -212,6 +364,16 @@
   }
 
   /* ---------- indítás ---------- */
+  // Profil menü bezárása külső kattintásra
+  document.addEventListener('click', function (e) {
+    var menu = document.getElementById('pmMenu'); if (!menu || menu.hidden) return;
+    var area = document.getElementById('authArea');
+    if (area && !area.contains(e.target)) menu.hidden = true;
+  });
+  // Felhívó üzenet "Belépés" gombjai
+  var ctaBtns = document.querySelectorAll('.pm-cta-login');
+  for (var ci = 0; ci < ctaBtns.length; ci++) ctaBtns[ci].addEventListener('click', openLoginModal);
+
   handleAuthReturn();
   sb.auth.getSession().then(function (r) { render(r.data.session); });
   sb.auth.onAuthStateChange(function (_e, session) {

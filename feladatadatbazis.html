@@ -410,6 +410,11 @@
 <main>
   <div class="board">
 
+    <div class="pm-login-cta pm-when-out" hidden>
+      <span class="cta-txt">📊 Jelentkezz be, hogy nyomon kövesd a haladásod a feladatokban!</span>
+      <button class="pm-cta-login" type="button">Belépés</button>
+    </div>
+
     <div class="mode-switch-wrap">
       <div class="mode-switch">
         <button class="mode-btn active" id="modeBrowse" data-mode="browse">Böngészés év szerint</button>
@@ -436,7 +441,6 @@
       <div class="browse-actions">
         <button class="apply-btn" id="applyBtn" type="button" disabled>Megjelenítés →</button>
       </div>
-      <div id="sheetChecklist" class="sheet-checklist" hidden></div>
     </div>
 
     <!-- SZŰRÉS TÉMAKÖR SZERINT -->
@@ -613,7 +617,7 @@
 
   els.paper.addEventListener('change',function(){
     resetSel(els.task,'Válassz feladatot…');
-    if(els.paper.value===''){els.task.disabled=true; if(window.PMprog)PMprog.onPaperSelected(null,null); return;}
+    if(els.paper.value===''){els.task.disabled=true; return;}
     var p=DATA.evek[els.year.value][parseInt(els.paper.value,10)];
     var full=document.createElement('option');full.value='full';full.textContent='📘 Teljes feladatsor (1–10.)';els.task.appendChild(full);
     p.tasks.forEach(function(t){
@@ -622,7 +626,6 @@
     });
     els.task.disabled=false;
     els.apply.disabled=true;
-    if(window.PMprog)PMprog.onPaperSelected(els.year.value, p);
   });
 
   // a mező változása csak beállít; a Megjelenítés gomb futtatja le
@@ -844,7 +847,7 @@
 
 <!-- Felhasználói fiók + haladás (Supabase) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=3"></script>
+<script src="auth.js?v=5"></script>
 
 <!-- Haladás: pipálható feladat / feladatsor / témakör -->
 <script>
