@@ -15,7 +15,7 @@
   }
 
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
-    auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true }
+    auth: { flowType: 'implicit', detectSessionInUrl: false, persistSession: true, autoRefreshToken: true }
   });
   var PM = window.PM = window.PM || {};
   PM.sb = sb;
@@ -175,7 +175,44 @@
     });
   };
 
+  /* ---------- bejelentkezés utáni visszatérés kezelése ---------- */
+  function showBanner(msg, ok) {
+    var b = document.createElement('div');
+    b.setAttribute('role', 'alert');
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2000;padding:12px 44px 12px 16px;'
+      + 'font-family:"Baloo 2",sans-serif;font-weight:700;font-size:14px;text-align:center;'
+      + (ok ? 'background:#1f7a5a;color:#eafff6;' : 'background:#b3261e;color:#fff;');
+    b.textContent = msg;
+    var x = document.createElement('button');
+    x.textContent = '×';
+    x.style.cssText = 'position:absolute;top:8px;right:14px;background:transparent;border:none;color:inherit;font-size:20px;cursor:pointer;';
+    x.addEventListener('click', function () { if (b.parentNode) b.parentNode.removeChild(b); });
+    b.appendChild(x);
+    document.body.appendChild(b);
+  }
+
+  function handleAuthReturn() {
+    var hp = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+    var qp = new URLSearchParams(location.search || '');
+    var err = hp.get('error_description') || hp.get('error') || qp.get('error_description') || qp.get('error');
+    if (err) { showBanner('Bejelentkezés sikertelen: ' + decodeURIComponent(err)); cleanUrl(); return; }
+    var at = hp.get('access_token'), rt = hp.get('refresh_token');
+    if (at && rt) {
+      sb.auth.setSession({ access_token: at, refresh_token: rt }).then(function (res) {
+        cleanUrl();
+        if (res && res.error) { showBanner('Munkamenet hiba: ' + res.error.message); return; }
+        var u = res && res.data && res.data.user;
+        render(u ? { user: u } : null);
+        listeners.forEach(function (cb) { try { cb(u || null); } catch (e) {} });
+      });
+    }
+  }
+  function cleanUrl() {
+    try { history.replaceState(null, document.title, location.pathname + location.search); } catch (e) {}
+  }
+
   /* ---------- indítás ---------- */
+  handleAuthReturn();
   sb.auth.getSession().then(function (r) { render(r.data.session); });
   sb.auth.onAuthStateChange(function (_e, session) {
     render(session);
