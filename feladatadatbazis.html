@@ -410,7 +410,7 @@
   <div class="board">
 
     <div class="pm-login-cta pm-when-out" hidden>
-      <span class="cta-txt">Jelentkezz be a haladásod nyomon követéséhez!!</span>
+      <span class="cta-txt">Jelentkezz be, hogy nyomon kövesd a haladásod a feladatokban!</span>
       <button class="pm-cta-login" type="button">Belépés</button>
     </div>
 
@@ -819,6 +819,23 @@
   function applyDeepLink(){
     try{
       var q=new URLSearchParams(location.search);
+      // Megnyitás a Haladás oldalról: ?ev=2025&ford=1&feladat=3  (feladat=full a teljes feladatsorhoz)
+      var ev=q.get('ev'), ford=q.get('ford'), fel=q.get('feladat');
+      if(ev && ford && DATA.evek[ev]){
+        setMode('browse');
+        els.year.value=ev; els.year.dispatchEvent(new Event('change'));
+        var papers=DATA.evek[ev], idx=-1;
+        for(var pi=0; pi<papers.length; pi++){ if(String(papers[pi].fordulo)===String(ford)){ idx=pi; break; } }
+        if(idx>=0){
+          els.paper.value=String(idx); els.paper.dispatchEvent(new Event('change'));
+          els.task.value = (fel || 'full'); els.task.dispatchEvent(new Event('change'));
+          if(els.task.value){
+            els.apply.disabled=false; els.apply.click();
+            var vc=document.querySelector('.viewer-card'); if(vc) setTimeout(function(){ vc.scrollIntoView({behavior:'smooth',block:'start'}); }, 150);
+          }
+        }
+        return;
+      }
       var t=q.get('temakor');
       if(t){
         setMode('topic');
@@ -846,7 +863,7 @@
 
 <!-- Felhasználói fiók + haladás (Supabase) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=6"></script>
+<script src="auth.js?v=7"></script>
 
 <!-- Haladás: pipálható feladat / feladatsor / témakör -->
 <script>

@@ -83,6 +83,22 @@
   .bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--mint),#8fe0cf);transition:width .5s ease;}
   .bar.full > i{background:linear-gradient(90deg,var(--yellow),#ffd23f);}
   .muted{color:var(--cream-dim);font-size:13px;}
+  /* Drill-down */
+  .crumbs{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:18px;}
+  .crumb{background:transparent;border:none;color:var(--cream-dim);font-family:'Baloo 2',sans-serif;font-weight:700;font-size:14px;cursor:pointer;padding:5px 8px;border-radius:8px;}
+  .crumb:hover{color:var(--yellow);background:rgba(255,255,255,.05);}
+  .crumb.current{color:var(--cream);}
+  .crumb-sep{color:var(--cream-dim);font-weight:700;}
+  .card.clickable{cursor:pointer;text-align:left;width:100%;color:inherit;font-family:inherit;background:var(--purple-800);transition:border-color .15s ease,transform .1s ease;}
+  .card.clickable:hover{border-color:var(--yellow);}
+  .card.clickable:active{transform:scale(.99);}
+  .card-hint{margin-top:11px;font-size:12px;color:var(--cream-dim);font-weight:700;}
+  .card.clickable:hover .card-hint{color:var(--yellow);}
+  .card.task .task-tema{color:var(--cream-dim);font-size:12.5px;margin-top:2px;}
+  .card .cnum.pending{color:var(--cream-dim);}
+  .card.open-sheet{grid-column:1 / -1;background:linear-gradient(135deg,var(--purple-700),var(--purple-800));border:1.5px solid var(--yellow);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .card.open-sheet .cname{font-size:15.5px;}
+  .card.open-sheet .card-hint{margin-top:0;color:var(--yellow);}
   [hidden]{display:none!important;}
   @media(max-width:600px){ .header-inner{padding:14px 16px;} .logo{font-size:17px;} main{padding:28px 16px 70px;} }
 </style>
@@ -134,9 +150,8 @@
       </div>
     </div>
 
-    <section class="block" id="secYears"><div class="grid" id="gridYears"></div></section>
-    <section class="block" id="secSheets" hidden><div class="grid" id="gridSheets"></div></section>
-    <section class="block" id="secTopics" hidden><div class="grid" id="gridTopics"></div></section>
+    <div class="crumbs" id="crumbs"></div>
+    <div class="grid" id="grid"></div>
   </div>
 
   <div id="loading" class="muted" style="text-align:center;padding:20px;">Betöltés…</div>
@@ -151,21 +166,9 @@
   tg.addEventListener('click',function(e){e.stopPropagation();var o=sm.classList.toggle('open');tg.classList.toggle('open',o);});
   document.addEventListener('click',function(e){if(!sm.contains(e.target)&&!tg.contains(e.target)){sm.classList.remove('open');tg.classList.remove('open');}});
 
-  // Nézetváltó (Évek / Feladatlapok / Témakörök)
-  (function(){
-    var vs=document.getElementById('viewSwitch');
-    var secs={years:'secYears',sheets:'secSheets',topics:'secTopics'};
-    function setView(v){
-      Array.prototype.forEach.call(vs.children,function(c){c.classList.toggle('active',c.dataset.view===v);});
-      Object.keys(secs).forEach(function(k){ document.getElementById(secs[k]).hidden=(k!==v); });
-      try{localStorage.setItem('pm_haladas_view',v);}catch(e){}
-    }
-    vs.addEventListener('click',function(e){ var b=e.target.closest('.vsw'); if(b) setView(b.dataset.view); });
-    var sv=null; try{sv=localStorage.getItem('pm_haladas_view');}catch(e){}
-    if(sv&&secs[sv]) setView(sv);
-  })();
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 
-  // Totals (feladat-szint)
+  // Aggregations (feladat-szint)
   var byYear={}, bySheet={}, byTopic={};
   PMDATA.forEach(function(r){ var y=r[0],f=r[1],tema=r[3]; var sk=y+'_'+f;
     (byYear[y]=byYear[y]||{done:0,total:0}).total++;
@@ -173,16 +176,8 @@
     (byTopic[tema]=byTopic[tema]||{done:0,total:0}).total++;
   });
 
-  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function card(name, done, total, marked){
-    var pct= total? Math.round(done/total*100):0;
-    var full = total>0 && done>=total;
-    return '<div class="card"><div class="ct"><span class="cname">'+esc(name)+'</span>'
-      + (marked?'<span class="done-badge">kész</span>':'<span class="cnum">'+done+' / '+total+'</span>')
-      + '</div><div class="bar'+(full?' full':'')+'"><i style="width:'+pct+'%"></i></div></div>';
-  }
-
-  function render(doneMap){
+  var doneMap={}; // t:/s:/k: -> true
+  function recompute(){
     Object.keys(byYear).forEach(function(k){byYear[k].done=0;});
     Object.keys(bySheet).forEach(function(k){bySheet[k].done=0;});
     Object.keys(byTopic).forEach(function(k){byTopic[k].done=0;});
@@ -192,21 +187,133 @@
     });
     document.getElementById('ovBig').textContent=totalDone+' / '+PMDATA.length;
     document.querySelector('#ovBar > i').style.width=(PMDATA.length?Math.round(totalDone/PMDATA.length*100):0)+'%';
-
-    var ys=Object.keys(byYear).sort(function(a,b){return b-a;});
-    document.getElementById('gridYears').innerHTML=ys.map(function(y){return card(y, byYear[y].done, byYear[y].total, false);}).join('');
-
-    var sk=Object.keys(bySheet).sort(function(a,b){var A=bySheet[a],B=bySheet[b];return (B.year-A.year)||(A.ford-B.ford);});
-    document.getElementById('gridSheets').innerHTML=sk.map(function(k){var s=bySheet[k];return card(s.year+' · '+s.ford+'. feladatlap', s.done, s.total, doneMap['s:'+k]);}).join('');
-
-    var tk=Object.keys(byTopic).sort();
-    document.getElementById('gridTopics').innerHTML=tk.map(function(t){return card(t, byTopic[t].done, byTopic[t].total, doneMap['k:'+t]);}).join('');
   }
+
+  // ---- Card renderers ----
+  function bar(done,total){
+    var pct= total? Math.round(done/total*100):0;
+    var full = total>0 && done>=total;
+    return '<div class="bar'+(full?' full':'')+'"><i style="width:'+pct+'%"></i></div>';
+  }
+  function navCard(kind, id, name, done, total, hint){
+    return '<button class="card clickable" data-kind="'+kind+'" data-id="'+esc(id)+'">'
+      + '<div class="ct"><span class="cname">'+esc(name)+'</span><span class="cnum">'+done+' / '+total+'</span></div>'
+      + bar(done,total)
+      + '<div class="card-hint">'+esc(hint)+' \u2192</div></button>';
+  }
+  function taskCard(y,f,n,label,sub){
+    var done = !!doneMap['t:'+y+'_'+f+'_'+n];
+    return '<button class="card clickable task" data-kind="task" data-y="'+y+'" data-f="'+f+'" data-n="'+n+'">'
+      + '<div class="ct"><span class="cname">'+esc(label)+'</span>'
+      + (done?'<span class="done-badge">kész</span>':'<span class="cnum pending">nyisd meg</span>')
+      + '</div>'+(sub?'<div class="task-tema">'+esc(sub)+'</div>':'')+'</button>';
+  }
+  function openSheetCard(y,f){
+    return '<button class="card clickable open-sheet" data-kind="opensheet" data-y="'+y+'" data-f="'+f+'">'
+      + '<span class="cname">Teljes feladatsor megnyitása ('+y+' \u00b7 '+f+'. forduló)</span>'
+      + '<span class="card-hint">megnyit \u2192</span></button>';
+  }
+
+  // ---- Data helpers ----
+  function sheetsOfYear(y){
+    var out=[];
+    Object.keys(bySheet).forEach(function(k){ if(String(bySheet[k].year)===String(y)) out.push(bySheet[k]); });
+    out.sort(function(a,b){return a.ford-b.ford;});
+    return out;
+  }
+  function tasksOfSheet(y,f){
+    return PMDATA.filter(function(r){return String(r[0])===String(y) && String(r[1])===String(f);}).sort(function(a,b){return a[2]-b[2];});
+  }
+  function tasksOfTopic(t){
+    return PMDATA.filter(function(r){return r[3]===t;}).sort(function(a,b){return (b[0]-a[0])||(a[1]-b[1])||(a[2]-b[2]);});
+  }
+
+  // ---- Navigation state ----
+  var view='years';   // years | sheets | topics
+  var path=[];        // navigation steps
+  var gridEl=document.getElementById('grid');
+  var crumbsEl=document.getElementById('crumbs');
+
+  function renderCrumbs(){
+    var rootLabel = view==='years'?'Évek':(view==='sheets'?'Feladatlapok':'Témakörök');
+    var parts=['<button class="crumb" data-depth="0">'+rootLabel+'</button>'];
+    path.forEach(function(step,i){
+      parts.push('<span class="crumb-sep">\u203a</span>');
+      var last = (i===path.length-1);
+      parts.push('<button class="crumb'+(last?' current':'')+'" data-depth="'+(i+1)+'">'+esc(step.label)+'</button>');
+    });
+    crumbsEl.innerHTML = path.length? parts.join('') : '';
+  }
+
+  function renderLevel(){
+    renderCrumbs();
+    var html='';
+    if(view==='years'){
+      if(path.length===0){
+        var ys=Object.keys(byYear).sort(function(a,b){return b-a;});
+        html = ys.map(function(y){return navCard('year',y,y+'. évi', byYear[y].done, byYear[y].total,'feladatsorok');}).join('');
+      } else if(path.length===1){
+        var y=path[0].val;
+        html = sheetsOfYear(y).map(function(s){return navCard('sheet',s.ford,s.ford+'. feladatsor', s.done, s.total,'feladatok');}).join('');
+      } else {
+        var y2=path[0].val, f2=path[1].ford;
+        html = openSheetCard(y2,f2) + tasksOfSheet(y2,f2).map(function(r){return taskCard(r[0],r[1],r[2],r[2]+'. feladat',r[3]);}).join('');
+      }
+    } else if(view==='sheets'){
+      if(path.length===0){
+        var sk=Object.keys(bySheet).sort(function(a,b){var A=bySheet[a],B=bySheet[b];return (B.year-A.year)||(A.ford-B.ford);});
+        html = sk.map(function(k){var s=bySheet[k];return navCard('ysheet',s.year+'_'+s.ford,s.year+' \u00b7 '+s.ford+'. feladatsor', s.done, s.total,'feladatok');}).join('');
+      } else {
+        var yy=path[0].y, ff=path[0].f;
+        html = openSheetCard(yy,ff) + tasksOfSheet(yy,ff).map(function(r){return taskCard(r[0],r[1],r[2],r[2]+'. feladat',r[3]);}).join('');
+      }
+    } else { // topics
+      if(path.length===0){
+        var tk=Object.keys(byTopic).sort();
+        html = tk.map(function(t){return navCard('topic',t,t, byTopic[t].done, byTopic[t].total,'feladatok');}).join('');
+      } else {
+        var tm=path[0].val;
+        html = tasksOfTopic(tm).map(function(r){return taskCard(r[0],r[1],r[2], r[0]+' \u00b7 '+r[1]+'. feladatsor, '+r[2]+'. feladat', null);}).join('');
+      }
+    }
+    gridEl.innerHTML = html || '<div class="muted">Nincs megjeleníthető elem.</div>';
+  }
+
+  function go(){ recompute(); renderLevel(); }
+  function scrollTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
+  function openTask(y,f,n){ window.location.href='feladatadatbazis.html?ev='+encodeURIComponent(y)+'&ford='+encodeURIComponent(f)+'&feladat='+encodeURIComponent(n); }
+  function openSheet(y,f){ window.location.href='feladatadatbazis.html?ev='+encodeURIComponent(y)+'&ford='+encodeURIComponent(f)+'&feladat=full'; }
+
+  gridEl.addEventListener('click',function(e){
+    var btn=e.target.closest('.card.clickable'); if(!btn) return;
+    var kind=btn.getAttribute('data-kind');
+    if(kind==='year'){ var y=btn.getAttribute('data-id'); path=[{val:y,label:y+'. évi'}]; renderLevel(); scrollTop(); }
+    else if(kind==='sheet'){ var f=btn.getAttribute('data-id'); path.push({ford:f,label:f+'. feladatsor'}); renderLevel(); scrollTop(); }
+    else if(kind==='ysheet'){ var id=btn.getAttribute('data-id').split('_'); path=[{y:id[0],f:id[1],label:id[0]+' \u00b7 '+id[1]+'. feladatsor'}]; renderLevel(); scrollTop(); }
+    else if(kind==='topic'){ var t=btn.getAttribute('data-id'); path=[{val:t,label:t}]; renderLevel(); scrollTop(); }
+    else if(kind==='task'){ openTask(btn.getAttribute('data-y'),btn.getAttribute('data-f'),btn.getAttribute('data-n')); }
+    else if(kind==='opensheet'){ openSheet(btn.getAttribute('data-y'),btn.getAttribute('data-f')); }
+  });
+
+  crumbsEl.addEventListener('click',function(e){
+    var b=e.target.closest('.crumb'); if(!b) return;
+    var d=parseInt(b.getAttribute('data-depth'),10);
+    path=path.slice(0,d); renderLevel(); scrollTop();
+  });
+
+  var vs=document.getElementById('viewSwitch');
+  vs.addEventListener('click',function(e){
+    var b=e.target.closest('.vsw'); if(!b) return;
+    var nv=b.getAttribute('data-view');
+    view=nv; path=[];
+    Array.prototype.forEach.call(vs.querySelectorAll('.vsw'),function(x){x.classList.toggle('active',x===b);});
+    renderLevel();
+  });
 
   function show(u){
     document.getElementById('loading').hidden=true;
     if(u){ document.getElementById('gate').hidden=true; document.getElementById('dash').hidden=false;
-      PM.loadProgress().then(function(map){ var dm={}; Object.keys(map||{}).forEach(function(k){ if(map[k].status==='kesz') dm[k]=true; }); render(dm); });
+      PM.loadProgress().then(function(map){ doneMap={}; Object.keys(map||{}).forEach(function(k){ if(map[k].status==='kesz') doneMap[k]=true; }); go(); });
     } else { document.getElementById('dash').hidden=true; document.getElementById('gate').hidden=false; }
   }
 
@@ -222,6 +329,6 @@
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=6"></script>
+<script src="auth.js?v=7"></script>
 </body>
 </html>

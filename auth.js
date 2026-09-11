@@ -69,6 +69,7 @@
       + '.pm-avatar{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.28);background:var(--yellow,#f5e463);color:var(--yellow-ink,#2f1866);font-family:"Baloo 2",sans-serif;font-weight:800;font-size:17px;cursor:pointer;overflow:hidden;padding:0;display:flex;align-items:center;justify-content:center;}'
       + '.pm-avatar img{width:100%;height:100%;object-fit:cover;display:block;}'
       + '.pm-avatar:hover{filter:brightness(1.05);}'
+      + '.pm-menu-backdrop{position:fixed;inset:0;z-index:290;background:transparent;}'
       + '.pm-menu{position:absolute;top:calc(100% + 10px);right:0;background:var(--purple-800,#3a1f80);border:1px solid rgba(255,255,255,.10);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.4);padding:8px;min-width:210px;display:flex;flex-direction:column;gap:2px;z-index:300;}'
       + '.pm-menu-name{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:14px;color:var(--cream,#f6efdd);padding:8px 12px 8px;border-bottom:1px solid rgba(255,255,255,.10);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'
       + '.pm-menu-item{display:block;text-align:left;background:transparent;border:none;color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-weight:600;font-size:14.5px;padding:11px 12px;border-radius:10px;cursor:pointer;text-decoration:none;}'
@@ -213,9 +214,18 @@
       + '</div>';
     var avBtn = area.querySelector('#pmAvatar');
     var menu = area.querySelector('#pmMenu');
-    avBtn.addEventListener('click', function (e) { e.stopPropagation(); menu.hidden = !menu.hidden; avBtn.setAttribute('aria-expanded', menu.hidden ? 'false' : 'true'); });
-    area.querySelector('#pmLogout').addEventListener('click', function () { sb.auth.signOut(); });
-    area.querySelector('#pmAccount').addEventListener('click', function () { menu.hidden = true; openAccountModal(user); });
+    var backdrop = null;
+    function closeMenu() { menu.hidden = true; avBtn.setAttribute('aria-expanded', 'false'); if (backdrop) { if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop); backdrop = null; } }
+    function openMenu() {
+      menu.hidden = false; avBtn.setAttribute('aria-expanded', 'true');
+      backdrop = document.createElement('div'); backdrop.className = 'pm-menu-backdrop';
+      backdrop.addEventListener('click', closeMenu);
+      document.body.appendChild(backdrop);
+    }
+    avBtn.addEventListener('click', function (e) { e.stopPropagation(); if (menu.hidden) openMenu(); else closeMenu(); });
+    area.querySelector('#pmLogout').addEventListener('click', function () { closeMenu(); sb.auth.signOut(); });
+    area.querySelector('#pmAccount').addEventListener('click', function () { closeMenu(); openAccountModal(user); });
+    var hl = area.querySelector('a.pm-menu-item'); if (hl) hl.addEventListener('click', closeMenu);
   }
 
   /* ---------- Saját fiók (név + profilkép) ---------- */
