@@ -68,6 +68,11 @@
 
   section.block{margin-bottom:34px;}
   section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:center;gap:10px;}
+  .view-switch-wrap{display:flex;justify-content:center;margin-bottom:26px;}
+  .view-switch{display:inline-flex;background:var(--purple-950);border:1.5px solid rgba(255,255,255,0.12);border-radius:999px;padding:5px;gap:4px;flex-wrap:wrap;justify-content:center;}
+  .vsw{font-family:'Baloo 2',sans-serif;font-weight:700;font-size:14px;color:var(--cream-dim);background:transparent;border:none;padding:10px 18px;border-radius:999px;cursor:pointer;white-space:nowrap;}
+  .vsw.active{background:var(--yellow);color:var(--yellow-ink);}
+  @media(max-width:520px){.view-switch{width:100%;}.vsw{flex:1;padding:10px 6px;font-size:12.5px;}}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
   .card{background:var(--purple-800);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:15px 16px;}
   .card .ct{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:9px;}
@@ -122,9 +127,17 @@
       <div class="obar"><div class="bar" id="ovBar"><i style="width:0%"></i></div></div>
     </div>
 
-    <section class="block"><h2>📅 Évek szerint</h2><div class="grid" id="gridYears"></div></section>
-    <section class="block"><h2>📄 Feladatlapok szerint</h2><div class="grid" id="gridSheets"></div></section>
-    <section class="block"><h2>🎯 Témakörök szerint</h2><div class="grid" id="gridTopics"></div></section>
+    <div class="view-switch-wrap">
+      <div class="view-switch" id="viewSwitch">
+        <button class="vsw active" data-view="years" type="button">📅 Évek</button>
+        <button class="vsw" data-view="sheets" type="button">📄 Feladatlapok</button>
+        <button class="vsw" data-view="topics" type="button">🎯 Témakörök</button>
+      </div>
+    </div>
+
+    <section class="block" id="secYears"><div class="grid" id="gridYears"></div></section>
+    <section class="block" id="secSheets" hidden><div class="grid" id="gridSheets"></div></section>
+    <section class="block" id="secTopics" hidden><div class="grid" id="gridTopics"></div></section>
   </div>
 
   <div id="loading" class="muted" style="text-align:center;padding:20px;">Betöltés…</div>
@@ -138,6 +151,20 @@
   var tg=document.getElementById('menuToggle'), sm=document.getElementById('submenu');
   tg.addEventListener('click',function(e){e.stopPropagation();var o=sm.classList.toggle('open');tg.classList.toggle('open',o);});
   document.addEventListener('click',function(e){if(!sm.contains(e.target)&&!tg.contains(e.target)){sm.classList.remove('open');tg.classList.remove('open');}});
+
+  // Nézetváltó (Évek / Feladatlapok / Témakörök)
+  (function(){
+    var vs=document.getElementById('viewSwitch');
+    var secs={years:'secYears',sheets:'secSheets',topics:'secTopics'};
+    function setView(v){
+      Array.prototype.forEach.call(vs.children,function(c){c.classList.toggle('active',c.dataset.view===v);});
+      Object.keys(secs).forEach(function(k){ document.getElementById(secs[k]).hidden=(k!==v); });
+      try{localStorage.setItem('pm_haladas_view',v);}catch(e){}
+    }
+    vs.addEventListener('click',function(e){ var b=e.target.closest('.vsw'); if(b) setView(b.dataset.view); });
+    var sv=null; try{sv=localStorage.getItem('pm_haladas_view');}catch(e){}
+    if(sv&&secs[sv]) setView(sv);
+  })();
 
   // Totals (feladat-szint)
   var byYear={}, bySheet={}, byTopic={};

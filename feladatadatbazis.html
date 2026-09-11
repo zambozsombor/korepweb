@@ -436,6 +436,7 @@
       <div class="browse-actions">
         <button class="apply-btn" id="applyBtn" type="button" disabled>Megjelenítés →</button>
       </div>
+      <div id="sheetChecklist" class="sheet-checklist" hidden></div>
     </div>
 
     <!-- SZŰRÉS TÉMAKÖR SZERINT -->
@@ -612,7 +613,7 @@
 
   els.paper.addEventListener('change',function(){
     resetSel(els.task,'Válassz feladatot…');
-    if(els.paper.value===''){els.task.disabled=true;return;}
+    if(els.paper.value===''){els.task.disabled=true; if(window.PMprog)PMprog.onPaperSelected(null,null); return;}
     var p=DATA.evek[els.year.value][parseInt(els.paper.value,10)];
     var full=document.createElement('option');full.value='full';full.textContent='📘 Teljes feladatsor (1–10.)';els.task.appendChild(full);
     p.tasks.forEach(function(t){
@@ -621,6 +622,7 @@
     });
     els.task.disabled=false;
     els.apply.disabled=true;
+    if(window.PMprog)PMprog.onPaperSelected(els.year.value, p);
   });
 
   // a mező változása csak beállít; a Megjelenítés gomb futtatja le
@@ -857,8 +859,16 @@
     +'.pm-check:hover{border-color:var(--mint,#c7f3ec);}'
     +'.pm-check.on{background:var(--mint,#c7f3ec);border-color:transparent;color:var(--mint-ink,#123b34);}'
     +'.pm-topicbar{margin-top:12px;}'
-    +'.pm-topicbtn{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.28);background:transparent;color:var(--cream,#f5f1ff);border-radius:999px;padding:8px 15px;display:inline-flex;align-items:center;gap:7px;}'
-    +'.pm-topicbtn.on{background:var(--yellow,#f5e463);color:var(--yellow-ink,#2f1866);border-color:transparent;}';
+    +'.pm-toggle{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.28);background:transparent;color:var(--cream,#f5f1ff);border-radius:999px;padding:8px 15px;display:inline-flex;align-items:center;gap:7px;}'
+    +'.pm-toggle.on{background:var(--yellow,#f5e463);color:var(--yellow-ink,#2f1866);border-color:transparent;}'
+    +'.sheet-checklist{margin-top:16px;border-top:1px solid rgba(255,255,255,.10);padding-top:16px;}'
+    +'.scl-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}'
+    +'.scl-title{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15px;color:var(--cream,#f5f1ff);}'
+    +'.scl-row{display:flex;align-items:center;gap:12px;padding:8px 6px;border-radius:12px;}'
+    +'.scl-row:hover{background:var(--purple-900,#2f1866);}'
+    +'.scl-open{flex:1;text-align:left;background:transparent;border:none;color:var(--cream,#f5f1ff);font-family:"Baloo 2",sans-serif;font-weight:600;font-size:14.5px;cursor:pointer;padding:0;}'
+    +'.scl-open:hover{color:var(--yellow,#f5e463);}'
+    +'.scl-open .tm{color:var(--cream-dim,#c9bdea);font-weight:600;}';
   document.head.appendChild(st);
 
   function sheetK(p){ var m=/M8_(\d+)_(\d+)_fl/.exec(p&&p.fl||''); return m?(m[1]+'_'+m[2]):((p&&p.datum||'')+'_'+(p&&p.fordulo||'')); }
@@ -878,8 +888,15 @@
     paintDoneBtn();
     var checks=document.querySelectorAll('.pm-check');
     for(var i=0;i<checks.length;i++){ var on=isDone(checks[i].dataset.key); checks[i].classList.toggle('on',on); checks[i].textContent=on?'✓':''; }
-    var tb=document.querySelectorAll('.pm-topicbtn');
-    for(var j=0;j<tb.length;j++){ var o=isDone(tb[j].dataset.key); tb[j].classList.toggle('on',o); tb[j].textContent=(o?'✓ ':'')+'Egész témakör kész'; }
+    var tg=document.querySelectorAll('.pm-toggle');
+    for(var j=0;j<tg.length;j++){ var o=isDone(tg[j].dataset.key); tg[j].classList.toggle('on',o); tg[j].textContent=(o?'✓ ':'')+(tg[j].dataset.label||''); }
+  }
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function openTask(n){
+    var sel=document.getElementById('selTask'); if(!sel) return;
+    sel.value=String(n); sel.dispatchEvent(new Event('change'));
+    var apply=document.getElementById('applyBtn'); if(apply){ apply.disabled=false; apply.click(); }
+    var vc=document.querySelector('.viewer-card'); if(vc) vc.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
   function toggle(key){
@@ -896,12 +913,35 @@
       else { curKey=taskKey(paper, parseInt(taskVal,10)); curLabel='Kész'; }
       doneBtn.style.display='inline-flex'; paintDoneBtn();
     },
+    onPaperSelected: function(year, paper){
+      var box=document.getElementById('sheetChecklist'); if(!box) return;
+      if(!paper){ box.hidden=true; box.innerHTML=''; return; }
+      box.innerHTML='';
+      var head=document.createElement('div'); head.className='scl-head';
+      var title=document.createElement('span'); title.className='scl-title'; title.textContent='Pipáld ki, amit megcsináltál:';
+      var sbtn=document.createElement('button'); sbtn.type='button'; sbtn.className='pm-toggle';
+      sbtn.dataset.key=sheetKey(paper); sbtn.dataset.label='Teljes feladatlap kész';
+      sbtn.addEventListener('click', function(){ toggle(this.dataset.key); });
+      head.appendChild(title); head.appendChild(sbtn); box.appendChild(head);
+      paper.tasks.forEach(function(t){
+        var row=document.createElement('div'); row.className='scl-row';
+        var chk=document.createElement('span'); chk.className='pm-check'; chk.setAttribute('role','checkbox'); chk.title='Kész / nincs kész';
+        chk.dataset.key=taskKey(paper, t.n);
+        chk.addEventListener('click', function(){ toggle(this.dataset.key); });
+        var open=document.createElement('button'); open.type='button'; open.className='scl-open';
+        open.innerHTML=t.n+'. feladat'+(t.tema?(' <span class="tm">— '+esc(t.tema)+'</span>'):'');
+        open.addEventListener('click', function(){ openTask(t.n); });
+        row.appendChild(chk); row.appendChild(open); box.appendChild(row);
+      });
+      box.hidden=false;
+      repaintAll();
+    },
     onTopicRendered: function(topic, list){
       var rc=document.getElementById('resultCount');
       var bar=document.createElement('div'); bar.className='pm-topicbar';
-      var tbtn=document.createElement('button'); tbtn.type='button'; tbtn.className='pm-topicbtn';
-      tbtn.dataset.key=topicKey(topic);
-      tbtn.addEventListener('click', function(){ toggle(tbtn.dataset.key); });
+      var tbtn=document.createElement('button'); tbtn.type='button'; tbtn.className='pm-toggle';
+      tbtn.dataset.key=topicKey(topic); tbtn.dataset.label='Egész témakör kész';
+      tbtn.addEventListener('click', function(){ toggle(this.dataset.key); });
       bar.appendChild(tbtn); rc.appendChild(bar);
       var rows=document.getElementById('results').children;
       for(var i=0;i<list.length;i++){
