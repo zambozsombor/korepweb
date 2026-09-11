@@ -388,7 +388,6 @@
         <div class="submenu-title">Menü</div>
         <a href="index.html" class="active"><span class="ic"></span> Főoldal</a>
         <a href="feladatadatbazis.html"><span class="ic"></span> Feladatadatbázis</a>
-        <a href="haladas.html"><span class="ic"></span> Haladásom</a>
         <a href="index.html#rolam"><span class="ic"></span> Ki vagyok én?</a>
         <a href="index.html#szolgaltatasok"><span class="ic"></span> Szolgáltatások</a>
         <a href="index.html#folyamat"><span class="ic"></span> Hogy zajlik a folyamat?</a>
@@ -411,7 +410,7 @@
   <div class="board">
 
     <div class="pm-login-cta pm-when-out" hidden>
-      <span class="cta-txt">📊 Jelentkezz be, hogy nyomon kövesd a haladásod a feladatokban!</span>
+      <span class="cta-txt">Jelentkezz be, hogy nyomon kövesd a haladásod a feladatokban!</span>
       <button class="pm-cta-login" type="button">Belépés</button>
     </div>
 
@@ -464,8 +463,8 @@
         </div>
         <div class="viewer-meta" id="viewerMeta">Válaszd ki a feladatot a megjelenítéshez.</div>
         <div class="viewer-actions">
-          <a class="mini-btn disabled" id="openNew" target="_blank" rel="noopener">Új lapon ↗</a>
-          <a class="mini-btn disabled" id="dlBtn" download>Letöltés ⬇</a>
+          <a class="mini-btn disabled" id="openNew" target="_blank" rel="noopener">Új lapon</a>
+          <a class="mini-btn disabled" id="dlBtn" download>Letöltés</a>
         </div>
       </div>
       <div class="frame-wrap">
@@ -478,7 +477,7 @@
           <button class="pg" id="nextPage" type="button" aria-label="Következő oldal">›</button>
         </div>
         <div class="placeholder" id="placeholder">
-          <div class="big">📄</div>
+          <div class="big"></div>
           <h3>Még nincs kiválasztva feladat</h3>
           <p>Fent válaszd ki a feladatot — év szerint vagy témakör szerint. A javítási útmutatóra a „Javítási útmutató" füllel válthatsz.</p>
         </div>
@@ -619,7 +618,7 @@
     resetSel(els.task,'Válassz feladatot…');
     if(els.paper.value===''){els.task.disabled=true; return;}
     var p=DATA.evek[els.year.value][parseInt(els.paper.value,10)];
-    var full=document.createElement('option');full.value='full';full.textContent='📘 Teljes feladatsor (1–10.)';els.task.appendChild(full);
+    var full=document.createElement('option');full.value='full';full.textContent='Teljes feladatsor (1–10.)';els.task.appendChild(full);
     p.tasks.forEach(function(t){
       var o=document.createElement('option');o.value=String(t.n);
       o.textContent=t.n+'. feladat'+(t.tema?('  ('+t.tema+')'):'');els.task.appendChild(o);
@@ -655,7 +654,7 @@
       row.innerHTML='<span class="result-badge">'+it.t.n+'.</span>'+
         '<span class="result-main"><span class="result-title">'+it.y+'. — '+fordLabel(it.p)+' · '+it.t.n+'. feladat</span>'+
         '<span class="result-sub">'+it.p.datum+' · '+(it.t.tema||'')+'</span></span>'+
-        '<span class="result-open">Megnyit ↗</span>';
+        '<span class="result-open">Megnyit</span>';
       row.addEventListener('click',function(){
         select(it.p, String(it.t.n));
         Array.prototype.forEach.call(els.results.children,function(c){c.classList.remove('active');});
@@ -847,7 +846,7 @@
 
 <!-- Felhasználói fiók + haladás (Supabase) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=5"></script>
+<script src="auth.js?v=6"></script>
 
 <!-- Haladás: pipálható feladat / feladatsor / témakör -->
 <script>

@@ -206,8 +206,8 @@
       +   '<button class="pm-avatar" id="pmAvatar" aria-haspopup="true" aria-expanded="false" title="' + esc(name) + '">' + avatarInner(user) + '</button>'
       +   '<div class="pm-menu" id="pmMenu" hidden>'
       +     '<div class="pm-menu-name">' + esc(name) + '</div>'
-      +     '<a class="pm-menu-item" href="haladas.html">📊 Haladásom</a>'
-      +     '<button class="pm-menu-item" id="pmAccount" type="button">👤 Saját fiók</button>'
+      +     '<a class="pm-menu-item" href="haladas.html">Haladásom</a>'
+      +     '<button class="pm-menu-item" id="pmAccount" type="button">Saját fiók</button>'
       +     '<button class="pm-menu-item pm-danger" id="pmLogout" type="button">Kijelentkezés</button>'
       +   '</div>'
       + '</div>';
