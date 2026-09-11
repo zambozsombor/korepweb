@@ -850,7 +850,7 @@
 <script>
 (function(){
   var PM = window.PM; if(!PM) return;
-  var doneMap = {}, user = null, curKey = null, curLabel = '';
+  var doneMap = {}, user = null, curKey = null, curLabel = '', curPaper = null, curIsSheet = false;
 
   var st=document.createElement('style'); st.textContent=''
     +'.viewer-actions .pm-done{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.28);background:transparent;color:var(--cream,#f5f1ff);border-radius:999px;padding:7px 13px;display:none;align-items:center;gap:6px;}'
@@ -880,7 +880,7 @@
   var actions=document.querySelector('.viewer-actions');
   var doneBtn=document.createElement('button'); doneBtn.type='button'; doneBtn.className='pm-done';
   if(actions) actions.insertBefore(doneBtn, actions.firstChild);
-  doneBtn.addEventListener('click', function(){ toggle(curKey); });
+  doneBtn.addEventListener('click', function(){ if(curIsSheet && curPaper){ toggleSheet(curPaper); } else { toggle(curKey); } });
 
   function paintDoneBtn(){ if(!curKey){return;} var on=isDone(curKey); doneBtn.classList.toggle('on',on); doneBtn.textContent=(on?'✓ ':'')+curLabel; }
 
@@ -905,12 +905,22 @@
     var now=!isDone(key); doneMap[key]=now; repaintAll();
     PM.saveProgress(key, { status: now?'kesz':'' });
   }
+  // Teljes feladatlap: a feladatlap ÖSSZES feladata is átveszi az állapotot
+  function toggleSheet(paper){
+    if(!user){ if(PM.openLogin) PM.openLogin(); return; }
+    var sk=sheetKey(paper); var val=!isDone(sk);
+    doneMap[sk]=val;
+    var keys=[sk];
+    paper.tasks.forEach(function(t){ var tk=taskKey(paper,t.n); doneMap[tk]=val; keys.push(tk); });
+    repaintAll();
+    keys.forEach(function(k){ PM.saveProgress(k, { status: val?'kesz':'' }); });
+  }
 
   window.PMprog = {
     onView: function(paper, taskVal){
-      if(!paper || taskVal===''){ doneBtn.style.display='none'; curKey=null; return; }
-      if(taskVal==='full'){ curKey=sheetKey(paper); curLabel='Feladatsor kész'; }
-      else { curKey=taskKey(paper, parseInt(taskVal,10)); curLabel='Kész'; }
+      if(!paper || taskVal===''){ doneBtn.style.display='none'; curKey=null; curPaper=null; curIsSheet=false; return; }
+      if(taskVal==='full'){ curKey=sheetKey(paper); curLabel='Feladatsor kész'; curPaper=paper; curIsSheet=true; }
+      else { curKey=taskKey(paper, parseInt(taskVal,10)); curLabel='Kész'; curPaper=paper; curIsSheet=false; }
       doneBtn.style.display='inline-flex'; paintDoneBtn();
     },
     onPaperSelected: function(year, paper){
@@ -921,7 +931,7 @@
       var title=document.createElement('span'); title.className='scl-title'; title.textContent='Pipáld ki, amit megcsináltál:';
       var sbtn=document.createElement('button'); sbtn.type='button'; sbtn.className='pm-toggle';
       sbtn.dataset.key=sheetKey(paper); sbtn.dataset.label='Teljes feladatlap kész';
-      sbtn.addEventListener('click', function(){ toggle(this.dataset.key); });
+      sbtn.addEventListener('click', function(){ toggleSheet(paper); });
       head.appendChild(title); head.appendChild(sbtn); box.appendChild(head);
       paper.tasks.forEach(function(t){
         var row=document.createElement('div'); row.className='scl-row';
@@ -936,24 +946,7 @@
       box.hidden=false;
       repaintAll();
     },
-    onTopicRendered: function(topic, list){
-      var rc=document.getElementById('resultCount');
-      var bar=document.createElement('div'); bar.className='pm-topicbar';
-      var tbtn=document.createElement('button'); tbtn.type='button'; tbtn.className='pm-toggle';
-      tbtn.dataset.key=topicKey(topic); tbtn.dataset.label='Egész témakör kész';
-      tbtn.addEventListener('click', function(){ toggle(this.dataset.key); });
-      bar.appendChild(tbtn); rc.appendChild(bar);
-      var rows=document.getElementById('results').children;
-      for(var i=0;i<list.length;i++){
-        var row=rows[i]; if(!row) continue;
-        var chk=document.createElement('span'); chk.className='pm-check'; chk.setAttribute('role','checkbox');
-        chk.dataset.key=taskKey(list[i].p, list[i].t.n);
-        chk.title='Kész / nincs kész';
-        chk.addEventListener('click', function(e){ e.stopPropagation(); toggle(this.dataset.key); });
-        row.insertBefore(chk, row.firstChild);
-      }
-      repaintAll();
-    }
+    onTopicRendered: function(){ /* A szűrésnél (témakör szerint) nincs pipázható lista — csak a feladatlapnál és az egyes feladatoknál. */ }
   };
 
   function refresh(){ PM.loadProgress().then(function(map){ doneMap={}; Object.keys(map||{}).forEach(function(k){ if(map[k].status==='kesz') doneMap[k]=true; }); repaintAll(); }); }
