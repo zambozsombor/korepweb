@@ -71,6 +71,7 @@
       + '.pm-avatar:hover{filter:brightness(1.05);}'
       + '.pm-menu-backdrop{position:fixed;inset:0;z-index:290;background:transparent;}'
       + '.pm-menu{position:absolute;top:calc(100% + 10px);right:0;background:var(--purple-800,#3a1f80);border:1px solid rgba(255,255,255,.10);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.4);padding:8px;min-width:210px;display:flex;flex-direction:column;gap:2px;z-index:300;}'
+      + '.pm-menu[hidden]{display:none!important;}'
       + '.pm-menu-name{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:14px;color:var(--cream,#f6efdd);padding:8px 12px 8px;border-bottom:1px solid rgba(255,255,255,.10);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'
       + '.pm-menu-item{display:block;text-align:left;background:transparent;border:none;color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-weight:600;font-size:14.5px;padding:11px 12px;border-radius:10px;cursor:pointer;text-decoration:none;}'
       + '.pm-menu-item:hover{background:var(--purple-700,#4a2aa0);}'
