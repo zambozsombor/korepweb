@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VRWQHDJE0Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-VRWQHDJE0Y');
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haladásom | papaimatek.hu</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#241150">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple-950:#241150; --purple-900:#2f1866; --purple-800:#3a1f80; --purple-700:#4a2aa0;
+    --yellow:#f5e463; --yellow-ink:#2f1866; --mint:#c7f3ec; --mint-ink:#123b34;
+    --cream:#f5f1ff; --cream-dim:#c9bdea; --coral:#ff8a65;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--purple-950);color:var(--cream);font-family:'Inter',sans-serif;}
+  h1,h2,h3,.logo,.pill{font-family:'Baloo 2',sans-serif;}
+  a{color:inherit;}
+  /* Header (a többi oldallal egyező) */
+  header{position:sticky;top:0;z-index:50;background:rgba(36,17,80,0.88);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.08);}
+  .header-inner{position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;}
+  .header-left{display:flex;align-items:center;gap:14px;position:relative;}
+  .logo{font-weight:700;font-size:19px;color:var(--cream);text-decoration:none;display:flex;flex-direction:column;line-height:1.02;}
+  .logo span{color:var(--yellow);}
+  .menu-toggle{width:42px;height:38px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;background:transparent;border:none;cursor:pointer;padding:6px;border-radius:12px;flex:none;}
+  .menu-toggle span{display:block;width:26px;height:3px;background:var(--cream);border-radius:3px;transition:transform .25s ease,opacity .2s ease;}
+  .menu-toggle:hover span{background:var(--yellow);}
+  .menu-toggle.open span:nth-child(1){transform:translateY(8px) rotate(45deg);}
+  .menu-toggle.open span:nth-child(2){opacity:0;}
+  .menu-toggle.open span:nth-child(3){transform:translateY(-8px) rotate(-45deg);}
+  .submenu{position:absolute;top:calc(100% + 12px);left:0;transform:translateY(-8px);background:var(--purple-800);border:1px solid rgba(255,255,255,0.10);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,0.35);padding:10px;min-width:240px;display:flex;flex-direction:column;gap:4px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,transform .2s ease,visibility .2s;z-index:60;}
+  .submenu.open{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);}
+  .submenu-title{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--cream-dim);padding:6px 14px 4px;}
+  .submenu a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;text-decoration:none;color:var(--cream);font-weight:600;font-size:15.5px;transition:background .15s ease;}
+  .submenu a:hover{background:var(--purple-700);}
+  .submenu a.active{background:var(--purple-700);color:var(--yellow);}
+  .header-right{display:flex;align-items:center;gap:10px;}
+
+  main{max-width:1080px;margin:0 auto;padding:40px 24px 80px;}
+  .page-head{text-align:center;margin-bottom:26px;}
+  .page-head .pill{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font-weight:700;font-size:clamp(24px,4.5vw,40px);line-height:1;padding:12px 28px;border-radius:999px;transform:rotate(-2deg);box-shadow:0 10px 30px rgba(0,0,0,0.25);}
+  .page-head p{margin-top:22px;color:var(--cream-dim);font-size:16px;}
+
+  .gate{max-width:460px;margin:30px auto;background:var(--purple-800);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:34px 28px;text-align:center;}
+  .gate h2{margin:0 0 10px;font-size:22px;}
+  .gate p{color:var(--cream-dim);margin:0 0 20px;font-size:15px;}
+  .gate .pm-btn{font-family:'Baloo 2',sans-serif;font-weight:700;border:none;border-radius:999px;cursor:pointer;background:var(--mint);color:var(--mint-ink);padding:12px 24px;font-size:15.5px;}
+
+  .overall{background:linear-gradient(135deg,var(--purple-800),var(--purple-700));border:1px solid rgba(255,255,255,0.10);border-radius:24px;padding:24px 26px;margin-bottom:30px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+  .overall .big{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:40px;color:var(--yellow);line-height:1;}
+  .overall .lbl{color:var(--cream-dim);font-size:14.5px;}
+  .overall .obar{flex:1;min-width:200px;}
+
+  section.block{margin-bottom:34px;}
+  section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:center;gap:10px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+  .card{background:var(--purple-800);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:15px 16px;}
+  .card .ct{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:9px;}
+  .card .cname{font-weight:700;font-size:14.5px;color:var(--cream);}
+  .card .cnum{font-size:13px;color:var(--cream-dim);white-space:nowrap;}
+  .card .done-badge{font-size:11px;font-weight:700;color:var(--yellow-ink);background:var(--yellow);padding:2px 8px;border-radius:999px;}
+  .bar{height:9px;border-radius:999px;background:rgba(255,255,255,0.10);overflow:hidden;}
+  .bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--mint),#8fe0cf);transition:width .5s ease;}
+  .bar.full > i{background:linear-gradient(90deg,var(--yellow),#ffd23f);}
+  .muted{color:var(--cream-dim);font-size:13px;}
+  [hidden]{display:none!important;}
+  @media(max-width:600px){ .header-inner{padding:14px 16px;} .logo{font-size:17px;} main{padding:28px 16px 70px;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-left">
+      <a class="logo" href="index.html"><span class="l1" style="color:var(--cream)">Zámbó</span><span>Zsombor</span></a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menü" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="submenu" id="submenu" aria-label="Almenü">
+        <div class="submenu-title">Menü</div>
+        <a href="index.html">Főoldal</a>
+        <a href="feladatadatbazis.html">Feladatadatbázis</a>
+        <a href="haladas.html" class="active">Haladásom</a>
+        <a href="index.html#rolam">Ki vagyok én?</a>
+        <a href="index.html#szolgaltatasok">Szolgáltatások</a>
+        <a href="index.html#arak">Árak</a>
+        <a href="index.html#jelentkezes">Jelentkezés</a>
+      </nav>
+    </div>
+    <div class="header-right"><div id="authArea" class="auth-area"></div></div>
+  </div>
+</header>
+
+<main>
+  <div class="page-head">
+    <span class="pill">Haladásom</span>
+    <p>Kövesd, hol tartasz — évenként, feladatlaponként és témakörönként. A feladatokat a feladatbankban tudod „kész"-re pipálni.</p>
+  </div>
+
+  <div class="gate" id="gate" hidden>
+    <h2>Jelentkezz be</h2>
+    <p>A haladásod megtekintéséhez lépj be a Google-fiókoddal. Az adataid csak a te fiókodhoz tartoznak.</p>
+    <button class="pm-btn" id="gateLogin" type="button">Belépés</button>
+  </div>
+
+  <div id="dash" hidden>
+    <div class="overall">
+      <div><div class="big" id="ovBig">0 / 470</div><div class="lbl">megoldott feladat összesen</div></div>
+      <div class="obar"><div class="bar" id="ovBar"><i style="width:0%"></i></div></div>
+    </div>
+
+    <section class="block"><h2>📅 Évek szerint</h2><div class="grid" id="gridYears"></div></section>
+    <section class="block"><h2>📄 Feladatlapok szerint</h2><div class="grid" id="gridSheets"></div></section>
+    <section class="block"><h2>🎯 Témakörök szerint</h2><div class="grid" id="gridTopics"></div></section>
+  </div>
+
+  <div id="loading" class="muted" style="text-align:center;padding:20px;">Betöltés…</div>
+</main>
+
+<script id="pmdata" type="application/json">[[2005,1,1,"Sorozatok"],[2005,1,2,"Mértékegység átváltások"],[2005,1,3,"Kombinatorika, logika"],[2005,1,4,"Kombinatorika, logika"],[2005,1,5,"A bekövetkezés valószínűsége"],[2005,1,6,"Arány, százalék"],[2005,1,7,"Grafikonok, diagramok, táblázatok"],[2005,1,8,"Térgeometria"],[2005,1,9,"Térgeometria"],[2005,1,10,"Síkgeometria"],[2005,2,1,"Sorozatok"],[2005,2,2,"Mértékegység átváltások"],[2005,2,3,"Kombinatorika, logika"],[2005,2,4,"Alapműveletek, számelmélet"],[2005,2,5,"A bekövetkezés valószínűsége"],[2005,2,6,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2005,2,7,"Grafikonok, diagramok, táblázatok"],[2005,2,8,"Térgeometria"],[2005,2,9,"Térgeometria"],[2005,2,10,"Síkgeometria"],[2006,1,1,"Alapműveletek, számelmélet"],[2006,1,2,"Mértékegység átváltások"],[2006,1,3,"Kombinatorika, logika"],[2006,1,4,"Grafikonok, diagramok, táblázatok"],[2006,1,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2006,1,6,"Síkgeometria"],[2006,1,7,"Sorozatok"],[2006,1,8,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2006,1,9,"Térgeometria"],[2006,1,10,"Egyéb egyenlettel megoldható feladatok"],[2006,2,1,"Alapműveletek, számelmélet"],[2006,2,2,"Mértékegység átváltások"],[2006,2,3,"Kombinatorika, logika"],[2006,2,4,"Egyéb egyenlettel megoldható feladatok"],[2006,2,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2006,2,6,"Grafikonok, diagramok, táblázatok"],[2006,2,7,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2006,2,8,"Síkgeometria"],[2006,2,9,"Térgeometria"],[2006,2,10,"Arány, százalék"],[2007,1,1,"Alapműveletek, számelmélet"],[2007,1,2,"Mértékegység átváltások"],[2007,1,3,"Kombinatorika, logika"],[2007,1,4,"Grafikonok, diagramok, táblázatok"],[2007,1,5,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2007,1,6,"Síkgeometria"],[2007,1,7,"Sorozatok"],[2007,1,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2007,1,9,"Térgeometria"],[2007,1,10,"Arány, százalék"],[2007,2,1,"Alapműveletek, számelmélet"],[2007,2,2,"Mértékegység átváltások"],[2007,2,3,"Kombinatorika, logika"],[2007,2,4,"Grafikonok, diagramok, táblázatok"],[2007,2,5,"Egyéb egyenlettel megoldható feladatok"],[2007,2,6,"Síkgeometria"],[2007,2,7,"Kombinatorika, logika"],[2007,2,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2007,2,9,"Térgeometria"],[2007,2,10,"Arány, százalék"],[2008,1,1,"Alapműveletek, számelmélet"],[2008,1,2,"Mértékegység átváltások"],[2008,1,3,"Kombinatorika, logika"],[2008,1,4,"Grafikonok, diagramok, táblázatok"],[2008,1,5,"Egyéb egyenlettel megoldható feladatok"],[2008,1,6,"Síkgeometria"],[2008,1,7,"Sorozatok"],[2008,1,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2008,1,9,"Térgeometria"],[2008,1,10,"Arány, százalék"],[2008,2,1,"Alapműveletek, számelmélet"],[2008,2,2,"Mértékegység átváltások"],[2008,2,3,"Kombinatorika, logika"],[2008,2,4,"Grafikonok, diagramok, táblázatok"],[2008,2,5,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2008,2,6,"Síkgeometria"],[2008,2,7,"Sorozatok"],[2008,2,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2008,2,9,"Térgeometria"],[2008,2,10,"Arány, százalék"],[2009,1,1,"Alapműveletek, számelmélet"],[2009,1,2,"Mértékegység átváltások"],[2009,1,3,"Kombinatorika, logika"],[2009,1,4,"Grafikonok, diagramok, táblázatok"],[2009,1,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2009,1,6,"Síkgeometria"],[2009,1,7,"Sorozatok"],[2009,1,8,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2009,1,9,"Térgeometria"],[2009,1,10,"Arány, százalék"],[2009,2,1,"Egyenletek"],[2009,2,2,"Mértékegység átváltások"],[2009,2,3,"Kombinatorika, logika"],[2009,2,4,"Grafikonok, diagramok, táblázatok"],[2009,2,5,"Arány, százalék"],[2009,2,6,"Síkgeometria"],[2009,2,7,"Sorozatok"],[2009,2,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2009,2,9,"Térgeometria"],[2009,2,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2010,1,1,"Egyenletek"],[2010,1,2,"Mértékegység átváltások"],[2010,1,3,"Kombinatorika, logika"],[2010,1,4,"Grafikonok, diagramok, táblázatok"],[2010,1,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2010,1,6,"Síkgeometria"],[2010,1,7,"Síkgeometria"],[2010,1,8,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2010,1,9,"Térgeometria"],[2010,1,10,"Arány, százalék"],[2010,2,1,"Alapműveletek, számelmélet"],[2010,2,2,"Mértékegység átváltások"],[2010,2,3,"Kombinatorika, logika"],[2010,2,4,"Grafikonok, diagramok, táblázatok"],[2010,2,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2010,2,6,"Térgeometria"],[2010,2,7,"Síkgeometria"],[2010,2,8,"Sorozatok"],[2010,2,9,"Térgeometria"],[2010,2,10,"Arány, százalék"],[2010,3,1,"Egyenletek"],[2010,3,2,"Mértékegység átváltások"],[2010,3,3,"Kombinatorika, logika"],[2010,3,4,"Grafikonok, diagramok, táblázatok"],[2010,3,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2010,3,6,"Kombinatorika, logika"],[2010,3,7,"Síkgeometria"],[2010,3,8,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2010,3,9,"Térgeometria"],[2010,3,10,"Arány, százalék"],[2011,1,1,"Alapműveletek, számelmélet"],[2011,1,2,"Mértékegység átváltások"],[2011,1,3,"Kombinatorika, logika"],[2011,1,4,"Grafikonok, diagramok, táblázatok"],[2011,1,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2011,1,6,"Síkgeometria"],[2011,1,7,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2011,1,8,"Grafikonok, diagramok, táblázatok"],[2011,1,9,"Térgeometria"],[2011,1,10,"Arány, százalék"],[2011,2,1,"Egyenletek"],[2011,2,2,"Mértékegység átváltások"],[2011,2,3,"Kombinatorika, logika"],[2011,2,4,"Alapműveletek, számelmélet"],[2011,2,5,"Grafikonok, diagramok, táblázatok"],[2011,2,6,"Síkgeometria"],[2011,2,7,"Egyenletek"],[2011,2,8,"Grafikonok, diagramok, táblázatok"],[2011,2,9,"Térgeometria"],[2011,2,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2012,1,1,"Alapműveletek, számelmélet"],[2012,1,2,"Mértékegység átváltások"],[2012,1,3,"Kombinatorika, logika"],[2012,1,4,"Grafikonok, diagramok, táblázatok"],[2012,1,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2012,1,6,"Síkgeometria"],[2012,1,7,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2012,1,8,"Grafikonok, diagramok, táblázatok"],[2012,1,9,"Térgeometria"],[2012,1,10,"Egyéb egyenlettel megoldható feladatok"],[2012,2,1,"Alapműveletek, számelmélet"],[2012,2,2,"Mértékegység átváltások"],[2012,2,3,"Kombinatorika, logika"],[2012,2,4,"Grafikonok, diagramok, táblázatok"],[2012,2,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2012,2,6,"Síkgeometria"],[2012,2,7,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2012,2,8,"Grafikonok, diagramok, táblázatok"],[2012,2,9,"Térgeometria"],[2012,2,10,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2013,1,1,"Alapműveletek, számelmélet"],[2013,1,2,"Mértékegység átváltások"],[2013,1,3,"Kombinatorika, logika"],[2013,1,4,"Grafikonok, diagramok, táblázatok"],[2013,1,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2013,1,6,"Síkgeometria"],[2013,1,7,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2013,1,8,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2013,1,9,"Térgeometria"],[2013,1,10,"Grafikonok, diagramok, táblázatok"],[2013,2,1,"Alapműveletek, számelmélet"],[2013,2,2,"Mértékegység átváltások"],[2013,2,3,"Kombinatorika, logika"],[2013,2,4,"Arány, százalék"],[2013,2,5,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2013,2,6,"Síkgeometria"],[2013,2,7,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2013,2,8,"Egyéb egyenlettel megoldható feladatok"],[2013,2,9,"Térgeometria"],[2013,2,10,"Kombinatorika, logika"],[2014,1,1,"Alapműveletek, számelmélet"],[2014,1,2,"Mértékegység átváltások"],[2014,1,3,"Kombinatorika, logika"],[2014,1,4,"Grafikonok, diagramok, táblázatok"],[2014,1,5,"Síkgeometria"],[2014,1,6,"Alapműveletek, számelmélet"],[2014,1,7,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2014,1,8,"Arány, százalék"],[2014,1,9,"Térgeometria"],[2014,1,10,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2014,2,1,"Egyenletek"],[2014,2,2,"Mértékegység átváltások"],[2014,2,3,"Kombinatorika, logika"],[2014,2,4,"Grafikonok, diagramok, táblázatok"],[2014,2,5,"Síkgeometria"],[2014,2,6,"Síkgeometria"],[2014,2,7,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2014,2,8,"Egyéb egyenlettel megoldható feladatok"],[2014,2,9,"Térgeometria"],[2014,2,10,"Egyéb egyenlettel megoldható feladatok"],[2015,1,1,"Arány, százalék"],[2015,1,2,"Mértékegység átváltások"],[2015,1,3,"Kombinatorika, logika"],[2015,1,4,"Grafikonok, diagramok, táblázatok"],[2015,1,5,"Síkgeometria"],[2015,1,6,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2015,1,7,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2015,1,8,"Arány, százalék"],[2015,1,9,"Térgeometria"],[2015,1,10,"Arány, százalék"],[2015,2,1,"Egyéb egyenlettel megoldható feladatok"],[2015,2,2,"Mértékegység átváltások"],[2015,2,3,"Kombinatorika, logika"],[2015,2,4,"Grafikonok, diagramok, táblázatok"],[2015,2,5,"Síkgeometria"],[2015,2,6,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2015,2,7,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2015,2,8,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2015,2,9,"Térgeometria"],[2015,2,10,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2016,1,1,"Alapműveletek, számelmélet"],[2016,1,2,"Mértékegység átváltások"],[2016,1,3,"Kombinatorika, logika"],[2016,1,4,"Grafikonok, diagramok, táblázatok"],[2016,1,5,"Síkgeometria"],[2016,1,6,"Egyenletek"],[2016,1,7,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2016,1,8,"Alapműveletek, számelmélet"],[2016,1,9,"Térgeometria"],[2016,1,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2016,2,1,"Alapműveletek, számelmélet"],[2016,2,2,"Mértékegység átváltások"],[2016,2,3,"Kombinatorika, logika"],[2016,2,4,"Grafikonok, diagramok, táblázatok"],[2016,2,5,"Síkgeometria"],[2016,2,6,"Grafikonok, diagramok, táblázatok"],[2016,2,7,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2016,2,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2016,2,9,"Térgeometria"],[2016,2,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2017,1,1,"Alapműveletek, számelmélet"],[2017,1,2,"Mértékegység átváltások"],[2017,1,3,"Kombinatorika, logika"],[2017,1,4,"Grafikonok, diagramok, táblázatok"],[2017,1,5,"Síkgeometria"],[2017,1,6,"Arány, százalék"],[2017,1,7,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2017,1,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2017,1,9,"Térgeometria"],[2017,1,10,"Arány, százalék"],[2017,2,1,"Alapműveletek, számelmélet"],[2017,2,2,"Mértékegység átváltások"],[2017,2,3,"Kombinatorika, logika"],[2017,2,4,"Síkgeometria"],[2017,2,5,"Grafikonok, diagramok, táblázatok"],[2017,2,6,"Egyenletek"],[2017,2,7,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2017,2,8,"Egyéb egyenlettel megoldható feladatok"],[2017,2,9,"Térgeometria"],[2017,2,10,"Arány, százalék"],[2018,1,1,"Alapműveletek, számelmélet"],[2018,1,2,"Mértékegység átváltások"],[2018,1,3,"Kombinatorika, logika"],[2018,1,4,"Grafikonok, diagramok, táblázatok"],[2018,1,5,"Síkgeometria"],[2018,1,6,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2018,1,7,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2018,1,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2018,1,9,"Térgeometria"],[2018,1,10,"Arány, százalék"],[2018,2,1,"Alapműveletek, számelmélet"],[2018,2,2,"Mértékegység átváltások"],[2018,2,3,"Kombinatorika, logika"],[2018,2,4,"Grafikonok, diagramok, táblázatok"],[2018,2,5,"Síkgeometria"],[2018,2,6,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2018,2,7,"Arány, százalék"],[2018,2,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2018,2,9,"Térgeometria"],[2018,2,10,"Arány, százalék"],[2019,1,1,"Alapműveletek, számelmélet"],[2019,1,2,"Mértékegység átváltások"],[2019,1,3,"Kombinatorika, logika"],[2019,1,4,"Grafikonok, diagramok, táblázatok"],[2019,1,5,"Síkgeometria"],[2019,1,6,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2019,1,7,"Átlag"],[2019,1,8,"A bekövetkezés valószínűsége"],[2019,1,9,"Térgeometria"],[2019,1,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2019,2,1,"Alapműveletek, számelmélet"],[2019,2,2,"Mértékegység átváltások"],[2019,2,3,"Kombinatorika, logika"],[2019,2,4,"Grafikonok, diagramok, táblázatok"],[2019,2,5,"Síkgeometria"],[2019,2,6,"Arány, százalék"],[2019,2,7,"A bekövetkezés valószínűsége"],[2019,2,8,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2019,2,9,"Térgeometria"],[2019,2,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2020,1,1,"Alapműveletek, számelmélet"],[2020,1,2,"Mértékegység átváltások"],[2020,1,3,"Kombinatorika, logika"],[2020,1,4,"Grafikonok, diagramok, táblázatok"],[2020,1,5,"Síkgeometria"],[2020,1,6,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2020,1,7,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2020,1,8,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2020,1,9,"Térgeometria"],[2020,1,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2020,2,1,"Alapműveletek, számelmélet"],[2020,2,2,"Mértékegység átváltások"],[2020,2,3,"Kombinatorika, logika"],[2020,2,4,"Grafikonok, diagramok, táblázatok"],[2020,2,5,"Síkgeometria"],[2020,2,6,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2020,2,7,"A bekövetkezés valószínűsége"],[2020,2,8,"Arány, százalék"],[2020,2,9,"Térgeometria"],[2020,2,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2021,1,1,"Alapműveletek, számelmélet"],[2021,1,2,"Mértékegység átváltások"],[2021,1,3,"Kombinatorika, logika"],[2021,1,4,"Grafikonok, diagramok, táblázatok"],[2021,1,5,"Síkgeometria"],[2021,1,6,"Arány, százalék"],[2021,1,7,"A bekövetkezés valószínűsége"],[2021,1,8,"Arány, százalék"],[2021,1,9,"Térgeometria"],[2021,1,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2021,2,1,"Alapműveletek, számelmélet"],[2021,2,2,"Mértékegység átváltások"],[2021,2,3,"Kombinatorika, logika"],[2021,2,4,"Grafikonok, diagramok, táblázatok"],[2021,2,5,"Síkgeometria"],[2021,2,6,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2021,2,7,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2021,2,8,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2021,2,9,"Térgeometria"],[2021,2,10,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2021,3,1,"Alapműveletek, számelmélet"],[2021,3,2,"Mértékegység átváltások"],[2021,3,3,"Kombinatorika, logika"],[2021,3,4,"Síkgeometria"],[2021,3,5,"Grafikonok, diagramok, táblázatok"],[2021,3,6,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2021,3,7,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2021,3,8,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2021,3,9,"Térgeometria"],[2021,3,10,"Arány, százalék"],[2022,1,1,"Alapműveletek, számelmélet"],[2022,1,2,"Mértékegység átváltások"],[2022,1,3,"Kombinatorika, logika"],[2022,1,4,"Grafikonok, diagramok, táblázatok"],[2022,1,5,"Síkgeometria"],[2022,1,6,"Átlag"],[2022,1,7,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2022,1,8,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2022,1,9,"Térgeometria"],[2022,1,10,"Arány, százalék"],[2022,2,1,"Alapműveletek, számelmélet"],[2022,2,2,"Mértékegység átváltások"],[2022,2,3,"Kombinatorika, logika"],[2022,2,4,"Grafikonok, diagramok, táblázatok"],[2022,2,5,"Síkgeometria"],[2022,2,6,"Arány, százalék"],[2022,2,7,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2022,2,8,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2022,2,9,"Térgeometria"],[2022,2,10,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2022,3,1,"Alapműveletek, számelmélet"],[2022,3,2,"Mértékegység átváltások"],[2022,3,3,"Kombinatorika, logika"],[2022,3,4,"Grafikonok, diagramok, táblázatok"],[2022,3,5,"Síkgeometria"],[2022,3,6,"Arány, százalék"],[2022,3,7,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2022,3,8,"Sorozatok"],[2022,3,9,"Térgeometria"],[2022,3,10,"Arány, százalék"],[2023,1,1,"Alapműveletek, számelmélet"],[2023,1,2,"Mértékegység átváltások"],[2023,1,3,"Kombinatorika, logika"],[2023,1,4,"Grafikonok, diagramok, táblázatok"],[2023,1,5,"Síkgeometria"],[2023,1,6,"Arány, százalék"],[2023,1,7,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2023,1,8,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2023,1,9,"Térgeometria"],[2023,1,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2023,2,1,"Alapműveletek, számelmélet"],[2023,2,2,"Mértékegység átváltások"],[2023,2,3,"Kombinatorika, logika"],[2023,2,4,"Grafikonok, diagramok, táblázatok"],[2023,2,5,"Síkgeometria"],[2023,2,6,"Arány, százalék"],[2023,2,7,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2023,2,8,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2023,2,9,"Térgeometria"],[2023,2,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2024,1,1,"Alapműveletek, számelmélet"],[2024,1,2,"Mértékegység átváltások"],[2024,1,3,"Kombinatorika, logika"],[2024,1,4,"Grafikonok, diagramok, táblázatok"],[2024,1,5,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2024,1,6,"Arány, százalék"],[2024,1,7,"Síkgeometria"],[2024,1,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2024,1,9,"Térgeometria"],[2024,1,10,"Egyéb egyenlettel megoldható feladatok"],[2024,2,1,"Alapműveletek, számelmélet"],[2024,2,2,"Mértékegység átváltások"],[2024,2,3,"Kombinatorika, logika"],[2024,2,4,"Grafikonok, diagramok, táblázatok"],[2024,2,5,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2024,2,6,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2024,2,7,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2024,2,8,"Síkgeometria"],[2024,2,9,"Térgeometria"],[2024,2,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2025,1,1,"Alapműveletek, számelmélet"],[2025,1,2,"Mértékegység átváltások"],[2025,1,3,"Kombinatorika, logika"],[2025,1,4,"Grafikonok, diagramok, táblázatok"],[2025,1,5,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2025,1,6,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2025,1,7,"Síkgeometria"],[2025,1,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2025,1,9,"Térgeometria"],[2025,1,10,"Egyéb egyenlettel megoldható feladatok"],[2025,2,1,"Alapműveletek, számelmélet"],[2025,2,2,"Mértékegység átváltások"],[2025,2,3,"Kombinatorika, logika"],[2025,2,4,"Grafikonok, diagramok, táblázatok"],[2025,2,5,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2025,2,6,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2025,2,7,"Síkgeometria"],[2025,2,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2025,2,9,"Térgeometria"],[2025,2,10,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2026,1,1,"Alapműveletek, számelmélet"],[2026,1,2,"Mértékegység átváltások"],[2026,1,3,"Kombinatorika, logika"],[2026,1,4,"Grafikonok, diagramok, táblázatok"],[2026,1,5,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2026,1,6,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2026,1,7,"Síkgeometria"],[2026,1,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2026,1,9,"Térgeometria"],[2026,1,10,"Egyenlettel megoldható feladatok (egyenes arányosság, logika)"],[2026,2,1,"Alapműveletek, számelmélet"],[2026,2,2,"Mértékegység átváltások"],[2026,2,3,"Kombinatorika, logika"],[2026,2,4,"Függvények, koordináta-rendszer, kapcsolódó egyenletek"],[2026,2,5,"Grafikonok, diagramok, táblázatok"],[2026,2,6,"Egyenlettel megoldható feladatok (hozzáad, elvesz, több, kevesebb stb.)"],[2026,2,7,"Síkgeometria"],[2026,2,8,"Feleletválasztós feladatok (karikázós, igaz-hamis)"],[2026,2,9,"Térgeometria"],[2026,2,10,"Egyéb egyenlettel megoldható feladatok"]]</script>
+<script>
+(function(){
+  var PMDATA = JSON.parse(document.getElementById('pmdata').textContent);
+  // Hamburger
+  var tg=document.getElementById('menuToggle'), sm=document.getElementById('submenu');
+  tg.addEventListener('click',function(e){e.stopPropagation();var o=sm.classList.toggle('open');tg.classList.toggle('open',o);});
+  document.addEventListener('click',function(e){if(!sm.contains(e.target)&&!tg.contains(e.target)){sm.classList.remove('open');tg.classList.remove('open');}});
+
+  // Totals (feladat-szint)
+  var byYear={}, bySheet={}, byTopic={};
+  PMDATA.forEach(function(r){ var y=r[0],f=r[1],tema=r[3]; var sk=y+'_'+f;
+    (byYear[y]=byYear[y]||{done:0,total:0}).total++;
+    (bySheet[sk]=bySheet[sk]||{year:y,ford:f,done:0,total:0}).total++;
+    (byTopic[tema]=byTopic[tema]||{done:0,total:0}).total++;
+  });
+
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function card(name, done, total, marked){
+    var pct= total? Math.round(done/total*100):0;
+    var full = total>0 && done>=total;
+    return '<div class="card"><div class="ct"><span class="cname">'+esc(name)+'</span>'
+      + (marked?'<span class="done-badge">kész</span>':'<span class="cnum">'+done+' / '+total+'</span>')
+      + '</div><div class="bar'+(full?' full':'')+'"><i style="width:'+pct+'%"></i></div></div>';
+  }
+
+  function render(doneMap){
+    Object.keys(byYear).forEach(function(k){byYear[k].done=0;});
+    Object.keys(bySheet).forEach(function(k){bySheet[k].done=0;});
+    Object.keys(byTopic).forEach(function(k){byTopic[k].done=0;});
+    var totalDone=0;
+    PMDATA.forEach(function(r){ var y=r[0],f=r[1],n=r[2],tema=r[3];
+      if(doneMap['t:'+y+'_'+f+'_'+n]){ byYear[y].done++; bySheet[y+'_'+f].done++; byTopic[tema].done++; totalDone++; }
+    });
+    document.getElementById('ovBig').textContent=totalDone+' / '+PMDATA.length;
+    document.querySelector('#ovBar > i').style.width=(PMDATA.length?Math.round(totalDone/PMDATA.length*100):0)+'%';
+
+    var ys=Object.keys(byYear).sort(function(a,b){return b-a;});
+    document.getElementById('gridYears').innerHTML=ys.map(function(y){return card(y, byYear[y].done, byYear[y].total, false);}).join('');
+
+    var sk=Object.keys(bySheet).sort(function(a,b){var A=bySheet[a],B=bySheet[b];return (B.year-A.year)||(A.ford-B.ford);});
+    document.getElementById('gridSheets').innerHTML=sk.map(function(k){var s=bySheet[k];return card(s.year+' · '+s.ford+'. feladatlap', s.done, s.total, doneMap['s:'+k]);}).join('');
+
+    var tk=Object.keys(byTopic).sort();
+    document.getElementById('gridTopics').innerHTML=tk.map(function(t){return card(t, byTopic[t].done, byTopic[t].total, doneMap['k:'+t]);}).join('');
+  }
+
+  function show(u){
+    document.getElementById('loading').hidden=true;
+    if(u){ document.getElementById('gate').hidden=true; document.getElementById('dash').hidden=false;
+      PM.loadProgress().then(function(map){ var dm={}; Object.keys(map||{}).forEach(function(k){ if(map[k].status==='kesz') dm[k]=true; }); render(dm); });
+    } else { document.getElementById('dash').hidden=true; document.getElementById('gate').hidden=false; }
+  }
+
+  document.getElementById('gateLogin').addEventListener('click',function(){ if(window.PM&&PM.openLogin) PM.openLogin(); });
+
+  function boot(){
+    if(!window.PM){ setTimeout(boot,120); return; }
+    PM.onChange(function(u){ show(u); });
+    PM.getUser().then(function(u){ show(u); });
+  }
+  boot();
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+</body>
+</html>

@@ -761,6 +761,7 @@ body::before {
         <div class="submenu-title">Menü</div>
         <a href="index.html" class="active">Főoldal</a>
         <a href="feladatadatbazis.html">Feladatadatbázis</a>
+        <a href="haladas.html">Haladásom</a>
         <a href="index.html#problema">Ismerős a helyzet?</a>
         <a href="index.html#rolam">Ki vagyok én?</a>
         <a href="index.html#szolgaltatasok">Szolgáltatások</a>
@@ -770,7 +771,9 @@ body::before {
         <a href="index.html#jelentkezes">Jelentkezés</a>
       </nav>
     </div>
-    <a class="header-cta" href="#jelentkezes">Ingyenes első óra</a>
+    <div class="header-right">
+      <div id="authArea" class="auth-area"></div>
+    </div>
   </div>
 </header>
 
@@ -1087,6 +1090,51 @@ body::before {
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close();});
 })();
 </script>
+
+<!-- Lebegő „sziget" CTA (csak a főoldalon) -->
+<a class="float-cta" id="floatCta" href="#jelentkezes" aria-label="Ingyenes első óra foglalása">
+  <span class="fc-emoji" aria-hidden="true">🎁</span>
+  <span class="fc-text">Ingyenes első óra</span>
+  <span class="fc-arrow" aria-hidden="true">→</span>
+</a>
+<style>
+  .float-cta{
+    position:fixed; left:50%; bottom:22px; z-index:200;
+    display:flex; align-items:center; gap:10px;
+    background:var(--yellow,#f5e463); color:var(--yellow-ink,#3a2d05);
+    font-family:'Baloo 2',sans-serif; font-weight:700; font-size:16px;
+    padding:14px 24px; border-radius:999px; text-decoration:none; white-space:nowrap;
+    box-shadow:0 14px 36px rgba(0,0,0,.42), 0 0 0 4px rgba(245,228,99,.16);
+    animation:fcBob 3s ease-in-out infinite;
+    transition:opacity .35s ease, transform .35s ease, visibility .35s;
+  }
+  .float-cta .fc-arrow{transition:transform .2s ease;}
+  .float-cta:hover{filter:brightness(1.05);}
+  .float-cta:hover .fc-arrow{transform:translateX(4px);}
+  .float-cta.hide{opacity:0; visibility:hidden; animation:none;
+    transform:translateX(-50%) translateY(24px);}
+  @keyframes fcBob{
+    0%,100%{transform:translateX(-50%) translateY(0);}
+    50%{transform:translateX(-50%) translateY(-7px);}
+  }
+  @media(max-width:600px){ .float-cta{font-size:14.5px; padding:12px 18px; bottom:16px;} }
+  @media(prefers-reduced-motion:reduce){ .float-cta{animation:none; transform:translateX(-50%);} }
+</style>
+<script>
+  (function(){
+    var cta=document.getElementById('floatCta');
+    var target=document.getElementById('jelentkezes');
+    if(!cta||!target||!('IntersectionObserver' in window)) return;
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ cta.classList.toggle('hide', e.isIntersecting); });
+    },{threshold:0.15});
+    io.observe(target);
+  })();
+</script>
+
+<!-- Felhasználói fiók + haladás (Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 
 </body>
 </html>

@@ -388,6 +388,7 @@
         <div class="submenu-title">Menü</div>
         <a href="index.html" class="active"><span class="ic"></span> Főoldal</a>
         <a href="feladatadatbazis.html"><span class="ic"></span> Feladatadatbázis</a>
+        <a href="haladas.html"><span class="ic"></span> Haladásom</a>
         <a href="index.html#rolam"><span class="ic"></span> Ki vagyok én?</a>
         <a href="index.html#szolgaltatasok"><span class="ic"></span> Szolgáltatások</a>
         <a href="index.html#folyamat"><span class="ic"></span> Hogy zajlik a folyamat?</a>
@@ -395,7 +396,9 @@
         <a href="index.html#jelentkezes"><span class="ic"></span> Jelentkezés</a>
       </nav>
     </div>
-    <a class="header-cta" href="index.html#jelentkezes">Ingyenes első óra</a>
+    <div class="header-right">
+      <div id="authArea" class="auth-area"></div>
+    </div>
   </div>
 </header>
 
@@ -657,6 +660,7 @@
       els.results.appendChild(row);
     });
     els.results.hidden=false;
+    if(window.PMprog) PMprog.onTopicRendered(c, list);
   });
 
   /* ---- Kiválasztás + render ---- */
@@ -703,6 +707,7 @@
     els.ph.hidden=true;
     if(PDFJS){ renderPdfjs(base, tg); }
     else { renderIframe(base+hash); }
+    if(window.PMprog) PMprog.onView(state.paper, state.taskVal);
   }
 
   function renderIframe(src){
@@ -832,6 +837,89 @@
     }catch(e){}
   }
   applyDeepLink();
+})();
+</script>
+
+<!-- Felhasználói fiók + haladás (Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
+
+<!-- Haladás: pipálható feladat / feladatsor / témakör -->
+<script>
+(function(){
+  var PM = window.PM; if(!PM) return;
+  var doneMap = {}, user = null, curKey = null, curLabel = '';
+
+  var st=document.createElement('style'); st.textContent=''
+    +'.viewer-actions .pm-done{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.28);background:transparent;color:var(--cream,#f5f1ff);border-radius:999px;padding:7px 13px;display:none;align-items:center;gap:6px;}'
+    +'.viewer-actions .pm-done.on{background:var(--mint,#c7f3ec);color:var(--mint-ink,#123b34);border-color:transparent;}'
+    +'.pm-check{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid rgba(255,255,255,.32);display:inline-flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:transparent;cursor:pointer;transition:all .15s;}'
+    +'.pm-check:hover{border-color:var(--mint,#c7f3ec);}'
+    +'.pm-check.on{background:var(--mint,#c7f3ec);border-color:transparent;color:var(--mint-ink,#123b34);}'
+    +'.pm-topicbar{margin-top:12px;}'
+    +'.pm-topicbtn{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:13.5px;cursor:pointer;border:1.5px solid rgba(255,255,255,.28);background:transparent;color:var(--cream,#f5f1ff);border-radius:999px;padding:8px 15px;display:inline-flex;align-items:center;gap:7px;}'
+    +'.pm-topicbtn.on{background:var(--yellow,#f5e463);color:var(--yellow-ink,#2f1866);border-color:transparent;}';
+  document.head.appendChild(st);
+
+  function sheetK(p){ var m=/M8_(\d+)_(\d+)_fl/.exec(p&&p.fl||''); return m?(m[1]+'_'+m[2]):((p&&p.datum||'')+'_'+(p&&p.fordulo||'')); }
+  function taskKey(p,n){ return 't:'+sheetK(p)+'_'+n; }
+  function sheetKey(p){ return 's:'+sheetK(p); }
+  function topicKey(t){ return 'k:'+t; }
+  function isDone(k){ return !!doneMap[k]; }
+
+  var actions=document.querySelector('.viewer-actions');
+  var doneBtn=document.createElement('button'); doneBtn.type='button'; doneBtn.className='pm-done';
+  if(actions) actions.insertBefore(doneBtn, actions.firstChild);
+  doneBtn.addEventListener('click', function(){ toggle(curKey); });
+
+  function paintDoneBtn(){ if(!curKey){return;} var on=isDone(curKey); doneBtn.classList.toggle('on',on); doneBtn.textContent=(on?'✓ ':'')+curLabel; }
+
+  function repaintAll(){
+    paintDoneBtn();
+    var checks=document.querySelectorAll('.pm-check');
+    for(var i=0;i<checks.length;i++){ var on=isDone(checks[i].dataset.key); checks[i].classList.toggle('on',on); checks[i].textContent=on?'✓':''; }
+    var tb=document.querySelectorAll('.pm-topicbtn');
+    for(var j=0;j<tb.length;j++){ var o=isDone(tb[j].dataset.key); tb[j].classList.toggle('on',o); tb[j].textContent=(o?'✓ ':'')+'Egész témakör kész'; }
+  }
+
+  function toggle(key){
+    if(!key) return;
+    if(!user){ if(PM.openLogin) PM.openLogin(); return; }
+    var now=!isDone(key); doneMap[key]=now; repaintAll();
+    PM.saveProgress(key, { status: now?'kesz':'' });
+  }
+
+  window.PMprog = {
+    onView: function(paper, taskVal){
+      if(!paper || taskVal===''){ doneBtn.style.display='none'; curKey=null; return; }
+      if(taskVal==='full'){ curKey=sheetKey(paper); curLabel='Feladatsor kész'; }
+      else { curKey=taskKey(paper, parseInt(taskVal,10)); curLabel='Kész'; }
+      doneBtn.style.display='inline-flex'; paintDoneBtn();
+    },
+    onTopicRendered: function(topic, list){
+      var rc=document.getElementById('resultCount');
+      var bar=document.createElement('div'); bar.className='pm-topicbar';
+      var tbtn=document.createElement('button'); tbtn.type='button'; tbtn.className='pm-topicbtn';
+      tbtn.dataset.key=topicKey(topic);
+      tbtn.addEventListener('click', function(){ toggle(tbtn.dataset.key); });
+      bar.appendChild(tbtn); rc.appendChild(bar);
+      var rows=document.getElementById('results').children;
+      for(var i=0;i<list.length;i++){
+        var row=rows[i]; if(!row) continue;
+        var chk=document.createElement('span'); chk.className='pm-check'; chk.setAttribute('role','checkbox');
+        chk.dataset.key=taskKey(list[i].p, list[i].t.n);
+        chk.title='Kész / nincs kész';
+        chk.addEventListener('click', function(e){ e.stopPropagation(); toggle(this.dataset.key); });
+        row.insertBefore(chk, row.firstChild);
+      }
+      repaintAll();
+    }
+  };
+
+  function refresh(){ PM.loadProgress().then(function(map){ doneMap={}; Object.keys(map||{}).forEach(function(k){ if(map[k].status==='kesz') doneMap[k]=true; }); repaintAll(); }); }
+
+  PM.onChange(function(u){ user=u; if(u){ refresh(); } else { doneMap={}; repaintAll(); } });
+  PM.getUser().then(function(u){ user=u; if(u) refresh(); });
 })();
 </script>
 
