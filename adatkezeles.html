@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VRWQHDJE0Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-VRWQHDJE0Y');
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adatkezelési tájékoztató | papaimatek.hu</title>
+<meta name="description" content="A papaimatek.hu adatkezelési tájékoztatója: milyen személyes adatokat kezelünk, milyen célból és jogalappal, meddig, kikkel, és milyen jogaid vannak (GDPR).">
+<meta name="theme-color" content="#241150">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --purple-950:#241150; --purple-900:#2f1866; --purple-800:#3a1f80; --purple-700:#4a2aa0;
+    --yellow:#f5e463; --yellow-ink:#2f1866; --mint:#c7f3ec; --mint-ink:#123b34;
+    --cream:#f5f1ff; --cream-dim:#c9bdea; --coral:#ff8a65;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--purple-950);color:var(--cream);font-family:'Inter',sans-serif;}
+  h1,h2,h3,.logo,.pill{font-family:'Baloo 2',sans-serif;}
+  a{color:var(--yellow);}
+  header{position:sticky;top:0;z-index:50;background:rgba(36,17,80,0.88);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.08);}
+  .header-inner{position:relative;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;}
+  .header-left{display:flex;align-items:center;gap:14px;position:relative;}
+  .logo{font-weight:700;font-size:19px;color:var(--cream);text-decoration:none;display:flex;flex-direction:column;line-height:1.02;}
+  .logo span{color:var(--yellow);}
+  .menu-toggle{width:42px;height:38px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;background:transparent;border:none;cursor:pointer;padding:6px;border-radius:12px;flex:none;}
+  .menu-toggle span{display:block;width:26px;height:3px;background:var(--cream);border-radius:3px;transition:transform .25s ease,opacity .2s ease;}
+  .menu-toggle:hover span{background:var(--yellow);}
+  .menu-toggle.open span:nth-child(1){transform:translateY(8px) rotate(45deg);}
+  .menu-toggle.open span:nth-child(2){opacity:0;}
+  .menu-toggle.open span:nth-child(3){transform:translateY(-8px) rotate(-45deg);}
+  .submenu{position:absolute;top:calc(100% + 12px);left:0;transform:translateY(-8px);background:var(--purple-800);border:1px solid rgba(255,255,255,0.10);border-radius:18px;box-shadow:0 18px 40px rgba(0,0,0,0.35);padding:10px;min-width:240px;display:flex;flex-direction:column;gap:4px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,transform .2s ease,visibility .2s;z-index:60;}
+  .submenu.open{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);}
+  .submenu-title{font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--cream-dim);padding:6px 14px 4px;}
+  .submenu a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;text-decoration:none;color:var(--cream);font-weight:600;font-size:15.5px;transition:background .15s ease;}
+  .submenu a:hover{background:var(--purple-700);}
+  .header-right{display:flex;align-items:center;gap:10px;}
+
+  main{max-width:860px;margin:0 auto;padding:40px 24px 80px;}
+  .page-head{text-align:center;margin-bottom:30px;}
+  .page-head .pill{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font-weight:700;font-size:clamp(22px,4vw,34px);line-height:1;padding:12px 26px;border-radius:999px;transform:rotate(-1.5deg);box-shadow:0 10px 30px rgba(0,0,0,0.25);}
+  .page-head p{margin-top:20px;color:var(--cream-dim);font-size:15px;}
+
+  .doc{background:var(--purple-900);border:1px solid rgba(255,255,255,0.08);border-radius:22px;padding:34px 30px;font-size:15px;line-height:1.7;}
+  .doc h2{font-size:19px;margin:30px 0 10px;color:var(--yellow);}
+  .doc h2:first-child{margin-top:0;}
+  .doc h3{font-size:16px;margin:20px 0 8px;color:var(--cream);}
+  .doc p{margin:0 0 12px;color:var(--cream);}
+  .doc ul{margin:0 0 14px;padding-left:20px;}
+  .doc li{margin:5px 0;}
+  .doc a{word-break:break-word;}
+  .doc strong{color:var(--cream);}
+  .fill{background:rgba(255,138,101,0.16);border:1px dashed var(--coral);color:#ffd9cc;padding:1px 7px;border-radius:6px;font-weight:600;font-size:13.5px;}
+  .note{background:var(--purple-800);border:1px solid rgba(255,255,255,0.10);border-radius:14px;padding:14px 16px;margin:14px 0;font-size:13.5px;color:var(--cream-dim);}
+  .tbl-wrap{overflow-x:auto;margin:14px 0;border-radius:14px;border:1px solid rgba(255,255,255,0.10);}
+  table{border-collapse:collapse;width:100%;min-width:640px;font-size:13.5px;}
+  th,td{text-align:left;padding:11px 13px;border-bottom:1px solid rgba(255,255,255,0.08);vertical-align:top;}
+  th{background:var(--purple-800);color:var(--yellow);font-family:'Baloo 2',sans-serif;font-weight:700;font-size:13px;white-space:nowrap;}
+  td{color:var(--cream);}
+  tr:last-child td{border-bottom:none;}
+  .meta{color:var(--cream-dim);font-size:13px;margin-top:6px;}
+  .back{display:inline-block;margin-top:26px;color:var(--mint);font-weight:600;text-decoration:none;}
+  footer{padding:26px 24px;text-align:center;color:var(--cream-dim);font-size:13.5px;border-top:1px solid rgba(255,255,255,0.08);line-height:1.7;}
+  footer a{color:var(--mint);}
+  @media(max-width:600px){ .header-inner{padding:14px 16px;} .logo{font-size:17px;} main{padding:28px 16px 70px;} .doc{padding:24px 18px;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="header-left">
+      <a class="logo" href="index.html"><span class="l1" style="color:var(--cream)">Zámbó</span><span>Zsombor</span></a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menü" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="submenu" id="submenu" aria-label="Almenü">
+        <div class="submenu-title">Menü</div>
+        <a href="index.html">Főoldal</a>
+        <a href="feladatadatbazis.html">Feladatadatbázis</a>
+        <a href="index.html#rolam">Ki vagyok én?</a>
+        <a href="index.html#szolgaltatasok">Szolgáltatások</a>
+        <a href="index.html#arak">Árak</a>
+        <a href="index.html#jelentkezes">Jelentkezés</a>
+      </nav>
+    </div>
+    <div class="header-right"><div id="authArea" class="auth-area"></div></div>
+  </div>
+</header>
+
+<main>
+  <div class="page-head">
+    <span class="pill">Adatkezelési tájékoztató</span>
+    <p>Hogyan kezeljük a személyes adataidat a papaimatek.hu oldalon — az Európai Unió általános adatvédelmi rendelete (GDPR) szerint.</p>
+  </div>
+
+  <div class="doc">
+
+    <div class="note">Ez a tájékoztató a papaimatek.hu weboldalon keresztül megvalósuló adatkezelésre vonatkozik. A dokumentum gondos, de általános minta; éles használat előtt érdemes adatvédelmi szakemberrel is átnézetni, és nem minősül jogi tanácsadásnak.</div>
+
+    <h2>1. Az adatkezelő</h2>
+    <p>
+      <strong>Név:</strong> Zámbó Zsombor (adószámmal rendelkező magánszemély)<br>
+      <strong>Szolgáltatás:</strong> papaimatek.hu — matematika felvételi felkészítő és korrepetálás<br>
+      <strong>Levelezési cím:</strong> 8500 Pápa, Korona u. 4/2.<br>
+      <strong>Adószám:</strong> 92376445-1-39<br>
+      <strong>E-mail:</strong> <a href="mailto:z.zsombor31@gmail.com">z.zsombor31@gmail.com</a><br>
+      <strong>Telefon:</strong> <a href="tel:+36302165768">+36 30 216 5768</a>
+    </p>
+    <p>Adatvédelmi tisztviselő (DPO) kijelölése nem kötelező, és nem történt.</p>
+
+    <h2>2. Milyen adatokat, milyen célból és jogalappal kezelünk</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Kezelt adatok</th><th>Cél</th><th>Jogalap</th><th>Megőrzési idő</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Név és e-mail-cím (a Google-fiókodból), valamint az általad megadott profilkép, évfolyam, iskola, kedvenc témakör, cél</td>
+            <td>Fiók létrehozása és működtetése, a bejelentkezés lehetővé tétele</td>
+            <td>GDPR 6. cikk (1) b) — a szolgáltatás (fiók) nyújtása, valamint 6. cikk (1) a) — hozzájárulás</td>
+            <td>A fiók törléséig, illetve a hozzájárulás visszavonásáig</td>
+          </tr>
+          <tr>
+            <td>Haladási adatok (mely feladatokat, feladatsorokat jelölted késznek)</td>
+            <td>A tanulási haladásod mentése és megjelenítése a saját fiókodban</td>
+            <td>GDPR 6. cikk (1) b) / a)</td>
+            <td>A fiók törléséig, illetve a hozzájárulás visszavonásáig</td>
+          </tr>
+          <tr>
+            <td>E-mail-cím (marketing célra)</td>
+            <td>Marketing célú megkeresés e-mailben (pl. új feladatok, hírek, ajánlatok) — csak ha ezt külön bejelölted</td>
+            <td>GDPR 6. cikk (1) a) — <strong>önkéntes, külön hozzájárulás</strong></td>
+            <td>A hozzájárulás visszavonásáig</td>
+          </tr>
+          <tr>
+            <td>Használati és eszközadatok, rövidített IP-cím, süti-azonosítók (Google Analytics)</td>
+            <td>A látogatottság mérése, a weboldal fejlesztése</td>
+            <td>GDPR 6. cikk (1) a) — hozzájárulás / 6. cikk (1) f) — jogos érdek</td>
+            <td>A Google Analytics beállítása szerint (jellemzően legfeljebb 14 hónap)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="meta">A fiókhoz szükséges adatok megadása a szolgáltatás használatának feltétele; ezek nélkül a fiók és a haladáskövetés nem működik. A <strong>marketing</strong> hozzájárulás és az <strong>analitika</strong> megadása teljesen önkéntes, és a többi funkció ettől függetlenül is elérhető.</p>
+
+    <h2>3. A hozzájárulás önkéntessége és visszavonása</h2>
+    <p>A hozzájárulás önkéntes, konkrét, tájékozott és egyértelmű. A marketing célú hozzájárulás <strong>nem feltétele</strong> a belépésnek vagy a feladatbank használatának.</p>
+    <p>A hozzájárulásodat bármikor, indokolás nélkül visszavonhatod. A visszavonás nem érinti a visszavonás előtti adatkezelés jogszerűségét. A visszavonás módjai:</p>
+    <ul>
+      <li>a fiókodban a „Saját fiók" ablakban a marketing feliratkozás kikapcsolása;</li>
+      <li>e-mailben az <a href="mailto:z.zsombor31@gmail.com">z.zsombor31@gmail.com</a> címen;</li>
+      <li>a fiók törlésének kérésével (ekkor az összes hozzá tartozó adatot töröljük).</li>
+    </ul>
+
+    <h2>4. Kik férnek hozzá az adatokhoz (adatfeldolgozók)</h2>
+    <p>Az adataidat nem adjuk el, és nem adjuk át harmadik feleknek marketing céljából. A működéshez az alábbi szolgáltatókat (adatfeldolgozókat) vesszük igénybe:</p>
+    <ul>
+      <li><strong>Google Ireland Ltd. / Google LLC</strong> — Google-fiókos bejelentkezés (OAuth) és Google Analytics.</li>
+      <li><strong>Supabase</strong> — a fiók- és haladási adatok tárolása (adatbázis és hitelesítés). Tárolási régió: <strong>Európai Unió (EU)</strong>.</li>
+      <li><strong>Vercel Inc.</strong> — a weboldal kiszolgálása (hosting).</li>
+    </ul>
+
+    <h2>5. Adattovábbítás az EGT-n kívülre</h2>
+    <p>A fiók- és haladási adataidat a Supabase az Európai Unión belül tárolja, így ezek tárolása nem jár EGT-n kívüli adattovábbítással. Egyes további szolgáltatók azonban — a Google (Google-fiókos belépés és Google Analytics), valamint a Vercel (a weboldal kiszolgálása) — az Egyesült Államokban is kezelhetnek adatot. Ez a továbbítás megfelelő garanciák mellett történik: az Európai Bizottság által elfogadott általános szerződési feltételek (SCC), illetve az EU–USA Adatvédelmi Keret (Data Privacy Framework) szerinti tanúsítás alapján.</p>
+
+    <h2>6. Kiskorúak</h2>
+    <p>A szolgáltatás jellemzően 8. osztályos, felvételire készülő diákoknak szól, akik gyakran 16 év alattiak. A GDPR 8. cikke és a magyar szabályozás szerint az információs társadalommal összefüggő szolgáltatás keretében a <strong>16. életévét be nem töltött</strong> gyermek adatainak hozzájárulás alapú kezeléséhez — így különösen a marketing célú megkereséshez — a szülő vagy gondviselő hozzájárulása szükséges.</p>
+    <p>Ezért a belépéskor nyilatkozni kell arról, hogy a felhasználó elmúlt 16 éves, vagy szülői/gondviselői hozzájárulással használja az oldalt. Marketing célú megkeresést 16 év alatti felhasználónak csak érvényes szülői/gondviselői hozzájárulás birtokában küldünk.</p>
+
+    <h2>7. Az érintett (te) jogai</h2>
+    <ul>
+      <li>tájékoztatást és hozzáférést kérhetsz a rólad kezelt személyes adatokhoz;</li>
+      <li>kérheted a pontatlan adatok helyesbítését;</li>
+      <li>kérheted az adataid törlését, illetve — a feltételek fennállásakor — az adatkezelés korlátozását;</li>
+      <li>jogosult lehetsz az adathordozhatóságra (az adataid géppel olvasható formátumban való megkapására);</li>
+      <li>tiltakozhatsz a jogos érdeken alapuló adatkezelés ellen;</li>
+      <li>a hozzájárulást bármikor visszavonhatod (lásd a 3. pontot).</li>
+    </ul>
+    <p>Kérésedet a fenti e-mail-címen jelezheted; a kérelemre indokolatlan késedelem nélkül, legkésőbb egy hónapon belül válaszolunk.</p>
+
+    <h2>8. Jogorvoslat</h2>
+    <p>Ha úgy érzed, hogy az adatkezelés során sérültek a jogaid, panaszt tehetsz a felügyeleti hatóságnál, vagy bírósághoz fordulhatsz.</p>
+    <p>
+      <strong>Nemzeti Adatvédelmi és Információszabadság Hatóság (NAIH)</strong><br>
+      Cím: 1055 Budapest, Falk Miksa utca 9–11.<br>
+      Levelezési cím: 1363 Budapest, Pf. 9.<br>
+      Telefon: +36 1 391 1400 · Web: <a href="https://naih.hu" target="_blank" rel="noopener">naih.hu</a>
+    </p>
+
+    <h2>9. Adatbiztonság</h2>
+    <p>Az adataidat a szolgáltatók által biztosított, iparági szintű technikai és szervezési intézkedésekkel (titkosított átvitel, hozzáférés-korlátozás, a fiókhoz kötött adathozzáférés) védjük. A jelszavas hitelesítést a Google végzi; a papaimatek.hu nem fér hozzá a Google-jelszavadhoz.</p>
+
+    <h2>10. A tájékoztató módosítása</h2>
+    <p>A tájékoztatót a szükséghez képest módosíthatjuk; a mindenkori hatályos változat ezen az oldalon érhető el. Lényeges változásról a fiókodhoz tartozó e-mail-címen tájékoztatunk.</p>
+
+    <h2>11. Irányadó jog és források</h2>
+    <p>Irányadó keret: az Európai Parlament és a Tanács (EU) 2016/679 rendelete (GDPR), különösen a 4. cikk 11. pontja, a 6. cikk (1) bekezdés a) és b) pontja, valamint a 7. és 8. cikk; továbbá az információs önrendelkezési jogról és az információszabadságról szóló 2011. évi CXII. törvény (Infotv.).</p>
+    <p class="meta">Források: <a href="https://eur-lex.europa.eu/eli/reg/2016/679/oj" target="_blank" rel="noopener">GDPR (EUR-Lex)</a> · <a href="https://njt.hu/jogszabaly/2011-112-00-00" target="_blank" rel="noopener">Infotv. (Nemzeti Jogszabálytár)</a></p>
+
+    <p class="meta" style="margin-top:22px;">Hatálybalépés / utolsó módosítás: <strong>2026. szeptember 12.</strong> · Verzió: 1.0</p>
+
+    <a class="back" href="index.html">&#8592; Vissza a főoldalra</a>
+  </div>
+</main>
+
+<footer>
+  Zámbó Zsombor — Matematika korrepetálás és felvételi felkészítés, Pápa<br>
+  <a href="adatkezeles.html">Adatkezelési tájékoztató</a> · <a href="https://forms.gle/BPX5QuBQwEtLPZpPA" target="_blank" rel="noopener">Jelentkezési űrlap</a>
+</footer>
+
+<script>
+(function(){
+  var tg=document.getElementById('menuToggle'), sm=document.getElementById('submenu');
+  tg.addEventListener('click',function(e){e.stopPropagation();var o=sm.classList.toggle('open');tg.classList.toggle('open',o);});
+  document.addEventListener('click',function(e){if(!sm.contains(e.target)&&!tg.contains(e.target)){sm.classList.remove('open');tg.classList.remove('open');}});
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js?v=11"></script>
+</body>
+</html>

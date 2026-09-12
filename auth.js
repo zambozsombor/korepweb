@@ -62,6 +62,10 @@
       + '.pm-note{margin-top:16px;font-size:12px;color:var(--cream-dim,#cdc3e6);line-height:1.5;}'
       + '.pm-consent label{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--cream,#f6efdd);cursor:pointer;margin:6px 0 16px;}'
       + '.pm-consent input[type=checkbox]{margin-top:3px;width:18px;height:18px;flex:none;accent-color:var(--yellow,#f5e463);}'
+      + '.pm-consent2{display:flex;flex-direction:column;gap:12px;margin:4px 0 18px;text-align:left;}'
+      + '.pm-consent2 label{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--cream,#f6efdd);cursor:pointer;line-height:1.5;}'
+      + '.pm-consent2 input[type=checkbox]{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--yellow,#f5e463);}'
+      + '.pm-consent2 a{color:var(--mint,#7fe3c4);}'
       + '.pm-primary{width:100%;background:var(--coral,#ff7a66);color:var(--purple-950,#160a34);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15.5px;border:none;border-radius:999px;padding:13px 18px;cursor:pointer;}'
       + '.pm-primary:disabled{opacity:.5;cursor:not-allowed;}'
       + '.pm-linkbtn{display:inline-block;background:none;border:none;color:var(--cream-dim,#cdc3e6);font-size:12.5px;text-decoration:underline;cursor:pointer;margin-top:12px;padding:0;}'
@@ -81,6 +85,8 @@
       + '.pm-acc-upload{background:transparent;border:1.5px solid rgba(255,255,255,.28);color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:13.5px;padding:9px 14px;border-radius:999px;cursor:pointer;display:inline-block;}'
       + '.pm-acc-label{display:block;font-size:13px;color:var(--cream-dim,#cdc3e6);margin-bottom:16px;font-weight:600;}'
       + '.pm-acc-label input{display:block;width:100%;margin-top:6px;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.18);background:var(--purple-950,#241150);color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-size:15px;box-sizing:border-box;}'
+      + '.pm-acc-check{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--cream,#f6efdd);cursor:pointer;line-height:1.5;margin:2px 0 18px;}'
+      + '.pm-acc-check input[type=checkbox]{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--yellow,#f5e463);}'
       + '.pm-login-cta{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg,var(--purple-800,#3a1f80),var(--purple-700,#4a2aa0));border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px 20px;margin:0 auto 18px;max-width:680px;text-align:center;}'
       + '.pm-login-cta .cta-txt{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15px;color:var(--cream,#f6efdd);}'
       + '.pm-cta-login{background:var(--mint,#c7f3ec);color:var(--mint-ink,#123b34);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:14px;border:none;border-radius:999px;padding:9px 18px;cursor:pointer;white-space:nowrap;}'
@@ -110,11 +116,25 @@
       '<button class="pm-x" type="button" aria-label="Bezárás">&times;</button>'
       + '<h3>Belépés / Regisztráció</h3>'
       + '<p>Lépj be a Google-fiókoddal, hogy később kövesd a haladásodat. Első belépéskor automatikusan létrejön a fiókod.</p>'
-      + '<button class="pm-google" type="button"><img class="pm-gicon" alt="" src="'+GICON+'">Bejelentkezés Google-fiókkal</button>'
-      + '<div class="pm-note">A belépéssel elfogadod, hogy a neved és e-mail-címed a fiókodhoz tároljuk a haladás mentéséhez. 16 év alatt szülői hozzájárulás szükséges — erről a következő lépésben kérdezünk.</div>'
+      + '<div class="pm-consent2">'
+      +   '<label><input type="checkbox" id="pmTerms"> Elolvastam és elfogadom az <a href="adatkezeles.html" target="_blank" rel="noopener">adatkezelési tájékoztatót</a>, és hozzájárulok, hogy a nevem és e-mail-címem a fiókomhoz tárolják a haladás mentéséhez — <b>visszavonásig</b>.</label>'
+      +   '<label><input type="checkbox" id="pmMkt"> Szeretnék később <b>marketing célú</b> megkereséseket (pl. új feladatok, hírek) kapni e-mailben. Ez nem feltétele a belépésnek, és bármikor visszavonható.</label>'
+      + '</div>'
+      + '<button class="pm-google" type="button" id="pmGoogleBtn" disabled><img class="pm-gicon" alt="" src="'+GICON+'">Bejelentkezés Google-fiókkal</button>'
+      + '<div class="pm-note">Az adatkezelési tájékoztató elfogadása kötelező a belépéshez. 16 év alatt a használathoz és a marketinghez szülői/gondviselői hozzájárulás szükséges — erről a következő lépésben kérdezünk.</div>'
     );
     ov.querySelector('.pm-x').addEventListener('click', function () { close(ov); });
-    ov.querySelector('.pm-google').addEventListener('click', loginGoogle);
+    var terms = ov.querySelector('#pmTerms');
+    var mkt = ov.querySelector('#pmMkt');
+    var gbtn = ov.querySelector('#pmGoogleBtn');
+    terms.addEventListener('change', function () { gbtn.disabled = !terms.checked; });
+    gbtn.addEventListener('click', function () {
+      if (!terms.checked) return;
+      try {
+        localStorage.setItem('pm_pending_consent', JSON.stringify({ terms: true, marketing: !!mkt.checked, at: new Date().toISOString() }));
+      } catch (e) {}
+      loginGoogle();
+    });
     open(ov);
   }
 
@@ -127,6 +147,26 @@
     }).then(function (res) {
       if (res && res.error) alert('Hiba a belépésnél: ' + res.error.message);
     });
+  }
+
+  // A belépési modalban tett hozzájárulások mentése (az OAuth-visszatérés után)
+  function applyPendingConsent(user) {
+    var raw = null;
+    try { raw = localStorage.getItem('pm_pending_consent'); } catch (e) {}
+    if (!raw) return;
+    try { localStorage.removeItem('pm_pending_consent'); } catch (e) {}
+    var c = null;
+    try { c = JSON.parse(raw); } catch (e) {}
+    if (!c) return;
+    var when = c.at || new Date().toISOString();
+    var payload = { terms_accepted_at: when };
+    if (c.marketing) { payload.marketing_consent = true; payload.marketing_consent_at = when; }
+    sb.from('profiles').update(payload).eq('id', user.id).then(function () {
+      if (curProfile) {
+        curProfile.terms_accepted_at = when;
+        if (c.marketing) { curProfile.marketing_consent = true; curProfile.marketing_consent_at = when; }
+      }
+    }).catch(function () {});
   }
 
   /* ---------- szülői hozzájárulás (egyszer) ---------- */
@@ -189,8 +229,9 @@
       curProfile = (res && res.data) || {};
       renderAvatar(user);
       ensureEmailSaved(user);
+      applyPendingConsent(user);
       if (curProfile.parental_consent === false) openConsentModal(user);
-    }).catch(function () { curProfile = {}; renderAvatar(user); ensureEmailSaved(user); });
+    }).catch(function () { curProfile = {}; renderAvatar(user); ensureEmailSaved(user); applyPendingConsent(user); });
   }
 
   // Az e-mail cím mentése a profiles táblába (ha még nincs ott, vagy megváltozott)
@@ -271,6 +312,7 @@
       + '<label class="pm-acc-label">Iskola<input type="text" id="accIskola" maxlength="80" value="' + esc(pr.iskola || '') + '" placeholder="pl. Petőfi Sándor Általános Iskola"></label>'
       + '<label class="pm-acc-label">Kedvenc témakör<select id="accTopic">' + topicOpts + '</select></label>'
       + '<label class="pm-acc-label">Kitűzött cél<input type="text" id="accCel" maxlength="120" value="' + esc(pr.cel || '') + '" placeholder="pl. 40+ pont a felvételin, jobb matekjegy"></label>'
+      + '<label class="pm-acc-check"><input type="checkbox" id="accMkt"' + (pr.marketing_consent ? ' checked' : '') + '> Kérek marketing célú megkereséseket e-mailben (új feladatok, hírek). Bármikor kikapcsolható.</label>'
       + '<button class="pm-primary" type="button" id="accSave">Mentés</button>'
       + '<div class="pm-note" id="accNote"></div>'
     );
@@ -289,13 +331,16 @@
       var btn = this;
       var newName = (ov.querySelector('#accName').value || '').trim() || name;
       var evfRaw = ov.querySelector('#accEvf').value;
+      var mktOn = ov.querySelector('#accMkt').checked;
       var payload = {
         display_name: newName,
         evfolyam: evfRaw ? parseInt(evfRaw, 10) : null,
         iskola: (ov.querySelector('#accIskola').value || '').trim() || null,
         kedvenc_temakor: ov.querySelector('#accTopic').value || null,
-        cel: (ov.querySelector('#accCel').value || '').trim() || null
+        cel: (ov.querySelector('#accCel').value || '').trim() || null,
+        marketing_consent: mktOn
       };
+      if (mktOn && !pr.marketing_consent) payload.marketing_consent_at = new Date().toISOString();
       if (pending.changed) payload.avatar = pending.avatar;
       btn.disabled = true; accNote.textContent = 'Mentés…';
       sb.from('profiles').update(payload).eq('id', user.id).then(function (res) {
@@ -304,7 +349,7 @@
           sb.from('profiles').update({ display_name: newName, evfolyam: payload.evfolyam }).eq('id', user.id).then(function () {
             curProfile.display_name = newName; curProfile.evfolyam = payload.evfolyam;
             renderAvatar(user); close(ov);
-            showBanner('A név és évfolyam mentve. A profilkép, iskola, kedvenc témakör és cél tárolásához a Supabase SQL Editorban futtasd le egyszer: alter table profiles add column if not exists avatar text, add column if not exists iskola text, add column if not exists kedvenc_temakor text, add column if not exists cel text;');
+            showBanner('A név és évfolyam mentve. A többi mező (profilkép, iskola, kedvenc témakör, cél, e-mail, marketing) tárolásához a Supabase SQL Editorban futtasd le egyszer: alter table profiles add column if not exists avatar text, add column if not exists iskola text, add column if not exists kedvenc_temakor text, add column if not exists cel text, add column if not exists email text, add column if not exists marketing_consent boolean default false, add column if not exists marketing_consent_at timestamptz, add column if not exists terms_accepted_at timestamptz;');
           }).catch(function () { btn.disabled = false; accNote.textContent = 'Hiba: ' + res.error.message; });
           return;
         }
@@ -313,6 +358,8 @@
         curProfile.iskola = payload.iskola;
         curProfile.kedvenc_temakor = payload.kedvenc_temakor;
         curProfile.cel = payload.cel;
+        curProfile.marketing_consent = payload.marketing_consent;
+        if (payload.marketing_consent_at) curProfile.marketing_consent_at = payload.marketing_consent_at;
         if (payload.avatar !== undefined) curProfile.avatar = payload.avatar;
         renderAvatar(user); close(ov);
       });
