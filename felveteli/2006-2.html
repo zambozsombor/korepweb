@@ -115,18 +115,27 @@ footer a:hover{color:var(--yellow)}
   .cta-inner{padding:22px 20px}
 }
 
-/* Felső felhívás a feladatbankhoz */
-.top-promo{max-width:1000px;margin:18px auto 0;padding:0 24px}
-.top-promo a{display:flex;align-items:center;gap:18px;background:linear-gradient(135deg,var(--purple-700),var(--purple-800));border:2px solid var(--yellow);border-radius:20px;padding:16px 22px;text-decoration:none;color:var(--cream);box-shadow:0 0 0 4px rgba(245,228,99,.1),0 14px 34px rgba(0,0,0,.3);transition:transform .16s,box-shadow .16s}
-.top-promo a:hover{transform:translateY(-2px);box-shadow:0 0 0 5px rgba(245,228,99,.2),0 20px 46px rgba(0,0,0,.4)}
-.top-promo .tp-ic{font-size:30px;flex:none;filter:drop-shadow(0 4px 8px rgba(0,0,0,.3))}
-.top-promo .tp-body{flex:1 1 auto;min-width:0}
-.top-promo .tp-k{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font-weight:800;font-size:10.5px;letter-spacing:.09em;padding:3px 9px;border-radius:999px;margin-bottom:5px}
-.top-promo .tp-t{display:block;font-weight:800;font-size:clamp(16px,2.4vw,20px);line-height:1.15}
-.top-promo .tp-t .hl{color:var(--yellow)}
-.top-promo .tp-s{display:block;font-size:13px;color:var(--cream-dim);margin-top:3px}
-.top-promo .tp-cta{flex:none;background:var(--yellow);color:var(--yellow-ink);font-weight:800;font-size:13.5px;padding:9px 16px;border-radius:999px;white-space:nowrap}
-@media(max-width:620px){.top-promo .tp-cta{display:none}}
+
+/* Feladatbank szalag + kozossegi media (papaimatek) */
+.pm-ribbon{display:block;background:linear-gradient(90deg,#f5e463,#ffdf5c);color:#2f1866;text-decoration:none;font-family:'Baloo 2',system-ui,sans-serif;border-bottom:1px solid rgba(0,0,0,.14)}
+.pm-ribbon-in{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:12px;padding:9px 20px;font-size:14px;font-weight:700;text-align:center;flex-wrap:wrap}
+.pm-ribbon .r-ic{font-size:16px;line-height:1}
+.pm-ribbon .r-cta{background:#2f1866;color:#f5e463;font-weight:800;font-size:12.5px;padding:3px 13px;border-radius:999px;white-space:nowrap}
+.pm-ribbon:hover .r-cta{background:#241150}
+@media(max-width:620px){.pm-ribbon-in{font-size:12.5px;padding:8px 14px;gap:8px}.pm-ribbon .r-long{display:none}}
+.pm-social{max-width:1000px;margin:18px auto 0;padding:0 24px}
+.pm-social-in{background:linear-gradient(135deg,#3a1f80,#2f1866);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;box-shadow:0 14px 34px rgba(0,0,0,.26)}
+.pm-social-head{flex:1 1 280px;min-width:0}
+.pm-social-head .ps-k{display:inline-block;background:rgba(199,243,236,.14);color:#c7f3ec;font-weight:800;font-size:11px;letter-spacing:.09em;padding:4px 11px;border-radius:999px;margin-bottom:9px}
+.pm-social-head .ps-title{color:#f5f1ff;font-size:clamp(18px,2.6vw,23px);font-weight:800;line-height:1.15;font-family:'Baloo 2',system-ui,sans-serif}
+.pm-social-head p{margin:5px 0 0;color:#c9bdea;font-size:14.5px}
+.pm-social-btns{display:flex;gap:12px;flex-wrap:wrap}
+.ps-btn{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:15px;padding:12px 20px;border-radius:14px;color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.28);transition:transform .16s,box-shadow .16s;font-family:'Baloo 2',system-ui,sans-serif}
+.ps-btn:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(0,0,0,.42)}
+.ps-btn svg{flex:none}
+.ps-btn.fb{background:#1877f2}
+.ps-btn.tt{background:#010101;border:1px solid rgba(255,255,255,.2)}
+@media(max-width:560px){.pm-social-in{padding:22px 20px}.ps-btn{flex:1 1 auto;justify-content:center}}
 </style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Főoldal", "item": "https://www.papaimatek.hu/"}, {"@type": "ListItem", "position": 2, "name": "Évek", "item": "https://www.papaimatek.hu/felveteli/"}, {"@type": "ListItem", "position": 3, "name": "2006. évi 2. feladatlap", "item": "https://www.papaimatek.hu/felveteli/2006-2.html"}]}</script>
 </head><body>
@@ -147,13 +156,9 @@ footer a:hover{color:var(--yellow)}
 </div>
 <a class="header-cta" href="/#jelentkezes">Kapcsolat</a>
 </div></header>
-<section class="top-promo"><a href="/feladatadatbazis.html">
-<span class="tp-ic">🔎</span>
-<span class="tp-body"><span class="tp-k">INGYENES FELADATBANK</span>
-<span class="tp-t">Gyakorolj a <span class="hl">teljes feladatbankban</span> — 2005–2026</span>
-<span class="tp-s">Központi írásbeli felvételi feladatok és megoldókulcsok, témakör és év szerint szűrve.</span></span>
-<span class="tp-cta">Megnyitom →</span>
-</a></section>
+<a class="pm-ribbon" href="/feladatadatbazis.html"><span class="pm-ribbon-in"><span class="r-ic">📚</span><span class="r-txt"><b>Ingyenes feladatbank</b> — <span class="r-long">2005–2026 központi felvételi feladatok megoldókulccsal, </span>témakör szerint</span><span class="r-cta">Böngészd →</span></span></a>
+<section class="pm-social"><div class="pm-social-in"><div class="pm-social-head"><span class="ps-k">KÖZÖSSÉGI MÉDIA</span><div class="ps-title">Kövess minket, hogy ne maradj le!</div><p>Friss felvételi tippek, feladatok és hírek a Facebookon és a TikTokon.</p></div><div class="pm-social-btns"><a class="ps-btn fb" href="https://www.facebook.com/profile.php?id=61594216435905" target="_blank" rel="noopener" aria-label="Facebook-oldal"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M15.12 5.32H17V2.14A26.1 26.1 0 0 0 14.26 2c-2.72 0-4.58 1.66-4.58 4.7v2.6H6.6v3.56h3.08V22h3.68v-9.14h3.06l.46-3.56h-3.52V7.05c0-1.03.28-1.73 1.76-1.73z"/></svg><span>Facebook</span></a><a class="ps-btn tt" href="https://www.tiktok.com/@papaimatek.hu" target="_blank" rel="noopener" aria-label="TikTok-oldal"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12v-3.2a5.8 5.8 0 0 0-.78-.05 5.79 5.79 0 1 0 5.79 5.79V9.01a7.35 7.35 0 0 0 4.28 1.37V7.3a4.28 4.28 0 0 1-3.11-1.48z"/></svg><span>TikTok</span></a></div></div></section>
+
 <main>
 <div class="crumb"><a href="/">Főoldal</a> › <a href="/felveteli/">Évek</a> › 2006. évi 2. feladatlap</div>
 <h1>2006. évi matematika felvételi feladatsor – 2. feladatlap</h1>
