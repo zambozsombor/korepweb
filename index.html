@@ -770,6 +770,12 @@ body::before {
 .ps-btn.fb{background:#1877f2}
 .ps-btn.tt{background:#010101;border:1px solid rgba(255,255,255,.2)}
 @media(max-width:560px){.pm-social-in{padding:22px 20px}.ps-btn{flex:1 1 auto;justify-content:center}}
+.header-right{display:flex;align-items:center;gap:9px;}
+.pm-hi{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 12px rgba(0,0,0,.25);}
+.pm-hi:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.35);}
+.pm-hi.fb{background:#1877f2;}
+.pm-hi.tt{background:#010101;border:1px solid rgba(255,255,255,.25);}
+@media(max-width:480px){.pm-hi{width:32px;height:32px;}.header-right{gap:7px;}}
 </style>
 </head>
 <body>
@@ -795,30 +801,14 @@ body::before {
       </nav>
     </div>
     <div class="header-right">
+      <a class="pm-hi fb" href="https://www.facebook.com/profile.php?id=61594216435905" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M15.12 5.32H17V2.14A26.1 26.1 0 0 0 14.26 2c-2.72 0-4.58 1.66-4.58 4.7v2.6H6.6v3.56h3.08V22h3.68v-9.14h3.06l.46-3.56h-3.52V7.05c0-1.03.28-1.73 1.76-1.73z"/></svg></a>
+      <a class="pm-hi tt" href="https://www.tiktok.com/@papaimatek.hu" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12v-3.2a5.8 5.8 0 0 0-.78-.05 5.79 5.79 0 1 0 5.79 5.79V9.01a7.35 7.35 0 0 0 4.28 1.37V7.3a4.28 4.28 0 0 1-3.11-1.48z"/></svg></a>
       <div id="authArea" class="auth-area"></div>
     </div>
   </div>
 </header>
 <a class="pm-ribbon" href="/feladatadatbazis.html"><span class="pm-ribbon-in"><span class="r-ic">📚</span><span class="r-txt"><b>Ingyenes feladatbank</b> — <span class="r-long">2005–2026 központi felvételi feladatok megoldókulccsal, </span>témakör szerint</span><span class="r-cta">Böngészd →</span></span></a>
 
-<div class="promo-wrap">
-  <a class="promo" href="feladatadatbazis.html">
-    
-    <span class="promo-body">
-      <span class="promo-kicker"><span class="promo-badge">ÚJ</span> Feladatadatbázis · 2005–2026</span>
-      <span class="promo-title">Gyakorolj <span class="hl">témakör szerint!</span></span>
-      <span class="promo-text">Szűrd a központi felvételi feladatokat <b>témakörönként</b>, és gyakorolj célzottan azon, ami még nem megy. (Kereshetsz <b>év, dátum és feladat</b> szerint is.)</span>
-      <span class="promo-chips">
-        <span class="c">Síkgeometria</span>
-        <span class="c">Térgeometria</span>
-        <span class="c">Szöveges egyenlet</span>
-        <span class="c">Kombinatorika</span>
-        <span class="c more">+ 12 további témakör</span>
-      </span>
-    </span>
-    <span class="promo-cta">Kipróbálom →</span>
-  </a>
-</div>
 
 <section class="hero">
   <h1 class="badge-stack">
@@ -1046,7 +1036,6 @@ body::before {
   </div>
 </section>
 
-<section class="pm-social"><div class="pm-social-in"><div class="pm-social-head"><span class="ps-k">KÖZÖSSÉGI MÉDIA</span><div class="ps-title">Kövess minket, hogy ne maradj le!</div><p>Friss felvételi tippek, feladatok és hírek a Facebookon és a TikTokon.</p></div><div class="pm-social-btns"><a class="ps-btn fb" href="https://www.facebook.com/profile.php?id=61594216435905" target="_blank" rel="noopener" aria-label="Facebook-oldal"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M15.12 5.32H17V2.14A26.1 26.1 0 0 0 14.26 2c-2.72 0-4.58 1.66-4.58 4.7v2.6H6.6v3.56h3.08V22h3.68v-9.14h3.06l.46-3.56h-3.52V7.05c0-1.03.28-1.73 1.76-1.73z"/></svg><span>Facebook</span></a><a class="ps-btn tt" href="https://www.tiktok.com/@papaimatek.hu" target="_blank" rel="noopener" aria-label="TikTok-oldal"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12v-3.2a5.8 5.8 0 0 0-.78-.05 5.79 5.79 0 1 0 5.79 5.79V9.01a7.35 7.35 0 0 0 4.28 1.37V7.3a4.28 4.28 0 0 1-3.11-1.48z"/></svg><span>TikTok</span></a></div></div></section>
 <footer>
   Zámbó Zsombor — Matematika korrepetálás és felvételi felkészítés, Pápa<br>
   <a href="feladatadatbazis.html">Feladatbank</a> · <a href="temakor/">Feladatok témakör szerint</a> · <a href="felveteli/">Felvételi évek (2005–2026)</a><br>
