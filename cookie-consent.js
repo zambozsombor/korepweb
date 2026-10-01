@@ -41,3 +41,23 @@
     show();
   }
 })();
+
+/* Feladatbank szalag bezárása (X) – minden oldalon */
+(function () {
+  function initRibbon() {
+    try {
+      var KEY = 'pm_ribbon_closed';
+      var r = document.getElementById('pmRibbon');
+      if (!r) return;
+      try { if (localStorage.getItem(KEY) === '1') { r.classList.add('pm-hidden'); return; } } catch (e) {}
+      var b = r.querySelector('.r-close');
+      if (b) b.addEventListener('click', function (ev) {
+        ev.preventDefault(); ev.stopPropagation();
+        r.classList.add('pm-hidden');
+        try { localStorage.setItem(KEY, '1'); } catch (e) {}
+      });
+    } catch (e) {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initRibbon);
+  else initRibbon();
+})();
