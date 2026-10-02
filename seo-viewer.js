@@ -19,8 +19,9 @@
   // kezdjük el betölteni azonnal
   loadData().catch(function(){});
 
-  function findPaper(ev, ford){
-    var yrs = DATA && DATA.evek && DATA.evek[ev];
+  function findPaper(grade, ev, ford){
+    var oz = DATA && DATA.osztalyok && DATA.osztalyok[grade];
+    var yrs = oz ? oz.evek[ev] : (DATA && DATA.evek && DATA.evek[ev]);
     if (!yrs) return null;
     for (var i=0;i<yrs.length;i++){ if (String(yrs[i].fordulo) === String(ford)) return yrs[i]; }
     return null;
@@ -301,14 +302,14 @@
   function parseBankLink(href){
     var qi = href.indexOf('?'); if (qi < 0) return null;
     var qs; try{ qs = new URLSearchParams(href.slice(qi + 1)); }catch(e){ return null; }
-    var ev = qs.get('ev'), ford = qs.get('ford'), fel = qs.get('feladat');
-    if (ev && ford) return { ev: ev, ford: ford, tab: 'fl', feladat: fel || 'full' };
+    var ev = qs.get('ev'), ford = qs.get('ford'), fel = qs.get('feladat'), osz = qs.get('osztaly') || '8';
+    if (ev && ford) return { grade: osz, ev: ev, ford: ford, tab: 'fl', feladat: fel || 'full' };
     return null;
   }
   function parsePdfLink(href){
-    var m = /M8_(\d+)_(\d+)_(fl|ut)\.pdf/.exec(href);
+    var m = /M(\d)_(\d+)_(\d+)_(fl|ut)\.pdf/.exec(href);
     if (!m) return null;
-    return { ev: m[1], ford: m[2], tab: m[3], feladat: 'full' };
+    return { grade: m[1], ev: m[2], ford: m[3], tab: m[4], feladat: 'full' };
   }
 
   function handleClick(e){
@@ -322,7 +323,7 @@
     if (!info) return;
     e.preventDefault();
     loadData().then(function(){
-      var paper = findPaper(info.ev, info.ford);
+      var paper = findPaper(info.grade, info.ev, info.ford);
       if (!paper){ window.location.href = href; return; } // tartalék: eredeti link
       openModal(paper, info.tab, info.feladat);
     }).catch(function(){ window.location.href = href; });
