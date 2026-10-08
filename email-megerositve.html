@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<title>E-mail-cím megerősítése | Matekozz!</title>
+<meta name="theme-color" content="#241150">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<!--
+  Ezt az oldalt a Supabase e-mail-megerősítő linkje nyitja meg (signUp emailRedirectTo).
+  Szándékosan NINCS rajta Google Analytics és semmilyen külső szkript: a címsorban
+  megerősítési adatok lehetnek, ezeket azonnal eltávolítjuk, és nem küldjük sehova.
+-->
+<style>
+  :root{
+    --purple-950:#241150; --purple-900:#2f1866; --purple-800:#3a1f80;
+    --yellow:#f5e463; --yellow-ink:#2f1866; --mint:#c7f3ec; --mint-ink:#123b34;
+    --cream:#f5f1ff; --cream-dim:#c9bdea; --coral:#ff8a65;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{margin:0;background:var(--purple-950);color:var(--cream);font-family:'Inter',sans-serif;
+       display:flex;align-items:center;justify-content:center;padding:24px 16px;}
+  .card{max-width:460px;width:100%;background:var(--purple-900);border:1px solid rgba(255,255,255,0.08);
+        border-radius:24px;padding:34px 26px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.35);}
+  .badge{width:72px;height:72px;margin:0 auto 18px;border-radius:50%;display:flex;align-items:center;
+         justify-content:center;font-size:36px;font-weight:800;font-family:'Baloo 2',sans-serif;}
+  .ok .badge{background:var(--mint);color:var(--mint-ink);}
+  .err .badge{background:var(--coral);color:var(--purple-950);}
+  h1{font-family:'Baloo 2',sans-serif;font-size:26px;line-height:1.15;margin:0 0 12px;color:var(--yellow);}
+  p{margin:0 0 12px;font-size:15.5px;line-height:1.6;color:var(--cream);}
+  .dim{color:var(--cream-dim);font-size:13.5px;}
+  .brand{margin-top:22px;font-family:'Baloo 2',sans-serif;font-weight:700;color:var(--cream-dim);font-size:14px;}
+  .brand span{color:var(--yellow);}
+  [hidden]{display:none!important;}
+</style>
+</head>
+<body>
+  <main class="card ok" id="okBox">
+    <div class="badge" aria-hidden="true">✓</div>
+    <h1>Megerősítetted az e-mail-címed!</h1>
+    <p>Most már visszatérhetsz a <strong>Matekozz!</strong> appba, és beléphetsz a fiókodba.</p>
+    <p class="dim">Ezt az oldalt bezárhatod. Ha 16 évnél fiatalabb vagy, a szüleid hamarosan kapnak egy külön e-mailt a fiókod jóváhagyásához.</p>
+    <div class="brand">Matekozz! · papaimatek<span>.hu</span></div>
+  </main>
+
+  <main class="card err" id="errBox" hidden>
+    <div class="badge" aria-hidden="true">!</div>
+    <h1>Ez a link már nem érvényes</h1>
+    <p>Lehet, hogy lejárt, vagy már egyszer használtad. Ha már megerősítetted a címed, egyszerűen lépj be az appban.</p>
+    <p class="dim">Ha még nem erősítetted meg, az appban kérhetsz új megerősítő e-mailt.</p>
+    <div class="brand">Matekozz! · papaimatek<span>.hu</span></div>
+  </main>
+
+<script>
+  (function () {
+    // A Supabase hiba esetén a címsorban (#... vagy ?...) error / error_code mezőt küld.
+    var raw = (location.hash || '').replace(/^#/, '') + '&' + (location.search || '').replace(/^\?/, '');
+    var hasError = /(^|&)(error|error_code)=/.test(raw);
+    if (hasError) {
+      document.getElementById('okBox').hidden = true;
+      document.getElementById('errBox').hidden = false;
+    }
+    // A címsorban lévő megerősítési adatokat azonnal töröljük (ne maradjanak az előzményekben).
+    try { history.replaceState(null, '', location.pathname); } catch (e) {}
+  })();
+</script>
+</body>
+</html>
