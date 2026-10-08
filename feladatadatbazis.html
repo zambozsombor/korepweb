@@ -607,7 +607,7 @@
     toggle:el('menuToggle'), submenu:el('submenu')
   };
 
-  var state={ paper:null, taskVal:'', tab:'fl' };
+  var state={ paper:null, taskVal:'', tab:'fl', focus:null, goToN:null };
 
   /* ---- Hamburger menü ---- */
   function closeMenu(){els.toggle.classList.remove('open');els.submenu.classList.remove('open');els.toggle.setAttribute('aria-expanded','false');}
@@ -814,6 +814,12 @@
   function select(paper, taskVal){
     state.paper=paper; state.taskVal=taskVal;
     state.tab='fl';
+    var isFull=(taskVal==='full');
+    // "Fókusz" = az éppen nézett feladat sorszáma. Teljes feladatsornál az 1., különben a kiválasztott.
+    state.focus = isFull ? (paper.tasks[0]?paper.tasks[0].n:1) : parseInt(taskVal,10);
+    // Teljes feladatsor: tiszta, jelölő nélküli nyitás az 1. oldalon. Konkrét feladat: ugrás + jelölő.
+    state.goToN = isFull ? null : parseInt(taskVal,10);
+    view.zoom=1; updateZoomUI();
     els.tabFl.classList.add('active'); els.tabUt.classList.remove('active');
     els.tabFl.disabled=false; els.tabUt.disabled=false;
     render();
@@ -821,6 +827,8 @@
   function setTab(tab){
     if(!state.paper)return;
     state.tab=tab;
+    // Fülváltáskor a MÁSIK PDF-en ugyanahhoz a feladathoz ugrunk, ahol épp jártunk.
+    state.goToN = state.focus;
     els.tabFl.classList.toggle('active',tab==='fl');
     els.tabUt.classList.toggle('active',tab==='ut');
     render();
@@ -831,12 +839,16 @@
   function currentTarget(){
     var p=state.paper; if(!p||state.taskVal==='')return null;
     var isFull=(state.taskVal==='full');
-    var task=isFull?null:p.tasks[parseInt(state.taskVal,10)-1];
     var isFl=(state.tab==='fl');
+    var navN=state.goToN;
+    var task=null;
+    if(navN!=null && p.tasks[navN-1]) task=p.tasks[navN-1];
+    else if(!isFull) task=p.tasks[parseInt(state.taskVal,10)-1];
+    var page = task ? (isFl?task.flp:task.utp) : 1;
+    var y    = task ? (isFl?task.fly:task.uty) : null;
     return {
       pdf:isFl?p.fl:p.ut,
-      page:isFull?1:(isFl?task.flp:task.utp),
-      y:isFull?null:(isFl?task.fly:task.uty),
+      page:page, y:y,
       isFull:isFull, task:task, paper:p, isFl:isFl
     };
   }
@@ -846,7 +858,7 @@
     var base=PDF_DIR+encodeURIComponent(tg.pdf);
     var hash='#page='+tg.page+'&view=Fit';
 
-    var taskTxt=tg.isFull?'Teljes feladatsor':(tg.task.n+'. feladat'+(tg.task.tema?(' — '+tg.task.tema):''));
+    var taskTxt=tg.task?(tg.task.n+'. feladat'+(tg.task.tema?(' — '+tg.task.tema):'')):'Teljes feladatsor';
     els.meta.innerHTML='<b>'+tg.paper.datum+'</b> · '+fordLabel(tg.paper)+'<br>'+taskTxt+(tg.isFl?'':' · Javítási útmutató');
     els.openNew.href=base+hash; els.openNew.classList.remove('disabled');
     els.dl.href=base; els.dl.setAttribute('download',tg.pdf); els.dl.classList.remove('disabled');
@@ -880,9 +892,12 @@
   function renderPdfjs(base, tg){
     els.frame.hidden=true; els.scroll.hidden=false;
     view.url=base;
-    view.taskPage = tg.isFull ? 0 : tg.page;
-    view.taskY = tg.isFull ? null : tg.y;
-    view.zoom=1; updateZoomUI();
+    // Jelölő mindig akkor, ha konkrét feladathoz navigálunk (y van) – teljes feladatsornál is, fülváltás után.
+    view.taskPage = (tg.y!=null) ? tg.page : 0;
+    view.taskY = (tg.y!=null) ? tg.y : null;
+    // Ha konkrét feladathoz navigálunk, a renderelés utáni fókusz-újraszámítás ne írja felül.
+    view.suppressFocusOnce = (tg.y!=null);
+    updateZoomUI();
     showPage(tg.page);
   }
 
@@ -903,7 +918,7 @@
     pageToken++;
     Object.keys(docCache).forEach(function(u){ try{docCache[u].destroy();}catch(e){} });
     docCache={}; docPromise={}; docOrder=[];
-    view={url:null, page:1, npages:1, zoom:1, fit:1};
+    view={url:null, page:1, npages:1, zoom:1, fit:1, scale:1};
     els.scroll.innerHTML='';
     els.scroll.classList.remove('zoomed','grabbing');
     els.zoomCtrl.hidden=true;
@@ -929,7 +944,7 @@
         var fit=Math.min(availW/vp1.width, availH/vp1.height); // teljes oldal beférjen
         view.fit=fit;
         var zoom=view.zoom||1;
-        var scale=fit*zoom;
+        var scale=fit*zoom; view.scale=scale;
         var vp=page.getViewport({scale:scale});
         var canvas=document.createElement('canvas');
         // Nagyításnál a magasabb render-skála adja az élességet, így az oversampling 1 lehet;
@@ -957,10 +972,11 @@
           if(isZoomed){
             els.scroll.scrollLeft=Math.max(0,(els.scroll.scrollWidth-els.scroll.clientWidth)/2);
             if(view.taskY!=null && view.page===view.taskPage){
-              els.scroll.scrollTop=Math.max(0,(view.taskY*scale)-60);
+              els.scroll.scrollTop=Math.max(0,(view.taskY*scale)-80);
             }
           }
           updatePager();
+          if(view.suppressFocusOnce){ view.suppressFocusOnce=false; } else { updateFocus(); }
         });
       });
     }).catch(function(){
@@ -977,6 +993,32 @@
   }
   els.prevPage.addEventListener('click',function(){ if(view.page>1) showPage(view.page-1); });
   els.nextPage.addEventListener('click',function(){ if(view.page<view.npages) showPage(view.page+1); });
+
+  /* ---- Feladatkövetés: melyik feladatnál járunk épp (görgetés + lapozás alapján) ----
+     Az aktív fül koordinátái szerint megkeressük a viewport tetejéhez legközelebbi
+     (épp elhagyott) feladatot, és ezt tároljuk state.focus-ba. Fülváltáskor ehhez
+     a feladathoz ugrik a másik PDF. Működik teljes feladatsornál és konkrét feladatnál is. */
+  function updateFocus(){
+    if(!view.url || els.scroll.hidden) return;
+    var p=state.paper; if(!p||!p.tasks||!p.tasks.length) return;
+    var fl=(state.tab==='fl');
+    var scale=view.scale||1;
+    var refY=(els.scroll.scrollTop+80)/scale;  // a viewport tetejénél kicsivel lejjebb (oldaltetőn is az első feladat)
+    var best=null;
+    for(var i=0;i<p.tasks.length;i++){
+      var t=p.tasks[i];
+      var pg=fl?t.flp:t.utp, yy=fl?t.fly:t.uty;
+      if(pg<view.page || (pg===view.page && yy<=refY)){ best=t.n; }
+      else if(pg>view.page){ break; }
+    }
+    if(best!=null) state.focus=best;
+  }
+  var focusRAF=null;
+  function scheduleFocus(){
+    if(focusRAF) return;
+    focusRAF=(window.requestAnimationFrame||function(f){return setTimeout(f,16);})(function(){ focusRAF=null; updateFocus(); });
+  }
+  els.scroll.addEventListener('scroll', scheduleFocus, {passive:true});
 
   /* ---- Nagyítás (+ / − gomb, a százalékra kattintva vissza teljes oldalra) ---- */
   els.zoomIn.addEventListener('click',function(){ setZoom((view.zoom||1)*ZSTEP); });
