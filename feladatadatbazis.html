@@ -256,9 +256,12 @@
   .frame-wrap{position:relative;background:#e9e6f2;min-height:85vh;}
   .pdf-scroll{height:85vh;overflow:auto;background:#e9e6f2;
     display:flex;align-items:center;justify-content:center;padding:12px;}
-  .pdf-scroll .page-wrap{position:relative;margin:0 auto;max-width:100%;max-height:100%;
+  .pdf-scroll .page-wrap{position:relative;margin:0 auto;
     box-shadow:0 6px 18px rgba(0,0,0,0.28);border-radius:2px;}
-  .pdf-scroll canvas{display:block;border-radius:2px;max-width:100%;max-height:100%;}
+  .pdf-scroll canvas{display:block;border-radius:2px;}
+  .pdf-scroll.zoomed{display:block;text-align:center;cursor:grab;-webkit-overflow-scrolling:touch;}
+  .pdf-scroll.zoomed.grabbing{cursor:grabbing;}
+  .pdf-scroll.zoomed .page-wrap{display:inline-block;text-align:left;margin:0 auto;}
   .task-marker{position:absolute;left:8px;width:4px;height:42px;pointer-events:none;
     background:var(--yellow);border-radius:999px;
     box-shadow:0 0 10px rgba(245,228,99,0.6);
@@ -278,6 +281,17 @@
   .pager .pg.disabled{opacity:.35;pointer-events:none;}
   .pager .pg-info{color:var(--cream);font-size:13.5px;font-weight:700;min-width:52px;text-align:center;
     font-family:'Baloo 2',sans-serif;}
+  .zoomctrl{position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:6px;
+    background:rgba(36,17,80,0.92);border:1px solid rgba(255,255,255,0.14);border-radius:999px;
+    padding:5px 8px;box-shadow:0 8px 22px rgba(0,0,0,0.32);z-index:6;}
+  .zoomctrl .zb{width:34px;height:34px;border:none;border-radius:50%;cursor:pointer;
+    background:var(--purple-700);color:var(--cream);font-size:20px;font-weight:700;line-height:1;
+    display:flex;align-items:center;justify-content:center;font-family:'Baloo 2',sans-serif;
+    transition:background .15s ease;}
+  .zoomctrl .zb:hover{background:var(--yellow);color:var(--yellow-ink);}
+  .zoomctrl .zb.disabled{opacity:.35;pointer-events:none;}
+  .zoomctrl .zlabel{color:var(--cream);font-size:13px;font-weight:700;min-width:46px;text-align:center;
+    font-family:'Baloo 2',sans-serif;cursor:pointer;user-select:none;}
   .frame-wrap iframe{display:block;width:100%;height:85vh;border:0;background:#e9e6f2;}
   .pdf-loading{position:absolute;top:14px;left:50%;transform:translateX(-50%);
     background:var(--purple-950);color:var(--cream);font-size:13.5px;font-weight:600;
@@ -521,6 +535,11 @@
           <span class="pg-info" id="pageInfo">1 / 1</span>
           <button class="pg" id="nextPage" type="button" aria-label="Következő oldal">›</button>
         </div>
+        <div class="zoomctrl" id="zoomCtrl" hidden>
+          <button class="zb" id="zoomOut" type="button" aria-label="Kicsinyítés">−</button>
+          <span class="zlabel" id="zoomLabel" title="Teljes oldal">100%</span>
+          <button class="zb" id="zoomIn" type="button" aria-label="Nagyítás">+</button>
+        </div>
         <div class="placeholder" id="placeholder">
           <div class="big"></div>
           <h3>Még nincs kiválasztva feladat</h3>
@@ -584,6 +603,7 @@
     loading:el('pdfLoading'), ph:el('placeholder'),
     openNew:el('openNew'), dl:el('dlBtn'), apply:el('applyBtn'),
     pager:el('pager'), pageInfo:el('pageInfo'), prevPage:el('prevPage'), nextPage:el('nextPage'),
+    zoomCtrl:el('zoomCtrl'), zoomIn:el('zoomIn'), zoomOut:el('zoomOut'), zoomLabel:el('zoomLabel'),
     toggle:el('menuToggle'), submenu:el('submenu')
   };
 
@@ -838,18 +858,31 @@
   }
 
   function renderIframe(src){
-    els.scroll.hidden=true; els.pager.hidden=true; els.frame.hidden=false; els.frame.src=src;
+    els.scroll.hidden=true; els.pager.hidden=true; els.zoomCtrl.hidden=true; els.frame.hidden=false; els.frame.src=src;
   }
 
-  /* ---- PDF.js egyoldalas nézegető (teljes oldal + lapozás) ---- */
+  /* ---- PDF.js egyoldalas nézegető (teljes oldal + lapozás + zoom) ---- */
   var docCache={}, docPromise={}, docOrder=[], pageToken=0;
-  var view={url:null, page:1, npages:1};
+  var view={url:null, page:1, npages:1, zoom:1, fit:1};
+
+  var ZMIN=1, ZMAX=3, ZSTEP=1.25;
+  function updateZoomUI(){
+    els.zoomLabel.textContent=Math.round((view.zoom||1)*100)+'%';
+    els.zoomOut.classList.toggle('disabled',(view.zoom||1)<=ZMIN+0.001);
+    els.zoomIn.classList.toggle('disabled',(view.zoom||1)>=ZMAX-0.001);
+  }
+  function setZoom(z){
+    z=Math.max(ZMIN,Math.min(ZMAX,z));
+    if(Math.abs(z-(view.zoom||1))<0.001){ updateZoomUI(); return; }
+    view.zoom=z; updateZoomUI(); showPage(view.page);
+  }
 
   function renderPdfjs(base, tg){
     els.frame.hidden=true; els.scroll.hidden=false;
     view.url=base;
     view.taskPage = tg.isFull ? 0 : tg.page;
     view.taskY = tg.isFull ? null : tg.y;
+    view.zoom=1; updateZoomUI();
     showPage(tg.page);
   }
 
@@ -870,8 +903,10 @@
     pageToken++;
     Object.keys(docCache).forEach(function(u){ try{docCache[u].destroy();}catch(e){} });
     docCache={}; docPromise={}; docOrder=[];
-    view={url:null, page:1, npages:1};
+    view={url:null, page:1, npages:1, zoom:1, fit:1};
     els.scroll.innerHTML='';
+    els.scroll.classList.remove('zoomed','grabbing');
+    els.zoomCtrl.hidden=true;
     els.frame.removeAttribute('src');
     els.pager.hidden=true;
     els.loading.hidden=false;
@@ -891,10 +926,15 @@
         var availW=els.scroll.clientWidth-24; if(availW<260) availW=260;
         var availH=els.scroll.clientHeight-24; if(availH<320) availH=320;
         var vp1=page.getViewport({scale:1});
-        var scale=Math.min(availW/vp1.width, availH/vp1.height); // teljes oldal beférjen
+        var fit=Math.min(availW/vp1.width, availH/vp1.height); // teljes oldal beférjen
+        view.fit=fit;
+        var zoom=view.zoom||1;
+        var scale=fit*zoom;
         var vp=page.getViewport({scale:scale});
         var canvas=document.createElement('canvas');
-        var os=Math.min(window.devicePixelRatio||1,2);
+        // Nagyításnál a magasabb render-skála adja az élességet, így az oversampling 1 lehet;
+        // teljes oldalnál (zoom=1) retina-élességhez 2x-ig mintavételezünk.
+        var os=zoom>1.001?1:Math.min(window.devicePixelRatio||1,2);
         canvas.width=Math.floor(vp.width*os); canvas.height=Math.floor(vp.height*os);
         canvas.style.width=Math.floor(vp.width)+'px'; canvas.style.height=Math.floor(vp.height)+'px';
         var ctx=canvas.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
@@ -908,8 +948,18 @@
             mk.style.top=Math.max(0,(view.taskY*scale)-6)+'px';
             wrap.appendChild(mk);
           }
+          var isZoomed=zoom>1.001;
+          els.scroll.classList.toggle('zoomed', isZoomed);
+          if(!isZoomed) els.scroll.classList.remove('grabbing');
           els.scroll.innerHTML=''; els.scroll.appendChild(wrap);
           els.loading.hidden=true;
+          els.zoomCtrl.hidden=false;
+          if(isZoomed){
+            els.scroll.scrollLeft=Math.max(0,(els.scroll.scrollWidth-els.scroll.clientWidth)/2);
+            if(view.taskY!=null && view.page===view.taskPage){
+              els.scroll.scrollTop=Math.max(0,(view.taskY*scale)-60);
+            }
+          }
           updatePager();
         });
       });
@@ -927,6 +977,32 @@
   }
   els.prevPage.addEventListener('click',function(){ if(view.page>1) showPage(view.page-1); });
   els.nextPage.addEventListener('click',function(){ if(view.page<view.npages) showPage(view.page+1); });
+
+  /* ---- Nagyítás (+ / − gomb, a százalékra kattintva vissza teljes oldalra) ---- */
+  els.zoomIn.addEventListener('click',function(){ setZoom((view.zoom||1)*ZSTEP); });
+  els.zoomOut.addEventListener('click',function(){ setZoom((view.zoom||1)/ZSTEP); });
+  els.zoomLabel.addEventListener('click',function(){ setZoom(1); });
+  els.zoomLabel.title='Vissza a teljes oldalra';
+  // Ctrl/⌘ + görgő = nagyítás
+  els.scroll.addEventListener('wheel',function(e){
+    if(!(e.ctrlKey||e.metaKey)) return;
+    e.preventDefault();
+    setZoom((view.zoom||1)*(e.deltaY<0?ZSTEP:1/ZSTEP));
+  },{passive:false});
+  // Húzással pásztázás nagyításkor (egérrel)
+  (function(){
+    var drag=false,sx,sy,sl,st;
+    els.scroll.addEventListener('mousedown',function(e){
+      if(!els.scroll.classList.contains('zoomed')) return;
+      drag=true; els.scroll.classList.add('grabbing');
+      sx=e.clientX; sy=e.clientY; sl=els.scroll.scrollLeft; st=els.scroll.scrollTop; e.preventDefault();
+    });
+    window.addEventListener('mousemove',function(e){
+      if(!drag) return;
+      els.scroll.scrollLeft=sl-(e.clientX-sx); els.scroll.scrollTop=st-(e.clientY-sy);
+    });
+    window.addEventListener('mouseup',function(){ if(drag){ drag=false; els.scroll.classList.remove('grabbing'); } });
+  })();
 
   /* ---- Reszponzív újrarenderelés ---- */
   var rzT=null;
