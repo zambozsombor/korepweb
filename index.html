@@ -772,6 +772,20 @@ body::before {
 .pm-hi.tt{background:#010101;border:1px solid rgba(255,255,255,.25);}
 @media(max-width:480px){.pm-hi{width:32px;height:32px;}.header-right{gap:7px;}}
 </style>
+<style id="pm-nobg">body::before{content:none!important;background:none!important;display:none!important}</style>
+<style id="pm-choose-css">
+.pm-choose{max-width:1000px;margin:18px auto 0;padding:0 24px}
+.pm-choose-in{background:linear-gradient(135deg,#3a1f80,#2f1866);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:16px 18px;display:flex;align-items:stretch;gap:12px;flex-wrap:wrap;box-shadow:0 14px 34px rgba(0,0,0,.22)}
+.pm-choose .q{flex:1 1 170px;display:flex;flex-direction:column;justify-content:center;font-family:'Baloo 2',system-ui,sans-serif;color:#f5f1ff}
+.pm-choose .q b{font-size:21px;font-weight:800;line-height:1.1}
+.pm-choose .q span{color:#c9bdea;font-size:14px}
+.pm-choose a{flex:1 1 230px;display:flex;flex-direction:column;gap:2px;background:#241150;border:1.5px solid rgba(255,255,255,.14);border-radius:16px;padding:12px 16px;text-decoration:none;color:#f5f1ff;font-family:'Baloo 2',system-ui,sans-serif;transition:border-color .15s,transform .15s}
+.pm-choose a:hover{border-color:#f5e463;transform:translateY(-2px)}
+.pm-choose a b{font-size:18px;font-weight:800}
+.pm-choose a b::after{content:" \2192";color:#f5e463}
+.pm-choose a span{color:#c9bdea;font-size:14px;line-height:1.3}
+@media(max-width:620px){.pm-choose{padding:0 16px}.pm-choose .q b{font-size:19px}}
+</style>
 </head>
 <body>
 
@@ -784,16 +798,10 @@ body::before {
       </button>
       <nav class="submenu" id="submenu" aria-label="Almenü">
         <div class="submenu-title">Menü</div>
-        <a href="index.html" class="active">Főoldal</a>
-        <a href="feladatadatbazis.html">Feladatadatbázis</a>
-        <a href="/erettsegi/">Érettségi feladatbank</a>
-        <a href="index.html#problema">Ismerős a helyzet?</a>
-        <a href="index.html#rolam">Ki vagyok én?</a>
-        <a href="index.html#szolgaltatasok">Szolgáltatások</a>
-        <a href="index.html#folyamat">Hogy zajlik a folyamat?</a>
-        <a href="index.html#arak">Árak</a>
-        <a href="index.html#mas">Miben más ez a felkészítő?</a>
-        <a href="index.html#jelentkezes">Jelentkezés</a>
+        <a href="/feladatadatbazis.html">Felvételi feladatok</a>
+        <a href="/erettsegi/">Érettségi feladatok</a>
+        <a href="/#arak">Árak</a>
+        <a href="/#jelentkezes">Jelentkezés</a>
       </nav>
     </div>
     <div class="header-right">
@@ -803,36 +811,19 @@ body::before {
     </div>
   </div>
 </header>
-<div class="pm-ribbon" id="pmRibbon"><a class="pm-ribbon-in" href="/feladatadatbazis.html"><span class="r-ic">📚</span><span class="r-txt"><b>Ingyenes feladatbank</b><span class="r-rest"> — <span class="r-long">2005–2026 központi felvételi feladatok megoldókulccsal, </span>témakör szerint</span></span><span class="r-cta"><span class="r-cta-full">Böngészd </span>→</span></a><button class="r-close" type="button" aria-label="Szalag bezárása">×</button></div>
 
+
+<section class="pm-choose" aria-label="Mire készülsz?"><div class="pm-choose-in">
+  <div class="q"><b>Mire készülsz?</b><span>Ingyenes feladatbankok javítási útmutatóval</span></div>
+  <a href="/feladatadatbazis.html"><b>Felvételire</b><span>4., 6. és 8. osztályos központi felvételi, 2005–2026</span></a>
+  <a href="/erettsegi/"><b>Érettségire</b><span>Matek, magyar, töri – közép- és emelt szint, 2005–2026</span></a>
+</div></section>
 
 <section class="hero">
   <h1 class="badge-stack">
     <span class="pill pill-1 reveal">Matematika</span>
     <span class="pill pill-2 reveal">Felvételi Felkészítő és Korrepetálás</span>
   </h1>
-  <div class="countdown-wrap reveal">
-    <span class="countdown-warning">Az idő fogy, ne várj az utolsó pillanatig!</span>
-    <div class="countdown" id="countdown">
-      <div class="countdown-item">
-        <span class="countdown-num" id="cd-days">00</span>
-        <span class="countdown-label">nap</span>
-      </div>
-      <div class="countdown-item">
-        <span class="countdown-num" id="cd-hours">00</span>
-        <span class="countdown-label">óra</span>
-      </div>
-      <div class="countdown-item">
-        <span class="countdown-num" id="cd-mins">00</span>
-        <span class="countdown-label">perc</span>
-      </div>
-      <div class="countdown-item">
-        <span class="countdown-num" id="cd-secs">00</span>
-        <span class="countdown-label">mp</span>
-      </div>
-    </div>
-    <p class="countdown-date">2027. január 23. — Központi felvételi vizsga</p>
-  </div>
   <p class="lead reveal">
     <strong>Korrepetálás 5–12. osztályosoknak és felvételi felkészítés Pápán</strong> —
     hogy a matek ne szorongás, hanem magabiztosan teljesíthető kihívás legyen.
@@ -1057,45 +1048,6 @@ body::before {
 })();
 </script>
 
-<script>
-(function(){
-  var target = new Date('2027-01-23T00:00:00+01:00').getTime();
-  var daysEl = document.getElementById('cd-days');
-  var hoursEl = document.getElementById('cd-hours');
-  var minsEl = document.getElementById('cd-mins');
-  var secsEl = document.getElementById('cd-secs');
-  if(!daysEl) return;
-
-  function pad(n){ return String(n).padStart(2,'0'); }
-
-  function tick(){
-    var now = new Date().getTime();
-    var diff = target - now;
-
-    if(diff <= 0){
-      daysEl.textContent = '00';
-      hoursEl.textContent = '00';
-      minsEl.textContent = '00';
-      secsEl.textContent = '00';
-      clearInterval(timer);
-      return;
-    }
-
-    var days = Math.floor(diff / (1000*60*60*24));
-    var hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
-    var mins = Math.floor((diff % (1000*60*60)) / (1000*60));
-    var secs = Math.floor((diff % (1000*60)) / 1000);
-
-    daysEl.textContent = pad(days);
-    hoursEl.textContent = pad(hours);
-    minsEl.textContent = pad(mins);
-    secsEl.textContent = pad(secs);
-  }
-
-  tick();
-  var timer = setInterval(tick, 1000);
-})();
-</script>
 
 <script>
 (function(){
