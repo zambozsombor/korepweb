@@ -42,69 +42,70 @@
     var css = ''
       + '.header-right{display:flex;align-items:center;gap:10px;}'
       + '.auth-area{display:flex;align-items:center;}'
-      + '.pm-btn{font-family:"Baloo 2",sans-serif;font-weight:700;border-radius:999px;cursor:pointer;border:none;line-height:1;transition:filter .15s ease,background .15s ease;}'
+      + '.pm-btn{font-family:"Alegreya Sans",sans-serif;font-weight:700;border-radius:999px;cursor:pointer;border:none;line-height:1;transition:filter .15s ease,background .15s ease;}'
       + '.pm-btn:hover{filter:brightness(1.05);}'
-      + '.pm-login{background:var(--mint,#7fe3c4);color:var(--mint-ink,#0c3b2c);padding:10px 18px;font-size:14.5px;}'
+      + '.pm-login{background:var(--patina-soft);color:#164F47;padding:10px 18px;font-size:15.5px;}'
       + '.pm-user{display:flex;align-items:center;gap:9px;}'
-      + '.pm-hi{color:var(--cream,#f6efdd);font-weight:700;font-size:14px;white-space:nowrap;}'
-      + '.pm-logout{background:transparent;border:1.5px solid rgba(255,255,255,.28);color:var(--cream,#f6efdd);padding:7px 13px;font-size:13px;}'
-      + '.pm-overlay{position:fixed;inset:0;background:rgba(10,4,28,.68);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s ease;}'
+      + '.pm-hi{color:var(--ink);font-weight:700;font-size:15px;white-space:nowrap;}'
+      + '.pm-logout{background:transparent;border:1.5px solid #DCE0DA;color:var(--ink);padding:7px 13px;font-size:14px;}'
+      + '.pm-overlay{position:fixed;inset:0;background:rgba(29,39,51,0.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s ease;}'
       + '.pm-overlay.open{opacity:1;pointer-events:auto;}'
-      + '.pm-card{background:var(--purple-800,#2f1a63);color:var(--cream,#f6efdd);border:1px solid rgba(255,255,255,.10);border-radius:24px;box-shadow:0 24px 60px rgba(0,0,0,.45);max-width:420px;width:100%;max-height:88vh;overflow:auto;padding:30px 26px;position:relative;transform:translateY(8px);transition:transform .2s ease;}'
-      + '.pm-acc-label select{display:block;width:100%;margin-top:6px;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.18);background:var(--purple-950,#241150);color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-size:15px;box-sizing:border-box;}'
+      + '.pm-card{background:var(--paper);color:var(--ink);border:1px solid #DCE0DA;border-radius:24px;box-shadow:0 24px 60px rgba(29,39,51,0.14);max-width:420px;width:100%;max-height:88vh;overflow:auto;padding:30px 26px;position:relative;transform:translateY(8px);transition:transform .2s ease;}'
+      + '.pm-acc-label select{display:block;width:100%;margin-top:6px;padding:11px 14px;border-radius:12px;border:1.5px solid #DCE0DA;background:var(--bg);color:var(--ink);font-family:"Alegreya Sans",sans-serif;font-size:16px;box-sizing:border-box;}'
       + '.pm-overlay.open .pm-card{transform:translateY(0);}'
-      + '.pm-card h3{font-family:"Baloo 2",sans-serif;margin:0 0 8px;font-size:23px;color:var(--cream,#f6efdd);}'
-      + '.pm-card p{margin:0 0 18px;font-size:14.5px;line-height:1.55;color:var(--cream-dim,#cdc3e6);}'
-      + '.pm-x{position:absolute;top:14px;right:16px;background:transparent;border:none;color:var(--cream-dim,#cdc3e6);font-size:22px;cursor:pointer;line-height:1;}'
-      + '.pm-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15.5px;border:none;border-radius:999px;padding:13px 18px;cursor:pointer;}'
+      + '.pm-card h3{font-family:"Alegreya Sans",sans-serif;margin:0 0 8px;font-size:23px;color:var(--ink);}'
+      + '.pm-card p{margin:0 0 18px;font-size:15.5px;line-height:1.55;color:var(--muted);}'
+      + '.pm-x{position:absolute;top:14px;right:16px;background:transparent;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;}'
+      + '.pm-google{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:16.5px;border:none;border-radius:999px;padding:13px 18px;cursor:pointer;}'
       + '.pm-google:hover{filter:brightness(.97);}'
       + '.pm-gicon{width:20px;height:20px;display:inline-block;object-fit:contain;vertical-align:middle;}'
-      + '.pm-note{margin-top:16px;font-size:12px;color:var(--cream-dim,#cdc3e6);line-height:1.5;}'
-      + '.pm-consent label{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--cream,#f6efdd);cursor:pointer;margin:6px 0 16px;}'
-      + '.pm-consent input[type=checkbox]{margin-top:3px;width:18px;height:18px;flex:none;accent-color:var(--yellow,#f5e463);}'
+      + '.pm-note{margin-top:16px;font-size:13px;color:var(--muted);line-height:1.5;}'
+      + '.pm-consent label{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--ink);cursor:pointer;margin:6px 0 16px;}'
+      + '.pm-consent input[type=checkbox]{margin-top:3px;width:18px;height:18px;flex:none;accent-color:var(--patina);}'
       + '.pm-consent2{display:flex;flex-direction:column;gap:12px;margin:4px 0 18px;text-align:left;}'
-      + '.pm-consent2 label{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--cream,#f6efdd);cursor:pointer;line-height:1.5;}'
-      + '.pm-consent2 input[type=checkbox]{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--yellow,#f5e463);}'
-      + '.pm-consent2 a{color:var(--mint,#7fe3c4);}'
-      + '.pm-primary{width:100%;background:var(--coral,#ff7a66);color:var(--purple-950,#160a34);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15.5px;border:none;border-radius:999px;padding:13px 18px;cursor:pointer;}'
+      + '.pm-consent2 label{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink);cursor:pointer;line-height:1.5;}'
+      + '.pm-consent2 input[type=checkbox]{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--patina);}'
+      + '.pm-consent2 a{color:var(--patina);}'
+      + '.pm-primary{width:100%;background:var(--patina);color:#1D2733;font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:16.5px;border:none;border-radius:999px;padding:13px 18px;cursor:pointer;}'
       + '.pm-primary:disabled{opacity:.5;cursor:not-allowed;}'
-      + '.pm-linkbtn{display:inline-block;background:none;border:none;color:var(--cream-dim,#cdc3e6);font-size:12.5px;text-decoration:underline;cursor:pointer;margin-top:12px;padding:0;}'
+      + '.pm-linkbtn{display:inline-block;background:none;border:none;color:var(--muted);font-size:13.5px;text-decoration:underline;cursor:pointer;margin-top:12px;padding:0;}'
       + '.pm-user{position:relative;display:flex;align-items:center;}'
-      + '.pm-avatar{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,.28);background:var(--yellow,#f5e463);color:var(--yellow-ink,#2f1866);font-family:"Baloo 2",sans-serif;font-weight:800;font-size:17px;cursor:pointer;overflow:hidden;padding:0;display:flex;align-items:center;justify-content:center;}'
+      + '.pm-avatar{width:40px;height:40px;border-radius:50%;border:2px solid #DCE0DA;background:var(--patina);color:#1D2733;font-family:"Alegreya Sans",sans-serif;font-weight:800;font-size:18.5px;cursor:pointer;overflow:hidden;padding:0;display:flex;align-items:center;justify-content:center;}'
       + '.pm-avatar img{width:100%;height:100%;object-fit:cover;display:block;}'
       + '.pm-avatar:hover{filter:brightness(1.05);}'
-      + '.pm-menu{position:absolute;top:calc(100% + 10px);right:0;background:var(--purple-800,#3a1f80);border:1px solid rgba(255,255,255,.10);border-radius:16px;box-shadow:0 18px 40px rgba(0,0,0,.4);padding:8px;min-width:210px;display:flex;flex-direction:column;gap:2px;z-index:300;}'
+      + '.pm-menu{position:absolute;top:calc(100% + 10px);right:0;background:var(--paper);border:1px solid #DCE0DA;border-radius:16px;box-shadow:0 18px 40px rgba(29,39,51,0.14);padding:8px;min-width:210px;display:flex;flex-direction:column;gap:2px;z-index:300;}'
       + '.pm-menu[hidden]{display:none!important;}'
-      + '.pm-menu-name{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:14px;color:var(--cream,#f6efdd);padding:8px 12px 8px;border-bottom:1px solid rgba(255,255,255,.10);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'
-      + '.pm-menu-item{display:block;text-align:left;background:transparent;border:none;color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-weight:600;font-size:14.5px;padding:11px 12px;border-radius:10px;cursor:pointer;text-decoration:none;}'
-      + '.pm-menu-item:hover{background:var(--purple-700,#4a2aa0);}'
-      + '.pm-menu-item.pm-danger{color:#ff9a86;}'
+      + '.pm-menu-name{font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:15px;color:var(--ink);padding:8px 12px 8px;border-bottom:1px solid #DCE0DA;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'
+      + '.pm-menu-item{display:block;text-align:left;background:transparent;border:none;color:var(--ink);font-family:"Alegreya Sans",sans-serif;font-weight:600;font-size:15.5px;padding:11px 12px;border-radius:10px;cursor:pointer;text-decoration:none;}'
+      + '.pm-menu-item:hover{background:var(--hover);}'
+      + '.pm-menu-item.pm-danger{color:#b3261e;}'
       + '.pm-acc-av{display:flex;align-items:center;gap:16px;margin:6px 0 18px;}'
-      + '.pm-acc-avpic{width:72px;height:72px;border-radius:50%;overflow:hidden;background:var(--yellow,#f5e463);color:var(--yellow-ink,#2f1866);display:flex;align-items:center;justify-content:center;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:30px;flex:none;}'
+      + '.pm-acc-avpic{width:72px;height:72px;border-radius:50%;overflow:hidden;background:var(--patina);color:#1D2733;display:flex;align-items:center;justify-content:center;font-family:"Alegreya Sans",sans-serif;font-weight:800;font-size:30px;flex:none;}'
       + '.pm-acc-avpic img{width:100%;height:100%;object-fit:cover;}'
-      + '.pm-acc-upload{background:transparent;border:1.5px solid rgba(255,255,255,.28);color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:13.5px;padding:9px 14px;border-radius:999px;cursor:pointer;display:inline-block;}'
-      + '.pm-acc-label{display:block;font-size:13px;color:var(--cream-dim,#cdc3e6);margin-bottom:16px;font-weight:600;}'
-      + '.pm-acc-label input{display:block;width:100%;margin-top:6px;padding:11px 14px;border-radius:12px;border:1.5px solid rgba(255,255,255,.18);background:var(--purple-950,#241150);color:var(--cream,#f6efdd);font-family:"Baloo 2",sans-serif;font-size:15px;box-sizing:border-box;}'
-      + '.pm-acc-check{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--cream,#f6efdd);cursor:pointer;line-height:1.5;margin:2px 0 18px;}'
-      + '.pm-acc-check input[type=checkbox]{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--yellow,#f5e463);}'
-      + '.pm-login-cta{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:linear-gradient(135deg,var(--purple-800,#3a1f80),var(--purple-700,#4a2aa0));border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:14px 20px;margin:0 auto 18px;max-width:680px;text-align:center;}'
-      + '.pm-login-cta .cta-txt{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15px;color:var(--cream,#f6efdd);}'
-      + '.pm-cta-login{background:var(--mint,#c7f3ec);color:var(--mint-ink,#123b34);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:14px;border:none;border-radius:999px;padding:9px 18px;cursor:pointer;white-space:nowrap;}'
+      + '.pm-acc-upload{background:transparent;border:1.5px solid #DCE0DA;color:var(--ink);font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:14.5px;padding:9px 14px;border-radius:999px;cursor:pointer;display:inline-block;}'
+      + '.pm-acc-label{display:block;font-size:14px;color:var(--muted);margin-bottom:16px;font-weight:600;}'
+      + '.pm-acc-label input{display:block;width:100%;margin-top:6px;padding:11px 14px;border-radius:12px;border:1.5px solid #DCE0DA;background:var(--bg);color:var(--ink);font-family:"Alegreya Sans",sans-serif;font-size:16px;box-sizing:border-box;}'
+      + '.pm-acc-check{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;color:var(--ink);cursor:pointer;line-height:1.5;margin:2px 0 18px;}'
+      + '.pm-acc-check input[type=checkbox]{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--patina);}'
+      + '.pm-login-cta{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:var(--paper);border:1px solid #DCE0DA;border-radius:18px;padding:14px 20px;margin:0 auto 18px;max-width:680px;text-align:center;}'
+      + '.pm-login-cta .cta-txt{font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:16px;color:var(--ink);}'
+      + '.pm-cta-login{background:var(--patina-soft);color:#164F47;font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:15px;border:none;border-radius:999px;padding:9px 18px;cursor:pointer;white-space:nowrap;}'
       + '.pm-cta-login:hover{filter:brightness(1.05);}'
-      + '.pm-reg{background:transparent;border:1.5px solid rgba(255,255,255,.35);color:var(--cream,#f6efdd);padding:8.5px 16px;font-size:14px;margin-right:8px;}'
-      + '.pm-tabs{display:flex;gap:4px;background:rgba(0,0,0,.18);border-radius:999px;padding:4px;margin:0 30px 18px 0;}'
-      + '.pm-tabs button{flex:1;border:none;background:transparent;color:var(--cream-dim,#cdc3e6);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15px;padding:9px 12px;border-radius:999px;cursor:pointer;}'
-      + '.pm-tabs button[aria-selected="true"]{background:var(--yellow,#f5e463);color:var(--yellow-ink,#2f1866);}'
-      + '.pm-or{display:flex;align-items:center;gap:10px;margin:16px 0 12px;color:var(--cream-dim,#cdc3e6);font-size:12.5px;}'
-      + '.pm-or::before,.pm-or::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.16);}'
+      + '.pm-reg{background:transparent;border:1.5px solid #DCE0DA;color:var(--ink);padding:8.5px 16px;font-size:15px;margin-right:8px;}'
+      + '.pm-tabs{display:flex;gap:4px;background:rgba(29,39,51,0.072);border-radius:999px;padding:4px;margin:0 30px 18px 0;}'
+      + '.pm-tabs button{flex:1;border:none;background:transparent;color:var(--muted);font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:16px;padding:9px 12px;border-radius:999px;cursor:pointer;}'
+      + '.pm-tabs button[aria-selected="true"]{background:var(--patina);color:#1D2733;}'
+      + '.pm-or{display:flex;align-items:center;gap:10px;margin:16px 0 12px;color:var(--muted);font-size:13.5px;}'
+      + '.pm-or::before,.pm-or::after{content:"";flex:1;height:1px;background:rgba(29,39,51,0.08);}'
       + '.pm-form .pm-acc-label{margin-bottom:12px;}'
-      + '.pm-msg{min-height:1.2em;font-size:13.5px;color:#ffb3a5;margin:2px 0 10px;}'
-      + '.pm-msg.ok{color:var(--mint,#c7f3ec);}'
-      + '.pm-switch{margin-top:14px;font-size:13.5px;color:var(--cream-dim,#cdc3e6);}'
-      + '.pm-switch .pm-linkbtn{margin:0;font-size:13.5px;color:var(--yellow,#f5e463);}'
+      + '.pm-msg{min-height:1.2em;font-size:14.5px;color:#b3261e;margin:2px 0 10px;}'
+      + '.pm-msg.ok{color:var(--patina);}'
+      + '.pm-switch{margin-top:14px;font-size:14.5px;color:var(--muted);}'
+      + '.pm-switch .pm-linkbtn{margin:0;font-size:14.5px;color:var(--patina);}'
       + '.pm-google:disabled{opacity:.5;cursor:not-allowed;}'
       + '.pm-tabs[hidden],.pm-pane[hidden]{display:none!important;}'
-      + '@media(max-width:760px){.header-right{gap:8px;}.pm-login,.pm-reg{padding:7px 11px;font-size:12px;}.pm-reg{margin-right:4px;}.header-cta{font-size:11.5px;padding:7px 11px;}}';
+      + '.pm-login{background:#1F6F64;color:#fff;border-radius:8px;}.pm-login:hover{background:#185A51;filter:none;}.pm-reg{border-radius:8px;}.pm-card{font-family:"Alegreya Sans",system-ui,sans-serif;border-radius:18px;}.pm-linkbtn,.pm-tabs button,.pm-menu-item,.pm-primary,.pm-google{font-family:inherit;}.pm-primary{border-radius:10px;}.pm-google{border:1px solid #DCE0DA;border-radius:10px;}.pm-cta-login{background:#1F6F64;color:#fff;border-radius:8px;}.pm-login-cta{background:#FFFFFD;border:1px solid #DCE0DA;}'
+      + '@media(max-width:760px){.header-right{gap:8px;}.pm-login,.pm-reg{padding:7px 11px;font-size:13px;}.pm-reg{margin-right:4px;}.header-cta{font-size:12.5px;padding:7px 11px;}}';
     var st = document.createElement('style');
     st.id = 'pm-auth-style';
     st.textContent = css;
@@ -130,7 +131,7 @@
     +   '<label><input type="checkbox" class="pmMkt"><span>Szeretnék később <b>marketing célú</b> megkereséseket (pl. új feladatok, hírek) kapni e-mailben. Ez nem feltétele a regisztrációnak, és bármikor visszavonható.</span></label>'
     + '</div>';
   function savePending(mkt) {
-    try { localStorage.setItem('pm_pending_consent', JSON.stringify({ terms: true, marketing: !!mkt, at: new Date().toISOString() })); } catch (e) {}
+    try { localStorage.setItem('pm_pending_consent', JSON.stringify({ terms:true, marketing: !!mkt, at: new Date().toISOString()})); } catch (e) {}
   }
   function authErr(e) {
     var m = (e && (e.message || e.error_description)) || String(e || '');
@@ -218,7 +219,7 @@
       var email = lf.email.value.trim(), pw = lf.pw.value;
       if (!email || !pw) { msg(lf, 'Add meg az e-mail-címed és a jelszavad.'); return; }
       var btn = lf.querySelector('button[type=submit]'); btn.disabled = true; msg(lf, 'Belépés…', true);
-      sb.auth.signInWithPassword({ email: email, password: pw }).then(function (res) {
+      sb.auth.signInWithPassword({ email:email, password: pw}).then(function (res) {
         btn.disabled = false;
         if (res.error) { msg(lf, authErr(res.error)); return; }
         close(ov);
@@ -248,7 +249,7 @@
       eReg.disabled = true; msg(rf, 'Regisztráció…', true);
       sb.auth.signUp({ email: email, password: pw, options: {
         emailRedirectTo: backUrl(),
-        data: { source: 'papaimatek-web', full_name: name || undefined, name: name || undefined, terms_accepted_at: when, marketing_consent: !!mkt.checked }
+        data: { source:'papaimatek-web', full_name: name || undefined, name: name || undefined, terms_accepted_at: when, marketing_consent: !!mkt.checked}
       } }).then(function (res) {
         eReg.disabled = false;
         if (res.error) { msg(rf, authErr(res.error)); return; }
@@ -272,7 +273,7 @@
 
   function loginGoogle() {
     sb.auth.signInWithOAuth({
-      provider: 'google',
+      provider:'google',
       options: { redirectTo: backUrl() }
     }).then(function (res) {
       if (res && res.error) alert('Hiba a belépésnél: ' + res.error.message);
@@ -295,7 +296,7 @@
       e.preventDefault();
       if (f.pw.value.length < 8) { m.textContent = 'A jelszó legalább 8 karakter legyen.'; return; }
       if (f.pw.value !== f.pw2.value) { m.textContent = 'A két jelszó nem egyezik.'; return; }
-      sb.auth.updateUser({ password: f.pw.value }).then(function (res) {
+      sb.auth.updateUser({ password:f.pw.value}).then(function (res) {
         if (res.error) { m.textContent = authErr(res.error); return; }
         close(ov); showBanner('Az új jelszavad elmentve.', true);
       });
@@ -352,7 +353,7 @@
   function openConsentModal(user) {
     var ov = makeOverlay(
       '<h3>Még egy lépés</h3>'
-      + '<p>Mielőtt elkezded: erősítsd meg az alábbit. Ha még nem múltál el 16 éves, a használathoz szülő vagy gondviselő hozzájárulása szükséges.</p>'
+      + '<p>Mielőtt elkezded:erősítsd meg az alábbit. Ha még nem múltál el 16 éves, a használathoz szülő vagy gondviselő hozzájárulása szükséges.</p>'
       + '<div class="pm-consent"><label><input type="checkbox" id="pm-consent-cb"> Elmúltam 16 éves, <b>vagy</b> szülői/gondviselői hozzájárulással használom az oldalt.</label></div>'
       + '<button class="pm-primary" type="button" id="pm-consent-ok" disabled>Rendben, kezdjük</button>'
       + '<button class="pm-linkbtn" type="button" id="pm-consent-out">Mégsem, kijelentkezem</button>'
@@ -436,7 +437,7 @@
   function ensureEmailSaved(user) {
     if (!user || !user.email) return;
     if (curProfile && curProfile.email === user.email) return;
-    sb.from('profiles').update({ email: user.email }).eq('id', user.id).then(function () {
+    sb.from('profiles').update({ email:user.email}).eq('id', user.id).then(function () {
       if (curProfile) curProfile.email = user.email;
     }).catch(function () {});
   }
@@ -492,7 +493,7 @@
   function openAccountModal(user) {
     var name = displayName(user);
     var av = (curProfile && curProfile.avatar) || '';
-    var pending = { avatar: av, changed: false };
+    var pending = { avatar:av, changed: false};
     var pr = curProfile || {};
     function opt(v, label, sel) { return '<option value="' + esc(v) + '"' + (String(sel) === String(v) && v !== '' ? ' selected' : '') + '>' + esc(label) + '</option>'; }
     var evfSel = (pr.evfolyam != null ? String(pr.evfolyam) : '');
@@ -535,10 +536,10 @@
       var mktOn = ov.querySelector('#accMkt').checked;
       var payload = {
         display_name: newName,
-        evfolyam: evfRaw ? parseInt(evfRaw, 10) : null,
-        iskola: (ov.querySelector('#accIskola').value || '').trim() || null,
+        evfolyam:evfRaw ? parseInt(evfRaw, 10) : null,
+        iskola:(ov.querySelector('#accIskola').value || '').trim() || null,
         kedvenc_temakor: ov.querySelector('#accTopic').value || null,
-        cel: (ov.querySelector('#accCel').value || '').trim() || null,
+        cel:(ov.querySelector('#accCel').value || '').trim() || null,
         marketing_consent: mktOn
       };
       if (mktOn && !pr.marketing_consent) payload.marketing_consent_at = new Date().toISOString();
@@ -547,10 +548,10 @@
       sb.from('profiles').update(payload).eq('id', user.id).then(function (res) {
         if (res && res.error) {
           // Hiányzó oszlop(ok): mentsük legalább a biztosan létező mezőket (név, évfolyam)
-          sb.from('profiles').update({ display_name: newName, evfolyam: payload.evfolyam }).eq('id', user.id).then(function () {
+          sb.from('profiles').update({ display_name: newName, evfolyam:payload.evfolyam}).eq('id', user.id).then(function () {
             curProfile.display_name = newName; curProfile.evfolyam = payload.evfolyam;
             renderAvatar(user); close(ov);
-            showBanner('A név és évfolyam mentve. A többi mező (profilkép, iskola, kedvenc témakör, cél, e-mail, marketing) tárolásához a Supabase SQL Editorban futtasd le egyszer: alter table profiles add column if not exists avatar text, add column if not exists iskola text, add column if not exists kedvenc_temakor text, add column if not exists cel text, add column if not exists email text, add column if not exists marketing_consent boolean default false, add column if not exists marketing_consent_at timestamptz, add column if not exists terms_accepted_at timestamptz;');
+            showBanner('A név és évfolyam mentve. A többi mező (profilkép, iskola, kedvenc témakör, cél, e-mail, marketing) tárolásához a Supabase SQL Editorban futtasd le egyszer:alter table profiles add column if not exists avatar text, add column if not exists iskola text, add column if not exists kedvenc_temakor text, add column if not exists cel text, add column if not exists email text, add column if not exists marketing_consent boolean default false, add column if not exists marketing_consent_at timestamptz, add column if not exists terms_accepted_at timestamptz;');
           }).catch(function () { btn.disabled = false; accNote.textContent = 'Hiba: ' + res.error.message; });
           return;
         }
@@ -574,7 +575,7 @@
   PM.saveProgress = function (itemKey, fields) {
     return sb.auth.getUser().then(function (r) {
       var u = r.data.user;
-      if (!u) return { error: 'not-logged-in' };
+      if (!u) return { error:'not-logged-in'};
       var row = Object.assign({ user_id: u.id, item_key: itemKey, updated_at: new Date().toISOString() }, fields || {});
       return sb.from('progress').upsert(row, { onConflict: 'user_id,item_key' });
     });
@@ -594,8 +595,8 @@
     var b = document.createElement('div');
     b.setAttribute('role', 'alert');
     b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2000;padding:12px 44px 12px 16px;'
-      + 'font-family:"Baloo 2",sans-serif;font-weight:700;font-size:14px;text-align:center;'
-      + (ok ? 'background:#1f7a5a;color:#eafff6;' : 'background:#b3261e;color:#fff;');
+      + 'font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:15px;text-align:center;'
+      + (ok ? 'background:#1f7a5a;color:#eafff6;' : 'background:#b3261e;color:#1D2733;');
     b.textContent = msg;
     var x = document.createElement('button');
     x.textContent = '×';
@@ -609,14 +610,14 @@
     var hp = new URLSearchParams((location.hash || '').replace(/^#/, ''));
     var qp = new URLSearchParams(location.search || '');
     var err = hp.get('error_description') || hp.get('error') || qp.get('error_description') || qp.get('error');
-    if (err) { showBanner('Bejelentkezés sikertelen: ' + decodeURIComponent(err)); cleanUrl(); return; }
+    if (err) { showBanner('Bejelentkezés sikertelen:' + decodeURIComponent(err)); cleanUrl(); return; }
     var at = hp.get('access_token'), rt = hp.get('refresh_token');
     if (at && rt) {
       sb.auth.setSession({ access_token: at, refresh_token: rt }).then(function (res) {
         cleanUrl();
-        if (res && res.error) { showBanner('Munkamenet hiba: ' + res.error.message); return; }
+        if (res && res.error) { showBanner('Munkamenet hiba:' + res.error.message); return; }
         var u = res && res.data && res.data.user;
-        render(u ? { user: u } : null);
+        render(u ? { user:u} : null);
         if (hp.get('type') === 'recovery') openNewPasswordModal();
         else if (hp.get('type') === 'signup') showBanner('Sikeres megerősítés – üdv a papaimatek.hu-n!', true);
         listeners.forEach(function (cb) { try { cb(u || null); } catch (e) {} });
