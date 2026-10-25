@@ -133,6 +133,20 @@
 .ps-btn.tt{background:#010101;border:1px solid rgba(255,255,255,.2)}
 @media(max-width:560px){.pm-social-in{padding:22px 20px}.ps-btn{flex:1 1 auto;justify-content:center}}
 </style>
+<style>
+  .er-prog{margin-top:34px;border-top:1px solid rgba(255,255,255,.12);padding-top:22px}
+  .er-prog h2{font-family:'Baloo 2',sans-serif;font-size:24px;color:var(--cream,#f5f1ff);margin-bottom:4px}
+  .er-sub{color:var(--cream-dim,#c9bdea);margin-bottom:14px}
+  .er-sub a{color:var(--yellow,#f5e463)}
+  .er-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  .er-card{display:block;text-decoration:none;color:var(--cream,#f5f1ff);background:var(--purple-800,#3a1f80);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:16px 18px}
+  .er-card:hover{border-color:var(--yellow,#f5e463)}
+  .er-card b{font-family:'Baloo 2',sans-serif;font-size:18px;display:block}
+  .er-card span{color:var(--cream-dim,#c9bdea);font-size:14px}
+  .er-num{font-family:'Baloo 2',sans-serif;font-weight:800;font-size:22px;margin-top:6px}
+  .er-bar{height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:6px}
+  .er-bar i{display:block;height:100%;background:var(--mint,#c7f3ec)}
+</style>
 </head>
 <body>
 
@@ -145,6 +159,7 @@
         <div class="submenu-title">Menü</div>
         <a href="index.html">Főoldal</a>
         <a href="feladatadatbazis.html">Feladatadatbázis</a>
+        <a href="/erettsegi/">Érettségi feladatbank</a>
         <a href="index.html#rolam">Ki vagyok én?</a>
         <a href="index.html#szolgaltatasok">Szolgáltatások</a>
         <a href="index.html#arak">Árak</a>
@@ -193,6 +208,12 @@
 
     <div class="crumbs" id="crumbs"></div>
     <div class="grid" id="grid"></div>
+
+    <section class="er-prog" id="erProg" aria-labelledby="erProgTitle">
+      <h2 id="erProgTitle">Érettségi feladatbank</h2>
+      <p class="er-sub">A <a href="/erettsegi/">érettségi feladatbankban</a> kipipált feladatok, tantárgyanként és szintenként.</p>
+      <div class="er-grid" id="erGrid"></div>
+    </section>
   </div>
 
   <div id="loading" class="muted" style="text-align:center;padding:20px;">Betöltés…</div>
@@ -384,6 +405,25 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js?v=11"></script>
+<script>
+/* Érettségi haladás – a feladatok kulcsa: e:<tantárgy>:<év>-<időszak>-<szint>-<sorszám> */
+(function(){
+  var TOT={"mat":{"k":1224,"e":594},"magy":{"k":194,"e":160},"tori":{"k":1220,"e":1354}};
+  var NEV={mat:['Matematika','matek.html'],magy:['Magyar nyelv és irodalom','magyar.html'],tori:['Történelem','tori.html']};
+  function render(map){
+    var c={}; Object.keys(map||{}).forEach(function(k){ var m=/^e:(mat|magy|tori):.*-(k|e)-\d+$/.exec(k); if(m&&map[k].status==='kesz'){ var x=m[1]+m[2]; c[x]=(c[x]||0)+1; } });
+    var h=''; ['mat','magy','tori'].forEach(function(t){ ['k','e'].forEach(function(sz){
+      var d=c[t+sz]||0, n=TOT[t][sz], p=n?Math.round(100*d/n):0;
+      h+='<a class="er-card" href="/erettsegi/'+NEV[t][1]+(sz==='e'?'?szint=e':'')+'"><b>'+NEV[t][0]+'</b><span>'+(sz==='k'?'középszint':'emelt szint')+'</span>'
+        +'<div class="er-num">'+d+' / '+n+'</div><div class="er-bar"><i style="width:'+p+'%"></i></div></a>'; }); });
+    var g=document.getElementById('erGrid'); if(g) g.innerHTML=h;
+  }
+  function boot(){ if(!window.PM){ setTimeout(boot,150); return; }
+    function load(u){ if(u) PM.loadProgress().then(render); }
+    PM.onChange(load); PM.getUser().then(load); }
+  boot();
+})();
+</script>
 <script src="/cookie-consent.js"></script>
 </body>
 </html>
