@@ -91,7 +91,20 @@
       + '.pm-login-cta .cta-txt{font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15px;color:var(--cream,#f6efdd);}'
       + '.pm-cta-login{background:var(--mint,#c7f3ec);color:var(--mint-ink,#123b34);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:14px;border:none;border-radius:999px;padding:9px 18px;cursor:pointer;white-space:nowrap;}'
       + '.pm-cta-login:hover{filter:brightness(1.05);}'
-      + '@media(max-width:760px){.header-right{gap:8px;}.pm-login{padding:7px 12px;font-size:12px;}.header-cta{font-size:11.5px;padding:7px 11px;}}';
+      + '.pm-reg{background:transparent;border:1.5px solid rgba(255,255,255,.35);color:var(--cream,#f6efdd);padding:8.5px 16px;font-size:14px;margin-right:8px;}'
+      + '.pm-tabs{display:flex;gap:4px;background:rgba(0,0,0,.18);border-radius:999px;padding:4px;margin:0 30px 18px 0;}'
+      + '.pm-tabs button{flex:1;border:none;background:transparent;color:var(--cream-dim,#cdc3e6);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:15px;padding:9px 12px;border-radius:999px;cursor:pointer;}'
+      + '.pm-tabs button[aria-selected="true"]{background:var(--yellow,#f5e463);color:var(--yellow-ink,#2f1866);}'
+      + '.pm-or{display:flex;align-items:center;gap:10px;margin:16px 0 12px;color:var(--cream-dim,#cdc3e6);font-size:12.5px;}'
+      + '.pm-or::before,.pm-or::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.16);}'
+      + '.pm-form .pm-acc-label{margin-bottom:12px;}'
+      + '.pm-msg{min-height:1.2em;font-size:13.5px;color:#ffb3a5;margin:2px 0 10px;}'
+      + '.pm-msg.ok{color:var(--mint,#c7f3ec);}'
+      + '.pm-switch{margin-top:14px;font-size:13.5px;color:var(--cream-dim,#cdc3e6);}'
+      + '.pm-switch .pm-linkbtn{margin:0;font-size:13.5px;color:var(--yellow,#f5e463);}'
+      + '.pm-google:disabled{opacity:.5;cursor:not-allowed;}'
+      + '.pm-tabs[hidden],.pm-pane[hidden]{display:none!important;}'
+      + '@media(max-width:760px){.header-right{gap:8px;}.pm-login,.pm-reg{padding:7px 11px;font-size:12px;}.pm-reg{margin-right:4px;}.header-cta{font-size:11.5px;padding:7px 11px;}}';
     var st = document.createElement('style');
     st.id = 'pm-auth-style';
     st.textContent = css;
@@ -110,43 +123,209 @@
   function open(ov) { requestAnimationFrame(function () { ov.classList.add('open'); }); }
   function close(ov) { ov.classList.remove('open'); setTimeout(function () { if (ov.parentNode) ov.parentNode.removeChild(ov); }, 220); }
 
-  /* ---------- belépés modal ---------- */
-  function openLoginModal() {
+  /* ---------- belépés / regisztráció modal ---------- */
+  var CONSENT_HTML = ''
+    + '<div class="pm-consent2">'
+    +   '<label><input type="checkbox" class="pmTerms"><span>Elolvastam és elfogadom az <a href="/adatkezeles.html" target="_blank" rel="noopener">adatkezelési tájékoztatót</a>, és hozzájárulok, hogy a nevem és e-mail-címem a fiókomhoz tárolják a haladás mentéséhez — <b>visszavonásig</b>.</span></label>'
+    +   '<label><input type="checkbox" class="pmMkt"><span>Szeretnék később <b>marketing célú</b> megkereséseket (pl. új feladatok, hírek) kapni e-mailben. Ez nem feltétele a regisztrációnak, és bármikor visszavonható.</span></label>'
+    + '</div>';
+  function savePending(mkt) {
+    try { localStorage.setItem('pm_pending_consent', JSON.stringify({ terms: true, marketing: !!mkt, at: new Date().toISOString() })); } catch (e) {}
+  }
+  function authErr(e) {
+    var m = (e && (e.message || e.error_description)) || String(e || '');
+    if (/Invalid login credentials/i.test(m)) return 'Hibás e-mail-cím vagy jelszó.';
+    if (/Email not confirmed/i.test(m)) return 'Az e-mail-címed még nincs megerősítve. Nézd meg a postafiókodat (a spam mappát is).';
+    if (/already registered|already exists/i.test(m)) return 'Ezzel az e-mail-címmel már van fiók. Lépj be, vagy kérj új jelszót.';
+    if (/Password should be at least/i.test(m)) return 'A jelszó legalább 8 karakter legyen.';
+    if (/rate limit|too many/i.test(m)) return 'Túl sok próbálkozás, kérlek várj egy kicsit, és próbáld újra.';
+    if (/not authorized|Error sending/i.test(m)) return 'Most nem tudtunk e-mailt küldeni. Próbáld később, vagy használd a Google-belépést.';
+    if (/valid email|invalid format/i.test(m)) return 'Érvénytelen e-mail-cím.';
+    return 'Hiba: ' + m;
+  }
+  function backUrl() { return window.location.origin + window.location.pathname + window.location.search; }
+
+  function openAuthModal(mode) {
+    mode = mode === 'register' ? 'register' : 'login';
     var ov = makeOverlay(
       '<button class="pm-x" type="button" aria-label="Bezárás">&times;</button>'
-      + '<h3>Belépés / Regisztráció</h3>'
-      + '<p>Lépj be a Google-fiókoddal, hogy később kövesd a haladásodat. Első belépéskor automatikusan létrejön a fiókod.</p>'
-      + '<div class="pm-consent2">'
-      +   '<label><input type="checkbox" id="pmTerms"> Elolvastam és elfogadom az <a href="adatkezeles.html" target="_blank" rel="noopener">adatkezelési tájékoztatót</a>, és hozzájárulok, hogy a nevem és e-mail-címem a fiókomhoz tárolják a haladás mentéséhez — <b>visszavonásig</b>.</label>'
-      +   '<label><input type="checkbox" id="pmMkt"> Szeretnék később <b>marketing célú</b> megkereséseket (pl. új feladatok, hírek) kapni e-mailben. Ez nem feltétele a belépésnek, és bármikor visszavonható.</label>'
+      + '<div class="pm-tabs" role="tablist">'
+      +   '<button type="button" role="tab" data-m="login">Belépés</button>'
+      +   '<button type="button" role="tab" data-m="register">Regisztráció</button>'
       + '</div>'
-      + '<button class="pm-google" type="button" id="pmGoogleBtn" disabled><img class="pm-gicon" alt="" src="'+GICON+'">Bejelentkezés Google-fiókkal</button>'
-      + '<div class="pm-note">Az adatkezelési tájékoztató elfogadása kötelező a belépéshez. 16 év alatt a használathoz és a marketinghez szülői/gondviselői hozzájárulás szükséges — erről a következő lépésben kérdezünk.</div>'
+      // --- belépés
+      + '<div class="pm-pane" data-pane="login">'
+      +   '<p>Lépj be a fiókodba, és folytasd ott, ahol abbahagytad.</p>'
+      +   '<button class="pm-google" type="button" data-act="g-login"><img class="pm-gicon" alt="" src="'+GICON+'">Belépés Google-fiókkal</button>'
+      +   '<div class="pm-or"><span>vagy e-maillel</span></div>'
+      +   '<form class="pm-form" data-form="login" novalidate>'
+      +     '<label class="pm-acc-label">E-mail-cím<input type="email" name="email" autocomplete="email" required></label>'
+      +     '<label class="pm-acc-label">Jelszó<input type="password" name="pw" autocomplete="current-password" required></label>'
+      +     '<div class="pm-msg" role="alert"></div>'
+      +     '<button class="pm-primary" type="submit">Belépés</button>'
+      +   '</form>'
+      +   '<button class="pm-linkbtn" type="button" data-act="forgot">Elfelejtetted a jelszavad?</button>'
+      +   '<div class="pm-switch">Még nincs fiókod? <button type="button" class="pm-linkbtn" data-go="register">Regisztrálj</button></div>'
+      + '</div>'
+      // --- regisztráció
+      + '<div class="pm-pane" data-pane="register" hidden>'
+      +   '<p>Hozz létre ingyenes fiókot: a kipipált feladataid és a haladásod minden eszközön megmaradnak.</p>'
+      +   CONSENT_HTML
+      +   '<button class="pm-google" type="button" data-act="g-reg" disabled><img class="pm-gicon" alt="" src="'+GICON+'">Regisztráció Google-fiókkal</button>'
+      +   '<div class="pm-or"><span>vagy e-maillel</span></div>'
+      +   '<form class="pm-form" data-form="register" novalidate>'
+      +     '<label class="pm-acc-label">Név (ahogy szólíthatunk)<input type="text" name="name" autocomplete="name" maxlength="40"></label>'
+      +     '<label class="pm-acc-label">E-mail-cím<input type="email" name="email" autocomplete="email" required></label>'
+      +     '<label class="pm-acc-label">Jelszó (legalább 8 karakter)<input type="password" name="pw" autocomplete="new-password" minlength="8" required></label>'
+      +     '<label class="pm-acc-label">Jelszó még egyszer<input type="password" name="pw2" autocomplete="new-password" minlength="8" required></label>'
+      +     '<div class="pm-msg" role="alert"></div>'
+      +     '<button class="pm-primary" type="submit" disabled>Regisztráció e-maillel</button>'
+      +   '</form>'
+      +   '<div class="pm-note">Az adatkezelési tájékoztató elfogadása kötelező a regisztrációhoz. 16 év alatt a használathoz és a marketinghez szülői/gondviselői hozzájárulás szükséges — erről a következő lépésben kérdezünk.</div>'
+      +   '<div class="pm-switch">Van már fiókod? <button type="button" class="pm-linkbtn" data-go="login">Lépj be</button></div>'
+      + '</div>'
+      // --- visszajelzés
+      + '<div class="pm-pane" data-pane="done" hidden><h3>Nézd meg a postafiókodat</h3><p class="pm-done-txt"></p>'
+      +   '<button class="pm-primary" type="button" data-act="close">Rendben</button></div>'
     );
-    ov.querySelector('.pm-x').addEventListener('click', function () { close(ov); });
-    var terms = ov.querySelector('#pmTerms');
-    var mkt = ov.querySelector('#pmMkt');
-    var gbtn = ov.querySelector('#pmGoogleBtn');
-    terms.addEventListener('change', function () { gbtn.disabled = !terms.checked; });
-    gbtn.addEventListener('click', function () {
-      if (!terms.checked) return;
-      try {
-        localStorage.setItem('pm_pending_consent', JSON.stringify({ terms: true, marketing: !!mkt.checked, at: new Date().toISOString() }));
-      } catch (e) {}
-      loginGoogle();
+    var card = ov.querySelector('.pm-card');
+    function setMode(m) {
+      card.querySelectorAll('.pm-tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.m === m); });
+      card.querySelectorAll('.pm-pane').forEach(function (p) { p.hidden = p.dataset.pane !== m; });
+      card.querySelector('.pm-tabs').hidden = m === 'done';
+      var f = card.querySelector('.pm-pane[data-pane="' + m + '"] input:not([type=checkbox])'); if (f && m !== 'done') setTimeout(function () { try { f.focus(); } catch (e) {} }, 60);
+    }
+    function msg(form, t, ok) { var el = form.querySelector('.pm-msg'); el.textContent = t || ''; el.classList.toggle('ok', !!ok); }
+    function done(text) { card.querySelector('.pm-done-txt').textContent = text; setMode('done'); }
+    card.querySelectorAll('.pm-tabs button').forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.m); }); });
+    card.querySelectorAll('[data-go]').forEach(function (b) { b.addEventListener('click', function () { setMode(b.dataset.go); }); });
+    card.querySelector('.pm-x').addEventListener('click', function () { close(ov); });
+    card.querySelector('[data-act="close"]').addEventListener('click', function () { close(ov); });
+
+    // regisztráció: hozzájárulás nélkül nem indítható
+    var regPane = card.querySelector('[data-pane="register"]');
+    var terms = regPane.querySelector('.pmTerms'), mkt = regPane.querySelector('.pmMkt');
+    var gReg = regPane.querySelector('[data-act="g-reg"]'), eReg = regPane.querySelector('form button[type=submit]');
+    terms.addEventListener('change', function () { gReg.disabled = eReg.disabled = !terms.checked; });
+
+    card.querySelector('[data-act="g-login"]').addEventListener('click', function () { loginGoogle(); });
+    gReg.addEventListener('click', function () { if (!terms.checked) return; savePending(mkt.checked); loginGoogle(); });
+
+    // e-mailes belépés
+    var lf = card.querySelector('form[data-form="login"]');
+    lf.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var email = lf.email.value.trim(), pw = lf.pw.value;
+      if (!email || !pw) { msg(lf, 'Add meg az e-mail-címed és a jelszavad.'); return; }
+      var btn = lf.querySelector('button[type=submit]'); btn.disabled = true; msg(lf, 'Belépés…', true);
+      sb.auth.signInWithPassword({ email: email, password: pw }).then(function (res) {
+        btn.disabled = false;
+        if (res.error) { msg(lf, authErr(res.error)); return; }
+        close(ov);
+      });
     });
+    // elfelejtett jelszó
+    card.querySelector('[data-act="forgot"]').addEventListener('click', function () {
+      var email = lf.email.value.trim();
+      if (!email) { msg(lf, 'Írd be fent az e-mail-címed, és utána kattints ide újra.'); lf.email.focus(); return; }
+      msg(lf, 'Küldés…', true);
+      sb.auth.resetPasswordForEmail(email, { redirectTo: backUrl() }).then(function (res) {
+        if (res.error) { msg(lf, authErr(res.error)); return; }
+        done('Ha a(z) ' + email + ' címmel van fiók, küldtünk rá egy linket, amellyel új jelszót adhatsz meg. (Nézd meg a spam mappát is.)');
+      });
+    });
+    // e-mailes regisztráció
+    var rf = card.querySelector('form[data-form="register"]');
+    rf.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (!terms.checked) { msg(rf, 'Az adatkezelési tájékoztató elfogadása kötelező.'); return; }
+      var name = rf.name.value.trim(), email = rf.email.value.trim(), pw = rf.pw.value, pw2 = rf.pw2.value;
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg(rf, 'Érvénytelen e-mail-cím.'); return; }
+      if (pw.length < 8) { msg(rf, 'A jelszó legalább 8 karakter legyen.'); return; }
+      if (pw !== pw2) { msg(rf, 'A két jelszó nem egyezik.'); return; }
+      var when = new Date().toISOString();
+      savePending(mkt.checked);
+      eReg.disabled = true; msg(rf, 'Regisztráció…', true);
+      sb.auth.signUp({ email: email, password: pw, options: {
+        emailRedirectTo: backUrl(),
+        data: { full_name: name || undefined, name: name || undefined, terms_accepted_at: when, marketing_consent: !!mkt.checked }
+      } }).then(function (res) {
+        eReg.disabled = false;
+        if (res.error) { msg(rf, authErr(res.error)); return; }
+        // ha már létezik a cím, a Supabase üres identitáslistát ad vissza
+        var u = res.data && res.data.user;
+        if (u && Array.isArray(u.identities) && u.identities.length === 0) { msg(rf, 'Ezzel az e-mail-címmel már van fiók. Lépj be, vagy kérj új jelszót.'); return; }
+        if (res.data && res.data.session) { if (name) pendingName = name; close(ov); return; }
+        if (name) { try { localStorage.setItem('pm_pending_name', name); } catch (x) {} }
+        done('Küldtünk egy megerősítő e-mailt a(z) ' + email + ' címre. Kattints a benne lévő linkre, és a fiókod aktiválódik. (Ha nem találod, nézd meg a spam mappát is.)');
+      });
+    });
+    setMode(mode);
     open(ov);
   }
+  var pendingName = null;
+  function openLoginModal() { openAuthModal('login'); }
+  function openRegisterModal() { openAuthModal('register'); }
 
   PM.openLogin = openLoginModal;
+  PM.openRegister = openRegisterModal;
 
   function loginGoogle() {
     sb.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.origin + window.location.pathname + window.location.search }
+      options: { redirectTo: backUrl() }
     }).then(function (res) {
       if (res && res.error) alert('Hiba a belépésnél: ' + res.error.message);
     });
+  }
+
+  /* ---------- új jelszó (jelszó-visszaállító link után) ---------- */
+  function openNewPasswordModal() {
+    var ov = makeOverlay(
+      '<h3>Új jelszó megadása</h3><p>Add meg az új jelszavadat (legalább 8 karakter).</p>'
+      + '<form class="pm-form" novalidate>'
+      +   '<label class="pm-acc-label">Új jelszó<input type="password" name="pw" autocomplete="new-password" minlength="8" required></label>'
+      +   '<label class="pm-acc-label">Új jelszó még egyszer<input type="password" name="pw2" autocomplete="new-password" minlength="8" required></label>'
+      +   '<div class="pm-msg" role="alert"></div>'
+      +   '<button class="pm-primary" type="submit">Jelszó mentése</button>'
+      + '</form>'
+    );
+    var f = ov.querySelector('form'), m = ov.querySelector('.pm-msg');
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (f.pw.value.length < 8) { m.textContent = 'A jelszó legalább 8 karakter legyen.'; return; }
+      if (f.pw.value !== f.pw2.value) { m.textContent = 'A két jelszó nem egyezik.'; return; }
+      sb.auth.updateUser({ password: f.pw.value }).then(function (res) {
+        if (res.error) { m.textContent = authErr(res.error); return; }
+        close(ov); showBanner('Az új jelszavad elmentve.', true);
+      });
+    });
+    open(ov);
+  }
+
+  /* ---------- adatkezelési hozzájárulás pótlása (pl. Google-belépés a „Belépés” fülön, új fiókkal) ---------- */
+  function openTermsModal(user) {
+    var ov = makeOverlay(
+      '<h3>Üdv a papaimatek.hu-n!</h3>'
+      + '<p>Mielőtt használni kezded a fiókodat, kérjük, fogadd el az adatkezelési tájékoztatót.</p>'
+      + CONSENT_HTML
+      + '<button class="pm-primary" type="button" id="pm-terms-ok" disabled>Elfogadom</button>'
+      + '<button class="pm-linkbtn" type="button" id="pm-terms-out">Mégsem, kijelentkezem</button>'
+    );
+    var t = ov.querySelector('.pmTerms'), mk = ov.querySelector('.pmMkt'), ok = ov.querySelector('#pm-terms-ok');
+    t.addEventListener('change', function () { ok.disabled = !t.checked; });
+    ok.addEventListener('click', function () {
+      ok.disabled = true;
+      var when = new Date().toISOString(), payload = { terms_accepted_at: when };
+      if (mk.checked) { payload.marketing_consent = true; payload.marketing_consent_at = when; }
+      sb.from('profiles').update(payload).eq('id', user.id).then(function () {
+        if (curProfile) { curProfile.terms_accepted_at = when; }
+        close(ov);
+        if (curProfile && curProfile.parental_consent === false) openConsentModal(user);
+      });
+    });
+    ov.querySelector('#pm-terms-out').addEventListener('click', function () { close(ov); sb.auth.signOut(); });
+    open(ov);
   }
 
   // A belépési modalban tett hozzájárulások mentése (az OAuth-visszatérés után)
@@ -218,8 +397,9 @@
     } else {
       curProfile = null;
       if (area) {
-        area.innerHTML = '<button class="pm-btn pm-login" type="button">Belépés</button>';
+        area.innerHTML = '<button class="pm-btn pm-reg" type="button">Regisztráció</button><button class="pm-btn pm-login" type="button">Belépés</button>';
         area.querySelector('.pm-login').addEventListener('click', openLoginModal);
+        area.querySelector('.pm-reg').addEventListener('click', openRegisterModal);
       }
     }
   }
@@ -229,9 +409,27 @@
       curProfile = (res && res.data) || {};
       renderAvatar(user);
       ensureEmailSaved(user);
+      var hadPending = false; try { hadPending = !!localStorage.getItem('pm_pending_consent'); } catch (x) {}
       applyPendingConsent(user);
-      if (curProfile.parental_consent === false) openConsentModal(user);
+      applyPendingName(user);
+      var metaTerms = user.user_metadata && user.user_metadata.terms_accepted_at;
+      if (!curProfile.terms_accepted_at && !hadPending && metaTerms) {
+        // e-mailes regisztráció másik eszközön megerősítve: a hozzájárulás a fiók adataiból jön
+        var p = { terms_accepted_at: metaTerms };
+        if (user.user_metadata.marketing_consent) { p.marketing_consent = true; p.marketing_consent_at = metaTerms; }
+        sb.from('profiles').update(p).eq('id', user.id).then(function () {}).catch(function () {});
+        curProfile.terms_accepted_at = metaTerms;
+      }
+      if (!curProfile.terms_accepted_at && !hadPending && !metaTerms) openTermsModal(user);
+      else if (curProfile.parental_consent === false) openConsentModal(user);
     }).catch(function () { curProfile = {}; renderAvatar(user); ensureEmailSaved(user); applyPendingConsent(user); });
+  }
+
+  function applyPendingName(user) {
+    var n = pendingName; try { n = n || localStorage.getItem('pm_pending_name'); localStorage.removeItem('pm_pending_name'); } catch (x) {}
+    pendingName = null;
+    if (!n || (curProfile && curProfile.display_name)) return;
+    sb.from('profiles').update({ display_name: n }).eq('id', user.id).then(function () { if (curProfile) { curProfile.display_name = n; renderAvatar(user); } }).catch(function () {});
   }
 
   // Az e-mail cím mentése a profiles táblába (ha még nincs ott, vagy megváltozott)
@@ -258,7 +456,7 @@
       +   '<button class="pm-avatar" id="pmAvatar" aria-haspopup="true" aria-expanded="false" title="' + esc(name) + '">' + avatarInner(user) + '</button>'
       +   '<div class="pm-menu" id="pmMenu" hidden>'
       +     '<div class="pm-menu-name">' + esc(name) + '</div>'
-      +     '<a class="pm-menu-item" href="haladas.html">Haladásom</a>'
+      +     '<a class="pm-menu-item" href="/haladas.html">Haladásom</a>'
       +     '<button class="pm-menu-item" id="pmAccount" type="button">Saját fiók</button>'
       +     '<button class="pm-menu-item pm-danger" id="pmLogout" type="button">Kijelentkezés</button>'
       +   '</div>'
@@ -416,6 +614,8 @@
         if (res && res.error) { showBanner('Munkamenet hiba: ' + res.error.message); return; }
         var u = res && res.data && res.data.user;
         render(u ? { user: u } : null);
+        if (hp.get('type') === 'recovery') openNewPasswordModal();
+        else if (hp.get('type') === 'signup') showBanner('Sikeres megerősítés – üdv a papaimatek.hu-n!', true);
         listeners.forEach(function (cb) { try { cb(u || null); } catch (e) {} });
       });
     }
@@ -445,5 +645,12 @@
   sb.auth.onAuthStateChange(function (_e, session) {
     render(session);
     listeners.forEach(function (cb) { try { cb(session && session.user || null); } catch (e) {} });
+  });
+  /* lapok közötti szinkron */
+  // Ha egy másik lapon (pl. a főoldalon) be- vagy kijelentkezel, ez a lap is frissül.
+  window.addEventListener('storage', function (e) {
+    if (!e.key || !/^sb-.*-auth-token$/.test(e.key)) return;
+    if ((!!e.oldValue) !== (!!e.newValue)) { location.reload(); return; }
+    sb.auth.getSession().then(function (r) { render(r.data.session); listeners.forEach(function (cb) { try { cb(r.data.session && r.data.session.user || null); } catch (x) {} }); });
   });
 })();
