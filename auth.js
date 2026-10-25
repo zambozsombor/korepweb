@@ -248,7 +248,7 @@
       eReg.disabled = true; msg(rf, 'Regisztráció…', true);
       sb.auth.signUp({ email: email, password: pw, options: {
         emailRedirectTo: backUrl(),
-        data: { full_name: name || undefined, name: name || undefined, terms_accepted_at: when, marketing_consent: !!mkt.checked }
+        data: { source: 'papaimatek-web', full_name: name || undefined, name: name || undefined, terms_accepted_at: when, marketing_consent: !!mkt.checked }
       } }).then(function (res) {
         eReg.disabled = false;
         if (res.error) { msg(rf, authErr(res.error)); return; }
