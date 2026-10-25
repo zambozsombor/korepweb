@@ -456,7 +456,7 @@
       +   '<button class="pm-avatar" id="pmAvatar" aria-haspopup="true" aria-expanded="false" title="' + esc(name) + '">' + avatarInner(user) + '</button>'
       +   '<div class="pm-menu" id="pmMenu" hidden>'
       +     '<div class="pm-menu-name">' + esc(name) + '</div>'
-      +     '<a class="pm-menu-item" href="/haladas.html">Haladásom</a>'
+      +     '<a class="pm-menu-item" href="' + esc(window.PM_HALADAS_URL || '/haladas.html') + '">Haladásom</a>'
       +     '<button class="pm-menu-item" id="pmAccount" type="button">Saját fiók</button>'
       +     '<button class="pm-menu-item pm-danger" id="pmLogout" type="button">Kijelentkezés</button>'
       +   '</div>'
@@ -497,9 +497,12 @@
     function opt(v, label, sel) { return '<option value="' + esc(v) + '"' + (String(sel) === String(v) && v !== '' ? ' selected' : '') + '>' + esc(label) + '</option>'; }
     var evfSel = (pr.evfolyam != null ? String(pr.evfolyam) : '');
     var evfOpts = '<option value="">Válassz…</option>';
-    [5, 6, 7, 8, 9].forEach(function (g) { evfOpts += opt(String(g), g + '. osztály', evfSel); });
+    var ER = window.PM_CONTEXT === 'erettsegi';
+    (ER ? [9, 10, 11, 12, 13] : [5, 6, 7, 8, 9]).forEach(function (g) { evfOpts += opt(String(g), g + '. osztály', evfSel); });
+    if (evfSel && (ER ? [9, 10, 11, 12, 13] : [5, 6, 7, 8, 9]).indexOf(parseInt(evfSel, 10)) < 0) evfOpts += opt(evfSel, evfSel + '. osztály', evfSel);
     var topicOpts = '<option value="">Válassz…</option>';
-    TOPICS.forEach(function (t) { topicOpts += opt(t, t, pr.kedvenc_temakor || ''); });
+    (ER ? ['Matematika', 'Magyar nyelv és irodalom', 'Történelem'] : TOPICS).forEach(function (t) { topicOpts += opt(t, t, pr.kedvenc_temakor || ''); });
+    if (pr.kedvenc_temakor && (ER ? ['Matematika', 'Magyar nyelv és irodalom', 'Történelem'] : TOPICS).indexOf(pr.kedvenc_temakor) < 0) topicOpts += opt(pr.kedvenc_temakor, pr.kedvenc_temakor, pr.kedvenc_temakor);
     var ov = makeOverlay(
       '<button class="pm-x" type="button" aria-label="Bezárás">&times;</button>'
       + '<h3>Saját fiók</h3>'
@@ -507,9 +510,9 @@
       +   '<label class="pm-acc-upload">Kép módosítása<input type="file" accept="image/*" id="accFile" hidden></label></div>'
       + '<label class="pm-acc-label">Megjelenített név<input type="text" id="accName" maxlength="40" value="' + esc(name) + '"></label>'
       + '<label class="pm-acc-label">Évfolyam<select id="accEvf">' + evfOpts + '</select></label>'
-      + '<label class="pm-acc-label">Iskola<input type="text" id="accIskola" maxlength="80" value="' + esc(pr.iskola || '') + '" placeholder="pl. Petőfi Sándor Általános Iskola"></label>'
-      + '<label class="pm-acc-label">Kedvenc témakör<select id="accTopic">' + topicOpts + '</select></label>'
-      + '<label class="pm-acc-label">Kitűzött cél<input type="text" id="accCel" maxlength="120" value="' + esc(pr.cel || '') + '" placeholder="pl. 40+ pont a felvételin, jobb matekjegy"></label>'
+      + '<label class="pm-acc-label">Iskola<input type="text" id="accIskola" maxlength="80" value="' + esc(pr.iskola || '') + '" placeholder="' + (ER ? 'pl. Petőfi Sándor Gimnázium' : 'pl. Petőfi Sándor Általános Iskola') + '"></label>'
+      + '<label class="pm-acc-label">' + (ER ? 'Kedvenc tantárgy' : 'Kedvenc témakör') + '<select id="accTopic">' + topicOpts + '</select></label>'
+      + '<label class="pm-acc-label">Kitűzött cél<input type="text" id="accCel" maxlength="120" value="' + esc(pr.cel || '') + '" placeholder="' + (ER ? 'pl. 80% feletti emelt matek érettségi' : 'pl. 40+ pont a felvételin, jobb matekjegy') + '"></label>'
       + '<label class="pm-acc-check"><input type="checkbox" id="accMkt"' + (pr.marketing_consent ? ' checked' : '') + '> Kérek marketing célú megkereséseket e-mailben (új feladatok, hírek). Bármikor kikapcsolható.</label>'
       + '<button class="pm-primary" type="button" id="accSave">Mentés</button>'
       + '<div class="pm-note" id="accNote"></div>'
