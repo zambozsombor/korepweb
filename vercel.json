@@ -35,6 +35,10 @@
   ],
   "rewrites": [
     {
+      "source": "/erettsegi/hang/:path*",
+      "destination": "https://erettsegi-hang.vercel.app/:path*"
+    },
+    {
       "source": "/erettsegi/",
       "destination": "https://torierettsegi.vercel.app/"
     },
