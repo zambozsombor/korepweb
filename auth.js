@@ -66,11 +66,11 @@
       + '.pm-consent2 label{display:flex;gap:10px;align-items:flex-start;font-size:14px;color:var(--ink);cursor:pointer;line-height:1.5;}'
       + '.pm-consent2 input[type=checkbox]{margin-top:2px;width:18px;height:18px;flex:none;accent-color:var(--patina);}'
       + '.pm-consent2 a{color:var(--patina);}'
-      + '.pm-primary{width:100%;background:var(--patina);color:#1D2733;font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:16.5px;border:none;border-radius:999px;padding:13px 18px;cursor:pointer;}'
+      + '.pm-primary{width:100%;background:var(--patina);color:#fff;font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:16.5px;border:none;border-radius:999px;padding:13px 18px;cursor:pointer;}'
       + '.pm-primary:disabled{opacity:.5;cursor:not-allowed;}'
       + '.pm-linkbtn{display:inline-block;background:none;border:none;color:var(--muted);font-size:13.5px;text-decoration:underline;cursor:pointer;margin-top:12px;padding:0;}'
       + '.pm-user{position:relative;display:flex;align-items:center;}'
-      + '.pm-avatar{width:40px;height:40px;border-radius:50%;border:2px solid #DCE0DA;background:var(--patina);color:#1D2733;font-family:"Alegreya Sans",sans-serif;font-weight:800;font-size:18.5px;cursor:pointer;overflow:hidden;padding:0;display:flex;align-items:center;justify-content:center;}'
+      + '.pm-avatar{width:40px;height:40px;border-radius:50%;border:2px solid #DCE0DA;background:var(--patina);color:#fff;font-family:"Alegreya Sans",sans-serif;font-weight:800;font-size:18.5px;cursor:pointer;overflow:hidden;padding:0;display:flex;align-items:center;justify-content:center;}'
       + '.pm-avatar img{width:100%;height:100%;object-fit:cover;display:block;}'
       + '.pm-avatar:hover{filter:brightness(1.05);}'
       + '.pm-menu{position:absolute;top:calc(100% + 10px);right:0;background:var(--paper);border:1px solid #DCE0DA;border-radius:16px;box-shadow:0 18px 40px rgba(29,39,51,0.14);padding:8px;min-width:210px;display:flex;flex-direction:column;gap:2px;z-index:300;}'
@@ -80,7 +80,7 @@
       + '.pm-menu-item:hover{background:var(--hover);}'
       + '.pm-menu-item.pm-danger{color:#b3261e;}'
       + '.pm-acc-av{display:flex;align-items:center;gap:16px;margin:6px 0 18px;}'
-      + '.pm-acc-avpic{width:72px;height:72px;border-radius:50%;overflow:hidden;background:var(--patina);color:#1D2733;display:flex;align-items:center;justify-content:center;font-family:"Alegreya Sans",sans-serif;font-weight:800;font-size:30px;flex:none;}'
+      + '.pm-acc-avpic{width:72px;height:72px;border-radius:50%;overflow:hidden;background:var(--patina);color:#fff;display:flex;align-items:center;justify-content:center;font-family:"Alegreya Sans",sans-serif;font-weight:800;font-size:30px;flex:none;}'
       + '.pm-acc-avpic img{width:100%;height:100%;object-fit:cover;}'
       + '.pm-acc-upload{background:transparent;border:1.5px solid #DCE0DA;color:var(--ink);font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:14.5px;padding:9px 14px;border-radius:999px;cursor:pointer;display:inline-block;}'
       + '.pm-acc-label{display:block;font-size:14px;color:var(--muted);margin-bottom:16px;font-weight:600;}'
@@ -94,7 +94,7 @@
       + '.pm-reg{background:transparent;border:1.5px solid #DCE0DA;color:var(--ink);padding:8.5px 16px;font-size:15px;margin-right:8px;}'
       + '.pm-tabs{display:flex;gap:4px;background:rgba(29,39,51,0.072);border-radius:999px;padding:4px;margin:0 30px 18px 0;}'
       + '.pm-tabs button{flex:1;border:none;background:transparent;color:var(--muted);font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:16px;padding:9px 12px;border-radius:999px;cursor:pointer;}'
-      + '.pm-tabs button[aria-selected="true"]{background:var(--patina);color:#1D2733;}'
+      + '.pm-tabs button[aria-selected="true"]{background:var(--patina);color:#fff;}'
       + '.pm-or{display:flex;align-items:center;gap:10px;margin:16px 0 12px;color:var(--muted);font-size:13.5px;}'
       + '.pm-or::before,.pm-or::after{content:"";flex:1;height:1px;background:rgba(29,39,51,0.08);}'
       + '.pm-form .pm-acc-label{margin-bottom:12px;}'
@@ -105,6 +105,21 @@
       + '.pm-google:disabled{opacity:.5;cursor:not-allowed;}'
       + '.pm-tabs[hidden],.pm-pane[hidden]{display:none!important;}'
       + '.pm-login{background:#1F6F64;color:#fff;border-radius:8px;}.pm-login:hover{background:#185A51;filter:none;}.pm-reg{border-radius:8px;}.pm-card{font-family:"Alegreya Sans",system-ui,sans-serif;border-radius:18px;}.pm-linkbtn,.pm-tabs button,.pm-menu-item,.pm-primary,.pm-google{font-family:inherit;}.pm-primary{border-radius:10px;}.pm-google{border:1px solid #DCE0DA;border-radius:10px;}.pm-cta-login{background:#1F6F64;color:#fff;border-radius:8px;}.pm-login-cta{background:#FFFFFD;border:1px solid #DCE0DA;}'
+      + '.pm-rate-pop{position:fixed;z-index:3000;background:#FFFFFD;border:1px solid #DCE0DA;border-radius:14px;box-shadow:0 18px 40px rgba(29,39,51,.16);padding:12px;font-family:"Alegreya Sans",system-ui,sans-serif;color:#1D2733;width:248px;}'
+      + '.pm-rate-pop .pr-t{font-weight:700;font-size:15px;margin:0 0 8px;}'
+      + '.pm-rate-row{display:flex;gap:6px;}'
+      + '.pm-rate-b{flex:1;height:38px;border-radius:9px;border:1.5px solid #DCE0DA;background:#F6F5EF;color:#1D2733;font:800 16px "Alegreya Sans",sans-serif;cursor:pointer;padding:0;transition:transform .1s;}'
+      + '.pm-rate-b:hover{transform:translateY(-1px);border-color:var(--rc);}'
+      + '.pm-rate-b.on{background:var(--rc);border-color:var(--rc);color:#fff;}'
+      + '.pm-rate-lbl{display:flex;justify-content:space-between;font-size:12.5px;color:#5B6672;margin-top:5px;}'
+      + '.pm-rate-x{margin-top:10px;background:none;border:0;color:#5B6672;text-decoration:underline;font:500 13.5px "Alegreya Sans",sans-serif;cursor:pointer;padding:0;}'
+      + '.pm-rate-chip{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 5px;border-radius:8px;border:2px solid #DCE0DA;background:#FFFFFD;color:transparent;font:800 14.5px "Alegreya Sans",sans-serif;cursor:pointer;flex:none;line-height:1;}'
+      + '.pm-rate-chip:hover{border-color:#1F6F64;}'
+      + '.pm-rate-chip.on{border-color:var(--rc,#1F6F64);background:var(--rc,#1F6F64);color:#fff;}'
+      + '.pm-rate-inline{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;}'
+      + '.pm-rate-inline .pri-t{font-weight:700;font-size:14.5px;margin-right:2px;color:#1D2733;}'
+      + '.pm-rate-inline .pm-rate-b{flex:none;width:34px;height:34px;font-size:15px;}'
+      + '.pm-rate-badge{display:inline-flex;align-items:center;gap:5px;font:700 12.5px "Alegreya Sans",sans-serif;color:#fff;background:var(--rc);border-radius:999px;padding:2px 9px;white-space:nowrap;}'
       + '@media(max-width:760px){.header-right{gap:8px;}.pm-login,.pm-reg{padding:7px 11px;font-size:13px;}.pm-reg{margin-right:4px;}.header-cta{font-size:12.5px;padding:7px 11px;}}';
     var st = document.createElement('style');
     st.id = 'pm-auth-style';
@@ -581,6 +596,68 @@
     });
   };
 
+  /* ---------- 1–5 értékelés (feladatbankok, haladás) ---------- */
+  PM.RATE = {
+    colors: { 1: '#B3261E', 2: '#C25E1F', 3: '#9A6E1C', 4: '#3E8C7D', 5: '#1F6F64' },
+    labels: { 1: 'Nagyon nehezen ment', 2: 'Nehezen ment', 3: 'Közepesen ment', 4: 'Jól ment', 5: 'Nagyon jól ment' },
+    short: { 1: 'nagyon nehéz', 2: 'nehéz', 3: 'közepes', 4: 'jól ment', 5: 'nagyon jól' }
+  };
+  /* rate: a progress sorból 1–5 vagy 0 (kész, de nincs értékelve) vagy null (nincs kész) */
+  PM.rateOf = function (row) {
+    if (!row || row.status !== 'kesz') return null;
+    var n = parseInt(row.score, 10); return n >= 1 && n <= 5 ? n : 0;
+  };
+  PM.rateChip = function (el, rate) {
+    var on = rate !== null && rate !== undefined;
+    el.classList.toggle('on', on);
+    el.style.setProperty('--rc', rate ? PM.RATE.colors[rate] : '#1F6F64');
+    el.textContent = on ? (rate ? String(rate) : '\u2713') : '';
+    el.title = on ? (rate ? PM.RATE.labels[rate] + ' (' + rate + '/5)' : 'Kész – kattints az értékeléshez') : 'Értékeld 1–5-ig, hogy ment';
+    el.setAttribute('aria-label', el.title);
+  };
+  PM.rateBadge = function (rate) {
+    if (!rate) return '';
+    return '<span class="pm-rate-badge" style="--rc:' + PM.RATE.colors[rate] + '">' + rate + '/5 · ' + PM.RATE.short[rate] + '</span>';
+  };
+  function rateButtons(cur) {
+    var h = '';
+    for (var i = 1; i <= 5; i++) h += '<button type="button" class="pm-rate-b' + (cur === i ? ' on' : '') + '" data-r="' + i + '" style="--rc:' + PM.RATE.colors[i] + '" title="' + PM.RATE.labels[i] + '">' + i + '</button>';
+    return h;
+  }
+  var ratePop = null;
+  function closeRatePop() { if (ratePop) { ratePop.remove(); ratePop = null; } }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeRatePop(); });
+  document.addEventListener('click', function (e) { if (ratePop && !ratePop.contains(e.target) && !e.target.closest('[data-rate-anchor]')) closeRatePop(); });
+  window.addEventListener('scroll', closeRatePop, true);
+  /* lebegő választó egy elem mellett; onPick(1–5) vagy onPick(0) = törlés */
+  PM.ratePicker = function (anchor, cur, onPick) {
+    closeRatePop();
+    var pop = document.createElement('div'); pop.className = 'pm-rate-pop'; pop.setAttribute('role', 'dialog');
+    pop.innerHTML = '<p class="pr-t">Hogy ment ez a feladat?</p><div class="pm-rate-row">' + rateButtons(cur) + '</div>'
+      + '<div class="pm-rate-lbl"><span>1 = nagyon nehezen</span><span>5 = nagyon jól</span></div>'
+      + (cur !== null && cur !== undefined ? '<button type="button" class="pm-rate-x">Jelölés törlése (nincs kész)</button>' : '');
+    document.body.appendChild(pop); ratePop = pop;
+    var r = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+    var left = Math.min(Math.max(8, r.left), window.innerWidth - w - 8);
+    var top = r.bottom + 8; if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
+    pop.style.left = left + 'px'; pop.style.top = top + 'px';
+    pop.addEventListener('click', function (e) {
+      var b = e.target.closest('.pm-rate-b'); if (b) { closeRatePop(); onPick(parseInt(b.dataset.r, 10)); return; }
+      if (e.target.closest('.pm-rate-x')) { closeRatePop(); onPick(0); }
+    });
+  };
+  /* beágyazott 1–5 sor (nézegető sávjába) */
+  PM.rateInline = function (cur, onPick) {
+    var box = document.createElement('div'); box.className = 'pm-rate-inline';
+    function draw(c) { box.innerHTML = '<span class="pri-t">Hogy ment?</span>' + rateButtons(c); }
+    draw(cur);
+    box.addEventListener('click', function (e) { var b = e.target.closest('.pm-rate-b'); if (!b) return; var n = parseInt(b.dataset.r, 10); onPick(b.classList.contains('on') ? 0 : n); });
+    box.set = draw; return box;
+  };
+  PM.saveRate = function (key, n) {
+    return PM.saveProgress(key, n ? { status: 'kesz', score: n } : { status: '', score: null });
+  };
+
   PM.loadProgress = function () {
     return sb.auth.getUser().then(function (r) {
       if (!r.data.user) return {};
@@ -596,7 +673,7 @@
     b.setAttribute('role', 'alert');
     b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2000;padding:12px 44px 12px 16px;'
       + 'font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:15px;text-align:center;'
-      + (ok ? 'background:#1f7a5a;color:#eafff6;' : 'background:#b3261e;color:#1D2733;');
+      + (ok ? 'background:#1f7a5a;color:#eafff6;' : 'background:#b3261e;color:#fff;');
     b.textContent = msg;
     var x = document.createElement('button');
     x.textContent = '×';

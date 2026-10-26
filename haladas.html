@@ -37,7 +37,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
 .view-switch-wrap{display:flex;justify-content:center;margin-bottom:26px;}
 .view-switch{display:inline-flex;background:var(--bg);border:1.5px solid #DCE0DA;border-radius:999px;padding:5px;gap:4px;flex-wrap:wrap;justify-content:center;}
 .vsw{font-family:'Alegreya Sans',sans-serif;font-weight:700;font-size:15px;color:var(--muted);background:transparent;border:none;padding:10px 18px;border-radius:999px;cursor:pointer;white-space:nowrap;}
-.vsw.active{background:var(--patina);color:#1D2733;}
+.vsw.active{background:var(--patina);color:#fff;}
 @media(max-width:520px){.view-switch{width:100%;}
 .vsw{flex:1;padding:10px 6px;font-size:13.5px;}}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
@@ -45,7 +45,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
 .card .ct{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:9px;}
 .card .cname{font-weight:700;font-size:15.5px;color:var(--ink);}
 .card .cnum{font-size:14px;color:var(--muted);white-space:nowrap;}
-.card .done-badge{font-size:12px;font-weight:700;color:#1D2733;background:var(--patina);padding:2px 8px;border-radius:999px;}
+.card .done-badge{font-size:12px;font-weight:700;color:#fff;background:var(--patina);padding:2px 8px;border-radius:999px;}
 .bar{height:9px;border-radius:999px;background:rgba(29,39,51,0.05);overflow:hidden;}
 .bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--patina-soft),#1F6F64);transition:width .5s ease;}
 .bar.full > i{background:linear-gradient(90deg,var(--patina),#9A6E1C);}
@@ -113,7 +113,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
     <a class="choose-card" href="/haladas-felveteli.html"><b>Felvételi</b><span>4., 6. és 8. osztályos központi felvételi – évfolyamonként, évenként, feladatlaponként és témakörönként</span></a>
     <a class="choose-card" href="/erettsegi/haladas.html"><b>Érettségi</b><span>Matematika, magyar, történelem – tantárgyanként és szintenként, témakörönként, évenként és feladatsoronként</span></a>
   </div>
-  <p class="choose-note">A haladásodat a fiókod tárolja: amit a feladatbankokban kipipálsz, itt mindig megtalálod. Belépés a jobb felső sarokban.</p>
+  <p class="choose-note">A haladásodat a fiókod tárolja: amit a feladatbankokban megoldasz és 1–5-ig értékelsz, itt mindig megtalálod, a nehezebben ment feladatokat pedig témakörönként visszanézheted. Belépés a jobb felső sarokban.</p>
 </main>
 
 <script>
@@ -122,7 +122,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
   document.addEventListener('click',function(e){if(!sm.contains(e.target)&&!tg.contains(e.target)){sm.classList.remove('open');tg.classList.remove('open');}}); })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=16"></script>
+<script src="auth.js?v=17"></script>
 <script src="/cookie-consent.js?v=2"></script>
 </body>
 </html>

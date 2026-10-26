@@ -99,13 +99,13 @@ main{padding:16px 24px 70px;}
 .mode-btn{font-family:'Alegreya Sans',sans-serif;font-weight:700;font-size:15.5px;color:var(--muted);
     background:transparent;border:none;padding:10px 22px;border-radius:999px;cursor:pointer;
     transition:background .15s ease,color .15s ease;white-space:nowrap;}
-.mode-btn.active{background:var(--patina);color:#1D2733;}
+.mode-btn.active{background:var(--patina);color:#fff;}
 .controls{background:var(--paper);border:1px solid #DCE0DA;
     border-radius:26px;padding:26px;position:relative;}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
 .browse-actions{display:flex;justify-content:flex-end;margin-top:18px;}
 .apply-btn{font-family:'Alegreya Sans',sans-serif;font-weight:700;font-size:16.5px;
-    background:var(--patina);color:#1D2733;border:none;border-radius:999px;
+    background:var(--patina);color:#fff;border:none;border-radius:999px;
     padding:13px 32px;cursor:pointer;box-shadow:0 8px 0 rgba(29,39,51,0.06);
     transition:transform .15s ease,opacity .15s ease;}
 .apply-btn:hover:not(:disabled){transform:translateY(-2px);}
@@ -114,7 +114,7 @@ main{padding:16px 24px 70px;}
 .field label{font-size:14px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
     color:var(--muted);display:flex;align-items:center;gap:8px;}
 .field label .num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
-    border-radius:8px;background:var(--patina);color:#1D2733;font-size:13.5px;font-weight:800;}
+    border-radius:8px;background:var(--patina);color:#fff;font-size:13.5px;font-weight:800;}
 select{appearance:none;-webkit-appearance:none;width:100%;
     font-family:'Alegreya Sans',sans-serif;font-size:16.5px;font-weight:600;color:var(--ink);
     background:var(--bg);border:1.5px solid #DCE0DA;border-radius:14px;
@@ -155,7 +155,7 @@ select option{background:var(--bg);color:var(--ink);}
     background:transparent;border:none;padding:9px 20px;border-radius:999px;cursor:pointer;
     transition:background .15s ease,color .15s ease;white-space:nowrap;}
 .tab:disabled{opacity:.45;cursor:not-allowed;}
-.tab.active{background:var(--patina);color:#1D2733;}
+.tab.active{background:var(--patina);color:#fff;}
 .tab.active.ut{background:var(--patina-soft);color:#164F47;}
 .viewer-meta{font-size:15px;color:var(--muted);flex:1 1 220px;min-width:0;}
 .viewer-meta b{color:var(--ink);}
@@ -190,7 +190,7 @@ select option{background:var(--bg);color:var(--ink);}
     background:var(--hover);color:var(--ink);font-size:19.5px;font-weight:700;line-height:1;
     display:flex;align-items:center;justify-content:center;font-family:'Alegreya Sans',sans-serif;
     transition:background .15s ease;}
-.pager .pg:hover{background:var(--patina);color:#1D2733;}
+.pager .pg:hover{background:var(--patina);color:#fff;}
 .pager .pg.disabled{opacity:.35;pointer-events:none;}
 .pager .pg-info{color:var(--ink);font-size:14.5px;font-weight:700;min-width:52px;text-align:center;
     font-family:'Alegreya Sans',sans-serif;}
@@ -201,7 +201,7 @@ select option{background:var(--bg);color:var(--ink);}
     background:var(--hover);color:var(--ink);font-size:20px;font-weight:700;line-height:1;
     display:flex;align-items:center;justify-content:center;font-family:'Alegreya Sans',sans-serif;
     transition:background .15s ease;}
-.zoomctrl .zb:hover{background:var(--patina);color:#1D2733;}
+.zoomctrl .zb:hover{background:var(--patina);color:#fff;}
 .zoomctrl .zb.disabled{opacity:.35;pointer-events:none;}
 .zoomctrl .zlabel{color:var(--ink);font-size:14px;font-weight:700;min-width:46px;text-align:center;
     font-family:'Alegreya Sans',sans-serif;cursor:pointer;user-select:none;}
@@ -689,6 +689,7 @@ select option{background:var(--bg);color:var(--ink);}
     els.ph.hidden=true;
     if(PDFJS){ renderPdfjs(base, tg); }
     else { renderIframe(base+hash); }
+    window.PMlast=[state.paper, state.taskVal];
     if(window.PMprog) PMprog.onView(state.paper, state.taskVal);
   }
 
@@ -929,29 +930,27 @@ select option{background:var(--bg);color:var(--ink);}
 
 <!-- Felhasználói fiók + haladás (Supabase) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=16"></script>
+<script src="auth.js?v=17"></script>
 
-<!-- Haladás: pipálható feladat / feladatsor / témakör -->
+<!-- Haladás: 1–5 értékelés feladatonként, feladatsor kész-jelölés -->
 <script>
 (function(){
   var PM = window.PM; if(!PM) return;
-  var doneMap = {}, user = null, curKey = null, curLabel = '', curPaper = null, curIsSheet = false;
+  var rateMap = {}, user = null, curKey = null, curPaper = null, curIsSheet = false;
 
   var st=document.createElement('style'); st.textContent=''
-    +'.viewer-actions .pm-done{font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;border:1.5px solid #DCE0DA;background:transparent;color:var(--ink);border-radius:999px;padding:7px 13px;display:none;align-items:center;gap:6px;}'
-    +'.viewer-actions .pm-done.on{background:var(--patina-soft);color:#164F47;border-color:transparent;}'
-    +'.pm-check{flex:none;width:26px;height:26px;border-radius:8px;border:2px solid #DCE0DA;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:transparent;cursor:pointer;transition:all .15s;}'
-    +'.pm-check:hover{border-color:var(--patina-soft);}'
-    +'.pm-check.on{background:var(--patina-soft);border-color:transparent;color:#164F47;}'
-    +'.pm-topicbar{margin-top:12px;}'
-    +'.pm-toggle{font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:14.5px;cursor:pointer;border:1.5px solid #DCE0DA;background:transparent;color:var(--ink);border-radius:999px;padding:8px 15px;display:inline-flex;align-items:center;gap:7px;}'
-    +'.pm-toggle.on{background:var(--patina);color:#1D2733;border-color:transparent;}'
+    +'.viewer-actions .pm-done{font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:15px;cursor:pointer;border:1.5px solid #DCE0DA;background:transparent;color:var(--ink);border-radius:999px;padding:7px 13px;display:none;align-items:center;gap:6px;}'
+    +'.viewer-actions .pm-done.on{background:var(--patina);color:#fff;border-color:transparent;}'
+    +'.viewer-actions .pm-rate-inline{display:none;margin-right:6px;}'
+    +'.pm-toggle{font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:15px;cursor:pointer;border:1.5px solid #DCE0DA;background:transparent;color:var(--ink);border-radius:999px;padding:8px 15px;display:inline-flex;align-items:center;gap:7px;}'
+    +'.pm-toggle.on{background:var(--patina);color:#fff;border-color:transparent;}'
     +'.sheet-checklist{margin-top:16px;border-top:1px solid #DCE0DA;padding-top:16px;}'
     +'.scl-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}'
     +'.scl-title{font-family:"Alegreya Sans",sans-serif;font-weight:700;font-size:16px;color:var(--ink);}'
+    +'.scl-title small{display:block;font-weight:400;color:var(--muted);font-size:14px;}'
     +'.scl-row{display:flex;align-items:center;gap:12px;padding:8px 6px;border-radius:12px;}'
     +'.scl-row:hover{background:var(--paper);}'
-    +'.scl-open{flex:1;text-align:left;background:transparent;border:none;color:var(--ink);font-family:"Alegreya Sans",sans-serif;font-weight:600;font-size:15.5px;cursor:pointer;padding:0;}'
+    +'.scl-open{flex:1;text-align:left;background:transparent;border:none;color:var(--ink);font-family:"Alegreya Sans",sans-serif;font-weight:600;font-size:16px;cursor:pointer;padding:0;}'
     +'.scl-open:hover{color:var(--patina);}'
     +'.scl-open .tm{color:var(--muted);font-weight:600;}';
   document.head.appendChild(st);
@@ -959,20 +958,22 @@ select option{background:var(--bg);color:var(--ink);}
   function sheetK(p){ var m=/M(\d)_(\d+)_(\d+)_fl/.exec(p&&p.fl||''); return m?(m[1]+'_'+m[2]+'_'+m[3]):((p&&p.datum||'')+'_'+(p&&p.fordulo||'')); }
   function taskKey(p,n){ return 't:'+sheetK(p)+'_'+n; }
   function sheetKey(p){ return 's:'+sheetK(p); }
-  function topicKey(t){ return 'k:'+t; }
-  function isDone(k){ return !!doneMap[k]; }
+  function rateOf(k){ return k in rateMap ? rateMap[k] : null; }
+  function isDone(k){ return rateOf(k)!==null; }
 
   var actions=document.querySelector('.viewer-actions');
   var doneBtn=document.createElement('button'); doneBtn.type='button'; doneBtn.className='pm-done';
-  if(actions) actions.insertBefore(doneBtn, actions.firstChild);
-  doneBtn.addEventListener('click', function(){ if(curIsSheet && curPaper){ toggleSheet(curPaper); } else { toggle(curKey); } });
-
-  function paintDoneBtn(){ if(!curKey){return;} var on=isDone(curKey); doneBtn.classList.toggle('on',on); doneBtn.textContent=(on?'✓ ':'')+curLabel; }
+  var rateBox=PM.rateInline(null, function(n){ if(curKey) setRate(curKey, n); });
+  if(actions){ actions.insertBefore(doneBtn, actions.firstChild); actions.insertBefore(rateBox, actions.firstChild); }
+  doneBtn.addEventListener('click', function(){ if(curIsSheet && curPaper) toggleSheet(curPaper); });
 
   function repaintAll(){
-    paintDoneBtn();
-    var checks=document.querySelectorAll('.pm-check');
-    for(var i=0;i<checks.length;i++){ var on=isDone(checks[i].dataset.key); checks[i].classList.toggle('on',on); checks[i].textContent=on?'✓':''; }
+    if(curKey){
+      if(curIsSheet){ var on=isDone(curKey); doneBtn.classList.toggle('on',on); doneBtn.textContent=(on?'✓ ':'')+'Feladatsor kész'; }
+      else { var r=rateOf(curKey); rateBox.set(r||null); }
+    }
+    var chips=document.querySelectorAll('.pm-rate-chip[data-key]');
+    for(var i=0;i<chips.length;i++){ PM.rateChip(chips[i], rateOf(chips[i].dataset.key)); }
     var tg=document.querySelectorAll('.pm-toggle');
     for(var j=0;j<tg.length;j++){ var o=isDone(tg[j].dataset.key); tg[j].classList.toggle('on',o); tg[j].textContent=(o?'✓ ':'')+(tg[j].dataset.label||''); }
   }
@@ -983,46 +984,48 @@ select option{background:var(--bg);color:var(--ink);}
     var apply=document.getElementById('applyBtn'); if(apply){ apply.disabled=false; apply.click(); }
     var vc=document.querySelector('.viewer-card'); if(vc) vc.scrollIntoView({behavior:'smooth',block:'start'});
   }
-
-  function toggle(key){
-    if(!key) return;
-    if(!user){ if(PM.openLogin) PM.openLogin(); return; }
-    var now=!isDone(key); doneMap[key]=now; repaintAll();
-    PM.saveProgress(key, { status:now?'kesz':''});
+  function needUser(){ if(!user){ if(PM.openLogin) PM.openLogin(); return true; } return false; }
+  function setRate(key, n){
+    if(!key || needUser()) return;
+    if(n) rateMap[key]=n; else delete rateMap[key];
+    repaintAll(); PM.saveRate(key, n);
   }
-  // Teljes feladatlap:a feladatlap ÖSSZES feladata is átveszi az állapotot
+  // Teljes feladatlap kész: a feladatlap feladatai is késznek számítanak (a meglévő értékelések megmaradnak)
   function toggleSheet(paper){
-    if(!user){ if(PM.openLogin) PM.openLogin(); return; }
+    if(needUser()) return;
     var sk=sheetKey(paper); var val=!isDone(sk);
-    doneMap[sk]=val;
-    var keys=[sk];
-    paper.tasks.forEach(function(t){ var tk=taskKey(paper,t.n); doneMap[tk]=val; keys.push(tk); });
+    if(val) rateMap[sk]=0; else delete rateMap[sk];
+    PM.saveProgress(sk, { status:val?'kesz':'' });
+    paper.tasks.forEach(function(t){ var tk=taskKey(paper,t.n);
+      if(val){ if(!isDone(tk)){ rateMap[tk]=0; PM.saveProgress(tk,{ status:'kesz' }); } }
+      else { if(isDone(tk)){ delete rateMap[tk]; PM.saveRate(tk,0); } }
+    });
     repaintAll();
-    keys.forEach(function(k){ PM.saveProgress(k, { status:val?'kesz':''}); });
   }
 
   window.PMprog = {
     onView: function(paper, taskVal){
-      if(!paper || taskVal===''){ doneBtn.style.display='none'; curKey=null; curPaper=null; curIsSheet=false; return; }
-      if(taskVal==='full'){ curKey=sheetKey(paper); curLabel='Feladatsor kész'; curPaper=paper; curIsSheet=true; }
-      else { curKey=taskKey(paper, parseInt(taskVal,10)); curLabel='Kész'; curPaper=paper; curIsSheet=false; }
-      doneBtn.style.display='inline-flex'; paintDoneBtn();
+      if(!paper || taskVal===''){ doneBtn.style.display='none'; rateBox.style.display='none'; curKey=null; curPaper=null; curIsSheet=false; return; }
+      curPaper=paper;
+      if(taskVal==='full'){ curKey=sheetKey(paper); curIsSheet=true; doneBtn.style.display='inline-flex'; rateBox.style.display='none'; }
+      else { curKey=taskKey(paper, parseInt(taskVal,10)); curIsSheet=false; doneBtn.style.display='none'; rateBox.style.display='inline-flex'; }
+      repaintAll();
     },
     onPaperSelected: function(year, paper){
       var box=document.getElementById('sheetChecklist'); if(!box) return;
       if(!paper){ box.hidden=true; box.innerHTML=''; return; }
       box.innerHTML='';
       var head=document.createElement('div'); head.className='scl-head';
-      var title=document.createElement('span'); title.className='scl-title'; title.textContent='Pipáld ki, amit megcsináltál:';
+      var title=document.createElement('span'); title.className='scl-title'; title.innerHTML='Értékeld, hogy ment az egyes feladat:<small>1 = nagyon nehezen, 5 = nagyon jól. A nehezebbeket a Haladásom oldalon témakörönként visszanézheted.</small>';
       var sbtn=document.createElement('button'); sbtn.type='button'; sbtn.className='pm-toggle';
       sbtn.dataset.key=sheetKey(paper); sbtn.dataset.label='Teljes feladatlap kész';
       sbtn.addEventListener('click', function(){ toggleSheet(paper); });
       head.appendChild(title); head.appendChild(sbtn); box.appendChild(head);
       paper.tasks.forEach(function(t){
         var row=document.createElement('div'); row.className='scl-row';
-        var chk=document.createElement('span'); chk.className='pm-check'; chk.setAttribute('role','checkbox'); chk.title='Kész / nincs kész';
+        var chk=document.createElement('button'); chk.type='button'; chk.className='pm-rate-chip'; chk.setAttribute('data-rate-anchor','');
         chk.dataset.key=taskKey(paper, t.n);
-        chk.addEventListener('click', function(){ toggle(this.dataset.key); });
+        chk.addEventListener('click', function(e){ e.stopPropagation(); var k=this.dataset.key; if(needUser()) return; PM.ratePicker(this, rateOf(k), function(n){ setRate(k,n); }); });
         var open=document.createElement('button'); open.type='button'; open.className='scl-open';
         open.innerHTML=t.n+'. feladat'+(t.tema?(' <span class="tm">— '+esc(t.tema)+'</span>'):'');
         open.addEventListener('click', function(){ openTask(t.n); });
@@ -1031,12 +1034,23 @@ select option{background:var(--bg);color:var(--ink);}
       box.hidden=false;
       repaintAll();
     },
-    onTopicRendered: function(){ /* A szűrésnél (témakör szerint) nincs pipázható lista — csak a feladatlapnál és az egyes feladatoknál. */ }
+    onTopicRendered: function(c, list){
+      var box=document.getElementById('results'); if(!box||!list) return;
+      Array.prototype.forEach.call(box.children,function(row,i){
+        var it=list[i]; if(!it||row.querySelector('.pm-rate-chip')) return;
+        var chk=document.createElement('span'); chk.className='pm-rate-chip'; chk.setAttribute('role','button'); chk.setAttribute('tabindex','0'); chk.setAttribute('data-rate-anchor','');
+        chk.dataset.key=taskKey(it.p, it.t.n);
+        chk.addEventListener('click', function(e){ e.stopPropagation(); var k=this.dataset.key; if(needUser()) return; PM.ratePicker(this, rateOf(k), function(n){ setRate(k,n); }); });
+        row.insertBefore(chk, row.firstChild);
+      });
+      repaintAll();
+    }
   };
+  if(window.PMlast) window.PMprog.onView(window.PMlast[0], window.PMlast[1]);
 
-  function refresh(){ PM.loadProgress().then(function(map){ doneMap={}; Object.keys(map||{}).forEach(function(k){ if(map[k].status==='kesz') doneMap[k]=true; }); repaintAll(); }); }
+  function refresh(){ PM.loadProgress().then(function(map){ rateMap={}; Object.keys(map||{}).forEach(function(k){ var r=PM.rateOf(map[k]); if(r!==null) rateMap[k]=r; }); repaintAll(); }); }
 
-  PM.onChange(function(u){ user=u; if(u){ refresh(); } else { doneMap={}; repaintAll(); } });
+  PM.onChange(function(u){ user=u; if(u){ refresh(); } else { rateMap={}; repaintAll(); } });
   PM.getUser().then(function(u){ user=u; if(u) refresh(); });
 })();
 </script>
@@ -1049,7 +1063,7 @@ select option{background:var(--bg);color:var(--ink);}
   css.textContent='.pm-nudge{max-width:1080px;margin:14px auto 0;padding:0 24px}.pm-nudge-in{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:rgba(243,222,154,0.24);border:1.5px solid rgba(31,111,100,0.45);border-radius:16px;padding:12px 16px;color:#1D2733;font-family:"Alegreya Sans",system-ui,sans-serif}.pm-nudge-in span{flex:1 1 260px;font-size:16px}.pm-nudge-in b{color:#1F6F64}.pm-nudge-in button{border:0;background:#1F6F64;color:#fff;font:800 16px"Alegreya Sans",sans-serif;border-radius:999px;padding:8px 20px;cursor:pointer}';
   document.head.appendChild(css);
   var box=document.createElement('div'); box.className='pm-nudge'; box.hidden=true;
-  box.innerHTML='<div class="pm-nudge-in"><span><b>Kövesd a haladásod!</b> Lépj be, pipáld ki a megoldott feladatokat, és a Haladásom oldalon mindig látod, hol tartasz.</span><button type="button">Belépés</button></div>';
+  box.innerHTML='<div class="pm-nudge-in"><span><b>Kövesd a haladásod!</b> Lépj be, értékeld 1–5-ig, hogy ment egy-egy feladat, és a Haladásom oldalon témakörönként visszanézheted a nehezebbeket.</span><button type="button">Belépés</button></div>';
   var head=document.querySelector('.page-head'); if(head) head.parentNode.insertBefore(box, head.nextSibling); else document.body.insertBefore(box, document.body.firstChild);
   box.querySelector('button').onclick=function(){ if(window.PM&&PM.openLogin) PM.openLogin(); };
   function boot(){ if(!window.PM){ setTimeout(boot,150); return; }

@@ -37,7 +37,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
 .view-switch-wrap{display:flex;justify-content:center;margin-bottom:26px;}
 .view-switch{display:inline-flex;background:var(--bg);border:1.5px solid #DCE0DA;border-radius:999px;padding:5px;gap:4px;flex-wrap:wrap;justify-content:center;}
 .vsw{font-family:'Alegreya Sans',sans-serif;font-weight:700;font-size:15px;color:var(--muted);background:transparent;border:none;padding:10px 18px;border-radius:999px;cursor:pointer;white-space:nowrap;}
-.vsw.active{background:var(--patina);color:#1D2733;}
+.vsw.active{background:var(--patina);color:#fff;}
 @media(max-width:520px){.view-switch{width:100%;}
 .vsw{flex:1;padding:10px 6px;font-size:13.5px;}}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
@@ -45,7 +45,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
 .card .ct{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:9px;}
 .card .cname{font-weight:700;font-size:15.5px;color:var(--ink);}
 .card .cnum{font-size:14px;color:var(--muted);white-space:nowrap;}
-.card .done-badge{font-size:12px;font-weight:700;color:#1D2733;background:var(--patina);padding:2px 8px;border-radius:999px;}
+.card .done-badge{font-size:12px;font-weight:700;color:#fff;background:var(--patina);padding:2px 8px;border-radius:999px;}
 .bar{height:9px;border-radius:999px;background:rgba(29,39,51,0.05);overflow:hidden;}
 .bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--patina-soft),#1F6F64);transition:width .5s ease;}
 .bar.full > i{background:linear-gradient(90deg,var(--patina),#9A6E1C);}
@@ -80,6 +80,21 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
 #dash.nograde .grade-pick-q{font-size:22px;margin-bottom:14px}
 #dash.nograde .grade-btn{padding:18px 26px}
 </style>
+<style id="pm-review">
+.rv-intro{grid-column:1/-1;color:var(--muted);font-size:16px;margin:0 0 4px}
+.rv-key{display:inline-flex;width:20px;height:20px;border-radius:6px;color:#fff;font-weight:800;font-size:12.5px;align-items:center;justify-content:center;margin:0 2px;vertical-align:-3px}
+.rv-dist{display:flex;height:10px;border-radius:999px;overflow:hidden;background:var(--hover,#EEF1EC)}
+.rv-dist i{display:block;height:100%}
+.rv-empty{grid-column:1/-1;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px 22px;line-height:1.6;color:var(--muted)}
+.rv-empty b{color:var(--ink)}.rv-empty a{color:var(--patina);font-weight:700}
+.rv-filter{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;font-weight:700}
+.rv-chip{border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:6px 12px;font:800 15.5px var(--sans,'Alegreya Sans');cursor:pointer}
+.rv-chip small{font-weight:500;color:var(--muted)}
+.rv-chip.on{background:var(--rc);border-color:var(--rc);color:#fff}.rv-chip.on small{color:rgba(255,255,255,.85)}
+.rv-none{grid-column:1/-1}
+.card .pm-rate-badge{font-size:12px}
+.card .done-badge{color:#fff}
+</style>
 </head>
 <body>
 
@@ -105,7 +120,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
   <div class="page-head">
     <a class="back-link" href="/haladas.html">‹ Haladásom</a>
     <span class="pill solo">Felvételi haladás</span>
-    <p>Válaszd ki az évfolyamot, aztán nézd meg évenként, feladatlaponként vagy témakörönként, mi van kész. A feladatokat a <a href="/feladatadatbazis.html">felvételi feladatbankban</a> tudod „kész"-re pipálni.</p>
+    <p>Válaszd ki az évfolyamot, aztán nézd meg évenként, feladatlaponként vagy témakörönként, mi van kész. A feladatokat a <a href="/feladatadatbazis.html">felvételi feladatbankban</a> tudod 1–5-ig értékelni (1 = nagyon nehezen, 5 = nagyon jól); a Visszanézés fülön témakörönként előveheted a nehezebben ment feladatokat.</p>
   </div>
 
   <div class="gate" id="gate" hidden>
@@ -135,6 +150,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
         <button class="vsw active" data-view="years" type="button">Évek</button>
         <button class="vsw" data-view="sheets" type="button">Feladatlapok</button>
         <button class="vsw" data-view="topics" type="button">Témakörök</button>
+        <button class="vsw" data-view="review" type="button">Visszanézés</button>
       </div>
     </div>
 
@@ -173,6 +189,8 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
   buildAggregates();
 
   var doneMap={}; // t:/s:/k: -> true
+  var rateMap={}; // t: -> 1..5
+  var reviewSel={1:true,2:true};
   function recompute(){
     buildAggregates();
     var totalDone=0, rows=CUR();
@@ -199,7 +217,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
     var done = !!doneMap['t:'+GRADE+'_'+y+'_'+f+'_'+n];
     return '<button class="card clickable task" data-kind="task" data-y="'+y+'" data-f="'+f+'" data-n="'+n+'">'
       + '<div class="ct"><span class="cname">'+esc(label)+'</span>'
-      + (done?'<span class="done-badge">kész</span>':'<span class="cnum pending">nyisd meg</span>')
+      + (done?(rateMap['t:'+GRADE+'_'+y+'_'+f+'_'+n]?PM.rateBadge(rateMap['t:'+GRADE+'_'+y+'_'+f+'_'+n]):'<span class="done-badge">kész</span>'):'<span class="cnum pending">nyisd meg</span>')
       + '</div>'+(sub?'<div class="task-tema">'+esc(sub)+'</div>':'')+'</button>';
   }
   function openSheetCard(y,f){
@@ -229,7 +247,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
   var crumbsEl=document.getElementById('crumbs');
 
   function renderCrumbs(){
-    var rootLabel = view==='years'?'Évek':(view==='sheets'?'Feladatlapok':'Témakörök');
+    var rootLabel = view==='years'?'Évek':(view==='sheets'?'Feladatlapok':(view==='review'?'Visszanézés':'Témakörök'));
     var parts=['<button class="crumb" data-depth="0">'+rootLabel+'</button>'];
     path.forEach(function(step,i){
       parts.push('<span class="crumb-sep">\u203a</span>');
@@ -261,6 +279,8 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
         var yy=path[0].y, ff=path[0].f;
         html = openSheetCard(yy,ff) + tasksOfSheet(yy,ff).map(function(r){return taskCard(r[0],r[1],r[2],r[2]+'. feladat',r[3]);}).join('');
       }
+    } else if(view==='review'){
+      html = renderReview();
     } else { // topics
       if(path.length===0){
         var tk=Object.keys(byTopic).sort();
@@ -272,6 +292,38 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
     }
     gridEl.innerHTML = html || '<div class="muted">Nincs megjeleníthető elem.</div>';
   }
+
+  // ---- Visszanézés: értékelt feladatok témakörönként, 1–5 szűrővel ----
+  function keyOf(r){ return 't:'+GRADE+'_'+r[0]+'_'+r[1]+'_'+r[2]; }
+  function distBar(cnt,total){
+    if(!total) return '<div class="rv-dist empty"></div>';
+    var h='';
+    for(var i=1;i<=5;i++){ if(cnt[i]) h+='<i style="width:'+(cnt[i]/total*100)+'%;background:'+PM.RATE.colors[i]+'" title="'+i+': '+cnt[i]+' feladat"></i>'; }
+    return '<div class="rv-dist">'+h+'</div>';
+  }
+  function renderReview(){
+    var rated=CUR().filter(function(r){ return rateMap[keyOf(r)]; });
+    if(path.length===0){
+      if(!rated.length) return '<div class="rv-empty"><b>Még nincs értékelt feladatod.</b><br>A feladatbankban minden feladatnál jelöld 1–5-ig, hogy ment (1 = nagyon nehezen, 5 = nagyon jól), és itt témakörönként visszanézheted a nehezebbeket.<br><a href="feladatadatbazis.html?osztaly='+GRADE+'">Irány a feladatbank →</a></div>';
+      var by={}; rated.forEach(function(r){ var t=r[3]; var b=by[t]=by[t]||{c:{},n:0,hard:0}; var v=rateMap[keyOf(r)]; b.c[v]=(b.c[v]||0)+1; b.n++; if(v<=2) b.hard++; });
+      var all={c:{},n:0,hard:0}; rated.forEach(function(r){ var v=rateMap[keyOf(r)]; all.c[v]=(all.c[v]||0)+1; all.n++; if(v<=2) all.hard++; });
+      function card(id,name,b){ return '<button class="card clickable rv-card" data-kind="rtopic" data-id="'+esc(id)+'"><div class="ct"><span class="cname">'+esc(name)+'</span><span class="cnum">'+b.n+' értékelt</span></div>'+distBar(b.c,b.n)+'<div class="card-hint">'+(b.hard?b.hard+' nehezen ment':'nincs nehéz')+' \u2192</div></button>'; }
+      var tk=Object.keys(by).sort(function(a,b2){ return (by[b2].hard/by[b2].n)-(by[a].hard/by[a].n) || a.localeCompare(b2,'hu'); });
+      return '<div class="rv-intro">Témakörönként látod, hogyan értékelted a megoldott feladatokat. A színek: '+[1,2,3,4,5].map(function(i){return '<span class="rv-key" style="background:'+PM.RATE.colors[i]+'">'+i+'</span>';}).join('')+' (1 = nagyon nehezen, 5 = nagyon jól). Elöl a legtöbb nehézséget okozó témakörök.</div>'
+        + card('*','Összes témakör',all) + tk.map(function(t){ return card(t,t,by[t]); }).join('');
+    }
+    var tm=path[0].val;
+    var list=rated.filter(function(r){ return (tm==='*'||r[3]===tm); });
+    var cnt={}; list.forEach(function(r){ var v=rateMap[keyOf(r)]; cnt[v]=(cnt[v]||0)+1; });
+    var chips='<div class="rv-filter"><span>Mutasd ezeket:</span>'+[1,2,3,4,5].map(function(i){ return '<button type="button" class="rv-chip'+(reviewSel[i]?' on':'')+'" data-r="'+i+'" style="--rc:'+PM.RATE.colors[i]+'" title="'+PM.RATE.labels[i]+'">'+i+' <small>('+(cnt[i]||0)+')</small></button>'; }).join('')+'</div>';
+    var sel=list.filter(function(r){ return reviewSel[rateMap[keyOf(r)]]; }).sort(function(a,b){ return (rateMap[keyOf(a)]-rateMap[keyOf(b)])||(b[0]-a[0])||(a[1]-b[1])||(a[2]-b[2]); });
+    var items=sel.map(function(r){ return taskCard(r[0],r[1],r[2], r[0]+' \u00b7 '+r[1]+'. feladatsor, '+r[2]+'. feladat', tm==='*'?r[3]:null); }).join('');
+    return chips + (items || '<div class="muted rv-none">Ebben a szűrésben nincs feladat. Válassz más értékelést fent.</div>');
+  }
+  gridEl.addEventListener('click',function(e){
+    var c=e.target.closest('.rv-chip'); if(!c) return;
+    var i=c.getAttribute('data-r'); if(reviewSel[i]) delete reviewSel[i]; else reviewSel[i]=true; renderLevel();
+  });
 
   function go(){ recompute(); renderLevel(); }
   function scrollTop(){ window.scrollTo({top:0,behavior:'smooth'}); }
@@ -287,6 +339,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
     else if(kind==='topic'){ var t=btn.getAttribute('data-id'); path=[{val:t,label:t}]; renderLevel(); scrollTop(); }
     else if(kind==='task'){ openTask(btn.getAttribute('data-y'),btn.getAttribute('data-f'),btn.getAttribute('data-n')); }
     else if(kind==='opensheet'){ openSheet(btn.getAttribute('data-y'),btn.getAttribute('data-f')); }
+    else if(kind==='rtopic'){ var rt=btn.getAttribute('data-id'); path=[{val:rt,label:rt==='*'?'Összes témakör':rt}]; renderLevel(); scrollTop(); }
   });
 
   crumbsEl.addEventListener('click',function(e){
@@ -315,7 +368,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
   function show(u){
     document.getElementById('loading').hidden=true;
     if(u){ document.getElementById('gate').hidden=true; document.getElementById('dash').hidden=false;
-      PM.loadProgress().then(function(map){ doneMap={}; Object.keys(map||{}).forEach(function(k){ if(map[k].status==='kesz') doneMap[k]=true; }); go(); });
+      PM.loadProgress().then(function(map){ doneMap={}; rateMap={}; Object.keys(map||{}).forEach(function(k){ if(map[k].status==='kesz'){ doneMap[k]=true; var rr=PM.rateOf(map[k]); if(rr) rateMap[k]=rr; } }); go(); });
     } else { document.getElementById('dash').hidden=true; document.getElementById('gate').hidden=false; }
   }
 
@@ -347,7 +400,7 @@ section.block > h2{font-size:20px;margin:0 0 14px;display:flex;align-items:cente
 })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=16"></script>
+<script src="auth.js?v=17"></script>
 <script src="/cookie-consent.js?v=2"></script>
 </body>
 </html>
