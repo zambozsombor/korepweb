@@ -772,7 +772,7 @@ select option{background:var(--bg);color:var(--ink);}
         var canvas=document.createElement('canvas');
         // Nagyításnál a magasabb render-skála adja az élességet, így az oversampling 1 lehet;
         // teljes oldalnál (zoom=1) retina-élességhez 2x-ig mintavételezünk.
-        var os=zoom>1.001?1:Math.min(window.devicePixelRatio||1,2);
+        var os=Math.min(Math.max(window.devicePixelRatio||1,2),3,Math.sqrt(16e6/(vp.width*vp.height)));
         canvas.width=Math.floor(vp.width*os); canvas.height=Math.floor(vp.height*os);
         canvas.style.width=Math.floor(vp.width)+'px'; canvas.style.height=Math.floor(vp.height)+'px';
         var ctx=canvas.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);

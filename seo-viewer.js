@@ -274,7 +274,7 @@
         var scale = Math.min(availW / vp1.width, availH / vp1.height);
         var vp = page.getViewport({ scale:scale});
         var canvas = document.createElement('canvas');
-        var os = Math.min(window.devicePixelRatio || 1, 2);
+        var os = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3, Math.sqrt(16e6 / (vp.width * vp.height)));
         canvas.width = Math.floor(vp.width * os); canvas.height = Math.floor(vp.height * os);
         canvas.style.width = Math.floor(vp.width) + 'px'; canvas.style.height = Math.floor(vp.height) + 'px';
         var ctx = canvas.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
