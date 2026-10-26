@@ -641,7 +641,8 @@
       + (cur !== null && cur !== undefined ? '<button type="button" class="pm-rate-x">Jelölés törlése (nincs kész)</button>' : '');
     document.body.appendChild(pop); ratePop = pop;
     var r = anchor.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
-    var left = Math.min(Math.max(8, r.left), window.innerWidth - w - 8);
+    var vw = document.documentElement.clientWidth || window.innerWidth;
+    var left = r.left + w > vw - 8 ? r.right - w : r.left; left = Math.min(Math.max(8, left), vw - w - 8);
     var top = r.bottom + 8; if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
     pop.style.left = left + 'px'; pop.style.top = top + 'px';
     pop.addEventListener('click', function (e) {
