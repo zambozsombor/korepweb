@@ -21,12 +21,17 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdn.jsdelivr.net https://*.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.googletagmanager.com https://*.google-analytics.com; connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com; worker-src 'self' blob:; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdn.jsdelivr.net https://*.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://www.googletagmanager.com https://*.google-analytics.com; connect-src 'self' https://*.supabase.co https://*.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com; media-src 'self' https://erettsegi-hang.vercel.app; worker-src 'self' blob:; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'"
         }
       ]
     }
   ],
   "redirects": [
+    {
+      "source": "/erettsegi/hang/:path*",
+      "destination": "https://erettsegi-hang.vercel.app/:path*",
+      "permanent": false
+    },
     {
       "source": "/erettsegi",
       "destination": "/erettsegi/",
@@ -34,10 +39,6 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/erettsegi/hang/:path*",
-      "destination": "https://erettsegi-hang.vercel.app/:path*"
-    },
     {
       "source": "/erettsegi/",
       "destination": "https://torierettsegi.vercel.app/"
