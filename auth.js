@@ -116,9 +116,12 @@
       + '.pm-rate-chip{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 5px;border-radius:8px;border:2px solid #DCE0DA;background:#FFFFFD;color:transparent;font:800 14.5px "Alegreya Sans",sans-serif;cursor:pointer;flex:none;line-height:1;}'
       + '.pm-rate-chip:hover{border-color:#1F6F64;}'
       + '.pm-rate-chip.on{border-color:var(--rc,#1F6F64);background:var(--rc,#1F6F64);color:#fff;}'
-      + '.pm-rate-inline{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;}'
-      + '.pm-rate-inline .pri-t{font-weight:700;font-size:14.5px;margin-right:2px;color:#1D2733;}'
-      + '.pm-rate-inline .pm-rate-b{flex:none;width:34px;height:34px;font-size:15px;}'
+      + '.pm-rate-inline{display:inline-flex;align-items:center;}'
+      + '.pri-tog{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 10px 0 12px;border:1.5px solid #DCE0DA;border-radius:999px;background:#FFFFFD;color:#1D2733;font:700 14.5px "Alegreya Sans",sans-serif;cursor:pointer;white-space:nowrap;}'
+      + '.pri-tog:hover{border-color:#1F6F64;}'
+      + '.pri-v{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 5px;border-radius:7px;background:var(--rc);color:#fff;font-weight:800;font-size:13.5px;}'
+      + '.pri-c{font-size:11px;color:#5B6672;transition:transform .15s;}'
+      + '.pri-tog[aria-expanded="true"] .pri-c{transform:rotate(180deg);}'
       + '.pm-rate-badge{display:inline-flex;align-items:center;gap:5px;font:700 12.5px "Alegreya Sans",sans-serif;color:#fff;background:var(--rc);border-radius:999px;padding:2px 9px;white-space:nowrap;}'
       + '@media(max-width:760px){.header-right{gap:8px;}.pm-login,.pm-reg{padding:7px 11px;font-size:13px;}.pm-reg{margin-right:4px;}.header-cta{font-size:12.5px;padding:7px 11px;}}';
     var st = document.createElement('style');
@@ -646,13 +649,28 @@
       if (e.target.closest('.pm-rate-x')) { closeRatePop(); onPick(0); }
     });
   };
-  /* beágyazott 1–5 sor (nézegető sávjába) */
+  /* becsukott „Hogy ment?” gomb a nézegető sávjában; a kis nyíllal nyílik le az 1–5 választó */
   PM.rateInline = function (cur, onPick) {
     var box = document.createElement('div'); box.className = 'pm-rate-inline';
-    function draw(c) { box.innerHTML = '<span class="pri-t">Hogy ment?</span>' + rateButtons(c); }
-    draw(cur);
-    box.addEventListener('click', function (e) { var b = e.target.closest('.pm-rate-b'); if (!b) return; var n = parseInt(b.dataset.r, 10); onPick(b.classList.contains('on') ? 0 : n); });
-    box.set = draw; return box;
+    var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'pri-tog';
+    btn.setAttribute('data-rate-anchor', ''); btn.setAttribute('aria-haspopup', 'dialog'); btn.setAttribute('aria-expanded', 'false');
+    var val = cur;
+    function draw(c) {
+      val = c; var on = c !== null && c !== undefined;
+      btn.innerHTML = '<span class="pri-t">Hogy ment?</span>'
+        + (on ? '<span class="pri-v" style="--rc:' + (c ? PM.RATE.colors[c] : '#1F6F64') + '">' + (c ? c : '\u2713') + '</span>' : '')
+        + '<span class="pri-c" aria-hidden="true">\u25BE</span>';
+      btn.title = on ? (c ? PM.RATE.labels[c] + ' (' + c + '/5) – kattints a módosításhoz' : 'Kész – kattints az értékeléshez') : 'Értékeld 1–5-ig, hogy ment';
+    }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (ratePop && btn.getAttribute('aria-expanded') === 'true') { closeRatePop(); return; }
+      PM.ratePicker(btn, val, function (n) { onPick(n); });
+      btn.setAttribute('aria-expanded', 'true');
+      var pop = ratePop, mo = new MutationObserver(function () { if (!pop.isConnected) { btn.setAttribute('aria-expanded', 'false'); mo.disconnect(); } });
+      mo.observe(document.body, { childList: true });
+    });
+    box.appendChild(btn); draw(cur); box.set = draw; return box;
   };
   PM.saveRate = function (key, n) {
     return PM.saveProgress(key, n ? { status: 'kesz', score: n } : { status: '', score: null });
