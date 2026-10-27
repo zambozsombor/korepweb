@@ -41,7 +41,7 @@
   (function injectStyles() {
     var css = ''
       + '.header-right{display:flex;align-items:center;gap:10px;}'
-      + '.auth-area{display:flex;align-items:center;}'
+      + '.auth-area{display:flex;align-items:center;}.auth-area .pm-reg{display:none}'
       + '.pm-btn{font-family:"Alegreya Sans",sans-serif;font-weight:700;border-radius:999px;cursor:pointer;border:none;line-height:1;transition:filter .15s ease,background .15s ease;}'
       + '.pm-btn:hover{filter:brightness(1.05);}'
       + '.pm-login{background:var(--patina-soft);color:#164F47;padding:10px 18px;font-size:15.5px;}'
