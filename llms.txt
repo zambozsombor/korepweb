@@ -1,0 +1,33 @@
+# papaimatek.hu – Zámbó Zsombor matematika korrepetálás és ingyenes feladatbankok
+
+> Matematika korrepetálás 5–12. osztályosoknak és felvételi felkészítés személyesen Pápán vagy online (Google Meet), valamint ingyenes, szűrhető feladatbankok: a 4., 6. és 8. osztályos központi írásbeli matematika felvételi és a matematika, magyar, történelem, angol és német érettségi összes feladatsora 2005–2026 között, a hivatalos javítási-értékelési útmutatóval.
+
+Fontos tudnivalók:
+- A feladatlapok és megoldókulcsok az Oktatási Hivatal anyagai; a feladatbankok ingyenesek, regisztráció nélkül használhatók.
+- A központi írásbeli matematika feladatlapra 45 perc jut, legfeljebb 50 pont szerezhető.
+- Árak: korrepetálás 5–7. osztály 4 000 Ft / 45 perc; egyéni felvételi felkészítő 8. osztály 5 000 Ft / 60 perc; kiscsoportos felvételi felkészítő 8. osztály 3 500 Ft / fő / 70 perc (csak Pápán); középiskolai korrepetálás 5 000 Ft / 45 perc. Az online ár azonos, online csak egyéni óra van. Az első óra ingyenes.
+- Kapcsolat: +36 30 216 5768, jelentkezés: https://forms.gle/BPX5QuBQwEtLPZpPA
+
+## Szolgáltatás
+- [Főoldal – korrepetálás és felvételi felkészítés](https://www.papaimatek.hu/): szolgáltatások, árak, jelentkezés, GYIK
+
+## Felvételi feladatbank (matematika, központi írásbeli)
+- [Szűrhető felvételi feladatbank](https://www.papaimatek.hu/feladatadatbazis.html): 4., 6. és 8. osztály, év, témakör és feladat szerint, nézegetővel
+- [8. osztályos feladatsorok évek szerint](https://www.papaimatek.hu/felveteli/): 47 feladatsor, 2005–2026
+- [6. osztályos feladatsorok évek szerint](https://www.papaimatek.hu/6-osztaly/felveteli/): 46 feladatsor (6 évfolyamos gimnázium)
+- [4. osztályos feladatsorok évek szerint](https://www.papaimatek.hu/4-osztaly/felveteli/): 46 feladatsor (8 évfolyamos gimnázium)
+- [8. osztályos feladatok témakör szerint](https://www.papaimatek.hu/temakor/)
+- [6. osztályos feladatok témakör szerint](https://www.papaimatek.hu/6-osztaly/temakor/)
+- [4. osztályos feladatok témakör szerint](https://www.papaimatek.hu/4-osztaly/temakor/)
+
+## Érettségi feladatbank (2005–2026, közép- és emelt szint)
+- [Érettségi feladatbank – tantárgyválasztó](https://www.papaimatek.hu/erettsegi/)
+- [Matematika érettségi](https://www.papaimatek.hu/erettsegi/matek.html): témakör, rész és feladattípus szerint
+- [Magyar nyelv és irodalom érettségi](https://www.papaimatek.hu/erettsegi/magyar.html): szövegértés és szövegalkotás, szerző szerint
+- [Történelem érettségi](https://www.papaimatek.hu/erettsegi/tori.html): korszak, témakör, rövid feladat és esszé szerint
+- [Angol érettségi](https://www.papaimatek.hu/erettsegi/angol.html): vizsgarészenként, a hallásértés feladatonkénti hanganyagával
+- [Német érettségi](https://www.papaimatek.hu/erettsegi/nemet.html): vizsgarészenként, a hallásértés feladatonkénti hanganyagával
+
+## Optional
+- [Adatkezelési tájékoztató](https://www.papaimatek.hu/adatkezeles.html)
+- [Sitemap](https://www.papaimatek.hu/sitemap.xml)

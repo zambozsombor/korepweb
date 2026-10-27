@@ -140,3 +140,22 @@ ul.tasks .t a{font-weight:600;font-size:14.5px;color:var(--patina)}
 }
 .page-head .pill.solo{font-family:var(--serif)!important;font-size:clamp(32px,5vw,50px);font-weight:800;color:var(--ink);letter-spacing:0;display:inline;background:linear-gradient(transparent 70%,var(--marker) 70%)}
 .page-head .pill.solo::before,.page-head .pill.solo::after{content:none}
+/* seo-tx: évoldalak bővítése */
+.tasks .tx{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+.tasks .tx summary{cursor:pointer;color:var(--muted);font-size:14px;font-weight:600;list-style:none}
+.tasks .tx summary::-webkit-details-marker{display:none}
+.tasks .tx summary::before{content:"▸ ";color:var(--patina)}
+.tasks .tx[open] summary::before{content:"▾ "}
+.tasks .tx p{margin:8px 0 0;font-size:14.5px;line-height:1.55;color:var(--ink)}
+body.pm-static .sum{color:var(--ink);font-size:16.5px;margin:-10px 0 24px;max-width:780px}
+.yrnav{display:flex;flex-wrap:wrap;gap:8px}
+.yrnav a,.hubnav a{display:inline-flex;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:8px 14px;color:var(--ink);text-decoration:none;font-weight:600;font-size:15px}
+.yrnav a:hover,.hubnav a:hover{border-color:var(--patina);color:var(--patina)}
+.yrmore{margin:12px 0 0;color:var(--muted);font-size:15px}
+.yrmore a{color:var(--patina);font-weight:600}
+.hubnav{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+body.pm-static .faq details{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:0 0 10px;max-width:820px}
+body.pm-static .faq summary{cursor:pointer;font-weight:700}
+body.pm-static .faq p{margin:8px 0 0;color:var(--ink)}
+
+.tasks{align-items:start}
