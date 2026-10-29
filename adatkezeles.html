@@ -47,6 +47,7 @@ tr:last-child td{border-bottom:none;}
 @media(max-width:600px){main{padding:28px 16px 70px;}
 .doc{padding:24px 18px;}}
 </style>
+<!--va--><script>window.va=window.va||function(){(window.vaq=window.vaq||[]).push(arguments)};window.va("beforeSend",function(e){try{var u=new URL(e.url);u.search="";u.hash="";if(window.__vaLast===u.pathname)return null;window.__vaLast=u.pathname;e.url=u.toString();}catch(x){}return e;});</script><script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
 
@@ -120,13 +121,20 @@ tr:last-child td{border-bottom:none;}
             <td>GDPR 6. cikk (1) a) — hozzájárulás / 6. cikk (1) f) — jogos érdek</td>
             <td>A Google Analytics beállítása szerint (jellemzően legfeljebb 14 hónap)</td>
           </tr>
+          <tr>
+            <td>Összesített, név nélküli látogatottsági adatok (megtekintett oldal, hivatkozó oldal, ország, eszköz- és böngészőtípus) — süti és tartós azonosító nélkül (Vercel Web Analytics)</td>
+            <td>A weboldal forgalmának mérése, a tartalom fejlesztése</td>
+            <td>GDPR 6. cikk (1) f) — jogos érdek (a weboldal működtetése és fejlesztése)</td>
+            <td>Csak összesített statisztika formájában, a Vercel beállítása szerint</td>
+          </tr>
         </tbody>
       </table>
     </div>
     <p class="meta">A fiókhoz szükséges adatok megadása a szolgáltatás használatának feltétele; ezek nélkül a fiók és a haladáskövetés nem működik. A <strong>marketing</strong> hozzájárulás és az <strong>analitika</strong> megadása teljesen önkéntes, és a többi funkció ettől függetlenül is elérhető.</p>
 
     <h3>Sütik (cookie-k)</h3>
-    <p>A weboldal az oldal betöltésekor egy süti-sávot jelenít meg. A látogatottságmérő (Google Analytics) sütijei <strong>csak akkor</strong> töltődnek be és tárolódnak, ha az „Elfogadom" gombra kattintasz; elutasítás esetén analitikai sütit nem helyezünk el (Google Consent Mode v2). A választásodat a böngésződ helyi tárolójában (localStorage) jegyezzük meg, és bármikor módosíthatod a böngésződ süti-adatainak törlésével. A bejelentkezéshez kapcsolódó, működéshez feltétlenül szükséges tárolás (pl. a munkamenet fenntartása) nem igényel külön hozzájárulást.</p>
+    <p>A weboldal az oldal betöltésekor egy süti-sávot jelenít meg, két választással. <strong>„Csak a kötelezőket fogadom el”</strong>: csak a működéshez feltétlenül szükséges tárolást használjuk (pl. a bejelentkezés fenntartása, a süti-választásod megjegyzése), analitikai sütit nem helyezünk el. <strong>„Mindent elfogadok”</strong>: ezen felül a Google Analytics sütijei is betöltődnek (Google Consent Mode v2). A választásodat a böngésződ helyi tárolójában (localStorage) jegyezzük meg, és bármikor módosíthatod a böngésződ süti-adatainak törlésével.</p>
+    <p>A látogatottságot ettől függetlenül a Vercel Web Analytics szolgáltatásával is mérjük. Ez nem használ sütit és nem tárol tartós azonosítót a böngésződben; csak összesített, személyhez nem köthető statisztikát készít (pl. hányan nézték meg az egyes oldalakat). A látogatók megkülönböztetéséhez a Vercel a beérkező kérésből képzett lenyomatot használ, a látogatói munkamenetet pedig 24 óra után automatikusan törli. Az oldalcímekből a lekérdezési paramétereket nem továbbítjuk.</p>
 
     <h3>A Matekozz Miloval! alkalmazás</h3>
     <div class="tbl-wrap">
@@ -196,7 +204,7 @@ tr:last-child td{border-bottom:none;}
     <ul>
       <li><strong>Google Ireland Ltd. / Google LLC</strong> — Google-fiókos bejelentkezés (OAuth) és Google Analytics.</li>
       <li><strong>Supabase</strong> — a fiók- és haladási adatok tárolása (adatbázis és hitelesítés). Tárolási régió: <strong>Európai Unió (EU)</strong>.</li>
-      <li><strong>Vercel Inc.</strong> — a weboldal kiszolgálása (hosting).</li>
+      <li><strong>Vercel Inc.</strong> — a weboldal kiszolgálása (hosting) és a süti nélküli látogatottságmérés (Vercel Web Analytics).</li>
       <li><strong>Resend, Inc.</strong> — rendszer-e-mailek küldése (regisztráció megerősítése, szülői hozzájárulás kérése). A levelek az EU-ban működő küldőinfrastruktúrán mennek ki.</li>
     </ul>
 
@@ -259,6 +267,6 @@ tr:last-child td{border-bottom:none;}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js?v=20"></script>
-<script src="/cookie-consent.js?v=2"></script>
+<script src="/cookie-consent.js?v=3"></script>
 </body>
 </html>
