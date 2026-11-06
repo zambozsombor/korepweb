@@ -27,6 +27,10 @@ Fontos tudnivalók:
 - [Történelem érettségi](https://www.papaimatek.hu/erettsegi/tori.html): korszak, témakör, rövid feladat és esszé szerint
 - [Angol érettségi](https://www.papaimatek.hu/erettsegi/angol.html): vizsgarészenként, a hallásértés feladatonkénti hanganyagával
 - [Német érettségi](https://www.papaimatek.hu/erettsegi/nemet.html): vizsgarészenként, a hallásértés feladatonkénti hanganyagával
+- [Biológia érettségi](https://www.papaimatek.hu/erettsegi/biologia.html): témakör és altémakör szerint
+- [Kémia érettségi](https://www.papaimatek.hu/erettsegi/kemia.html): témakör, altémakör és feladattípus szerint
+- [Fizika érettségi](https://www.papaimatek.hu/erettsegi/fizika.html): témakör és vizsgarész szerint
+- [Földrajz érettségi](https://www.papaimatek.hu/erettsegi/foldrajz.html): témakör, altémakör és összetevő szerint
 
 ## Optional
 - [Adatkezelési tájékoztató](https://www.papaimatek.hu/adatkezeles.html)
