@@ -179,7 +179,8 @@
     $('#tabSzures').onclick = () => setMod('szures');
     $('#tabVizsga').onclick = () => setMod('vizsga');
     $('#vEv').onchange = (ev) => { st.vEv = +ev.target.value; syncVizsgaSelects(); render(); };
-    $('#vFord').onchange = (ev) => { st.vFord = +ev.target.value; render(); };
+    $('#vFord').onchange = (ev) => { st.vFord = +ev.target.value; syncFel(); render(); };
+    $('#vFel').onchange = (ev) => { const v = aktualisVizsga(); if (!v) return; const n = ev.target.value; if (!n) open(teljes(v)); else { const f = D().feladatok.find((x) => x.v === v && String(x.n) === n); if (f) open(f); } };
   }
   function setGrade(g) {
     if (!DB[g] || g === st.g) return;
@@ -196,6 +197,14 @@
     const fordok = vk.filter((v) => v.ev === st.vEv).sort((a, b) => a.ford - b.ford);
     if (!fordok.some((v) => v.ford === st.vFord)) st.vFord = fordok[0] && fordok[0].ford;
     fillSelect($('#vFord'), fordok.map((v) => [v.ford, fordNev(v)]), st.vFord);
+    syncFel();
+  }
+  // Feladat-választó: teljes feladatsor vagy egy konkrét feladat a kiválasztott feladatlapról
+  function syncFel() {
+    const v = aktualisVizsga(); const sel = $('#vFel'); if (!sel) return;
+    const fs = v ? D().feladatok.filter((f) => f.v === v).sort((a, b) => a.n - b.n) : [];
+    const cur = st.aktiv && st.aktiv.v === v ? (st.aktiv._full ? '' : String(st.aktiv.n)) : '';
+    fillSelect(sel, [['', 'Teljes feladatsor'], ...fs.map((f) => [String(f.n), `${f.n}. feladat${f.tema ? ` – ${temaRovid(f.tema)}` : ''}`])], cur);
   }
   function setMod(m) {
     st.mod = m;
@@ -269,7 +278,8 @@
   }
   let shown = { url: null, width: 0, holders: [], scale: 1, token: 0, obs: null };
   const pagesEl = $('#pages');
-  const lapSzel = () => Math.min(pagesEl.clientWidth - 24, document.body.classList.contains('panel-closed') ? 1400 : 980);
+  let zoom = 1; const ZMIN = 1, ZMAX = 2.5, ZSTEP = 1.25;
+  const lapSzel = () => Math.round(Math.min(pagesEl.clientWidth - 24, document.body.classList.contains('panel-closed') ? 1400 : 980) * zoom);
   async function buildDoc(url) {
     const token = ++shown.token;
     pagesEl.innerHTML = '<div class="loading">Feladat betöltése…</div>';
@@ -321,6 +331,13 @@
     await renderPage(shown.pdf, h, shown.scale, shown.token);
     if (shown.holders[pos[0]]) renderPage(shown.pdf, shown.holders[pos[0]], shown.scale, shown.token);
     pagesEl.scrollTop = keep != null ? keep * shown.scale : h.offsetTop + (pos[1] || 0) * shown.scale - 10;
+    // nagyításnál a lap bal margója után kezdődjön a nézet (a feladat sorszáma és szövege látsszon)
+    if (zoom > 1 && (keep == null || pagesEl.scrollLeft === 0)) pagesEl.scrollLeft = Math.min(pagesEl.scrollWidth - pagesEl.clientWidth, Math.round(shown.width * 0.07));
+    if (zoom === 1) pagesEl.scrollLeft = 0;
+    // a feladat elejét jelölő zöld csík (mint a korábbi nézegetőben)
+    pagesEl.querySelectorAll('.tmark').forEach((x) => x.remove());
+    if (!f._full) { const mk = document.createElement('div'); mk.className = 'tmark'; mk.style.top = `${Math.max(0, (pos[1] || 0) * shown.scale - 4)}px`; h.appendChild(mk); }
+    $('#vDl').href = url; $('#vDl').setAttribute('download', (url.split('/').pop() || 'feladat.pdf'));
     if (!shown.observing) { shown.observing = true; requestAnimationFrame(() => shown.holders.forEach((x) => shown.obs.observe(x))); }
     $('#vOpen').href = `${url}#page=${pos[0] || 1}`;
     const pre = [st.doc === 'fl' ? v.ut : v.fl];
@@ -338,6 +355,7 @@
     $('#vMeta').innerHTML = `<b>${esc(parts[0])}</b>${parts.slice(1).map((p) => ` <i>·</i> ${esc(p)}`).join('')}`;
     document.querySelectorAll('.results button').forEach((b) => b.toggleAttribute('aria-current', b.dataset.id === f.id));
     document.body.classList.add('viewing');
+    if (st.mod === 'vizsga' && aktualisVizsga() === f.v) syncFel();
     pg.paint(); writeUrl(); show();
   }
   document.querySelectorAll('.doc button').forEach((b) => {
@@ -348,6 +366,17 @@
     const i = L.findIndex((f) => f.id === st.aktiv.id);
     const n = L[i + d]; if (n) open(n, true);
   }
+  function setZoom(z) {
+    z = Math.max(ZMIN, Math.min(ZMAX, z)); if (Math.abs(z - zoom) < 0.001) return;
+    const keep = st.aktiv && shown.scale ? pagesEl.scrollTop / shown.scale : null;
+    zoom = z; $('#zLab').textContent = `${Math.round(zoom * 100)}%`;
+    $('#zOut').disabled = zoom <= ZMIN + 0.001; $('#zIn').disabled = zoom >= ZMAX - 0.001;
+    if (st.aktiv) show(keep);
+  }
+  $('#zIn').onclick = () => setZoom(zoom * ZSTEP);
+  $('#zOut').onclick = () => setZoom(zoom / ZSTEP);
+  $('#zLab').onclick = () => setZoom(1);
+  $('#zOut').disabled = true;
   $('#vPrev').onclick = () => step(-1);
   $('#vNext').onclick = () => step(1);
   $('#vBack').onclick = () => document.body.classList.remove('viewing');

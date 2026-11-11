@@ -98,6 +98,26 @@
 .seo-about .seo-tags{display:flex;flex-wrap:wrap;gap:6px 8px;margin:6px 0 12px}
 .seo-about .seo-tags a,.seo-about .seo-tags span{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.88rem;color:var(--ink);text-decoration:none;background:var(--paper)}
 .seo-about .seo-tags a:hover{border-color:var(--patina);color:var(--patina)}
+.nav .zoom{display:inline-flex;gap:2px}
+.nav .zoom button{min-width:30px}
+.nav .zoom button:disabled{opacity:.4;cursor:default}
+.pages{overflow:auto}
+.tmark{position:absolute;left:6px;width:4px;height:42px;border-radius:999px;background:var(--patina);box-shadow:0 0 10px rgba(31,111,100,.6);pointer-events:none;animation:tmIn .35s cubic-bezier(.16,.84,.44,1)}
+@keyframes tmIn{0%{opacity:0;transform:translateX(-7px) scaleY(.55)}100%{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.tmark{animation:none}}
+/* közösségi blokk (a korábbi oldalról) */
+.pm-social{max-width:1100px;margin:32px auto 0;padding:0 24px}
+.pm-social-in{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap}
+.pm-social-head{flex:1 1 280px;min-width:0}
+.pm-social-head .ps-k{display:inline-block;color:var(--ochre);background:var(--ochre-soft);font-weight:700;font-size:12px;letter-spacing:.1em;padding:4px 11px;border-radius:999px;margin-bottom:10px}
+.pm-social-head .ps-title{font:800 clamp(21px,2.6vw,26px)/1.15 var(--head);color:var(--ink)}
+.pm-social-head p{margin:6px 0 0;color:var(--muted);font-size:16px}
+.pm-social-btns{display:flex;gap:10px;flex-wrap:wrap}
+.ps-btn{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;font-size:15.5px;padding:11px 18px;border-radius:10px;color:var(--ink);background:var(--bg);border:1px solid var(--line)}
+.ps-btn:hover{border-color:var(--patina);background:var(--paper)}
+.ps-btn svg{flex:none;width:20px;height:20px}
+.ps-btn.fb svg{fill:#1877F2}.ps-btn.tt svg{fill:var(--ink)}
+@media (max-width:980px){.pm-social{padding:0 16px}.ps-btn{flex:1 1 auto;justify-content:center}}
 </style>
 </head>
 
@@ -162,6 +182,7 @@
       <div class="filters">
         <label>Év <select id="vEv"></select></label>
         <label>Feladatlap <select id="vFord"></select></label>
+        <label class="wide">Feladat <select id="vFel"></select></label>
       </div>
     </div>
 
@@ -183,7 +204,9 @@
       <div class="nav">
         <button id="vPrev" type="button" aria-label="Előző feladat">‹</button>
         <button id="vNext" type="button" aria-label="Következő feladat">›</button>
-        <a id="vOpen" target="_blank" rel="noopener" title="PDF megnyitása új lapon">PDF</a>
+        <span class="zoom" role="group" aria-label="Nagyítás"><button id="zOut" type="button" aria-label="Kicsinyítés">−</button><button id="zLab" type="button" title="Vissza az alapméretre">100%</button><button id="zIn" type="button" aria-label="Nagyítás">+</button></span>
+        <a id="vOpen" target="_blank" rel="noopener" title="PDF megnyitása új lapon">Új lapon</a>
+        <a id="vDl" download title="A PDF letöltése">Letöltés</a>
       </div>
     </div>
     <div class="pages" id="pages">
@@ -214,6 +237,7 @@
       </div>
       <p style="margin-top:16px;" id="si-related">Kapcsolódó keresések: matek felvételi feladatok megoldással, központi felvételi matematika 8. osztály, felvételi feladatsorok PDF, matematika felvételi megoldókulcs, felvételi gyakorló feladatok témakör szerint. Vissza a <a href="index.html">főoldalra</a>.</p>
     </section>
+<section class="pm-social"><div class="pm-social-in"><div class="pm-social-head"><span class="ps-k">KÖZÖSSÉGI MÉDIA</span><div class="ps-title">Kövess minket, hogy ne maradj le!</div><p>Friss felvételi tippek, feladatok és hírek a Facebookon és a TikTokon.</p></div><div class="pm-social-btns"><a class="ps-btn fb" href="https://www.facebook.com/profile.php?id=61594216435905" target="_blank" rel="noopener" aria-label="Facebook-oldal"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M15.12 5.32H17V2.14A26.1 26.1 0 0 0 14.26 2c-2.72 0-4.58 1.66-4.58 4.7v2.6H6.6v3.56h3.08V22h3.68v-9.14h3.06l.46-3.56h-3.52V7.05c0-1.03.28-1.73 1.76-1.73z"/></svg><span>Facebook</span></a><a class="ps-btn tt" href="https://www.tiktok.com/@papaimatek.hu" target="_blank" rel="noopener" aria-label="TikTok-oldal"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 1 1-2.59-2.59c.27 0 .53.04.78.12v-3.2a5.8 5.8 0 0 0-.78-.05 5.79 5.79 0 1 0 5.79 5.79V9.01a7.35 7.35 0 0 0 4.28 1.37V7.3a4.28 4.28 0 0 1-3.11-1.48z"/></svg><span>TikTok</span></a></div></div></section>
 <footer class="foot">
   A feladatlapok és javítási-értékelési útmutatók az Oktatási Hivatal központi írásbeli felvételi feladatsorai. A témakör-besorolás saját besorolás.<br><a href="https://www.papaimatek.hu/">Matek korrepetálás – Zámbó Zsombor</a> · <a href="/haladas.html">Haladásom</a> · <a href="/adatkezeles.html">Adatkezelési tájékoztató</a>
 </footer>
@@ -222,7 +246,7 @@
 <script src="/feladatadatbazis/pdfjs/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/auth.js?v=20"></script>
-<script src="/feladatadatbazis/fv-app.js?v=20261111"></script>
+<script src="/feladatadatbazis/fv-app.js?v=20261111b"></script>
 <script src="/cookie-consent.js?v=3"></script>
 <script>
   (function(){ var t=document.getElementById('menuToggle'), m=document.getElementById('submenu'); if(!t||!m) return;
