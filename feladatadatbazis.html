@@ -98,6 +98,16 @@
 .seo-about .seo-tags{display:flex;flex-wrap:wrap;gap:6px 8px;margin:6px 0 12px}
 .seo-about .seo-tags a,.seo-about .seo-tags span{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.88rem;color:var(--ink);text-decoration:none;background:var(--paper)}
 .seo-about .seo-tags a:hover{border-color:var(--patina);color:var(--patina)}
+/* lista ki-/becsukása – az oldalon is megadva, hogy az érettségi CSS frissülésétől függetlenül működjön */
+.ptoggle{flex:none;align-self:center;display:inline-flex;align-items:center;gap:7px;font:700 .9rem/1 var(--body);color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:999px;padding:8px 14px;margin-bottom:6px;cursor:pointer;white-space:nowrap}
+.ptoggle:hover{border-color:var(--patina);color:var(--patina)}
+body.panel-closed .work{grid-template-columns:1fr}
+body.panel-closed .work>.panel{display:none}
+body.panel-closed .ptoggle{background:var(--patina);border-color:var(--patina);color:#fff}
+@media (max-width:980px){.ptoggle{display:none}body.panel-closed .work>.panel{display:flex}}
+.vtitle span#vMeta{font-size:.98rem;line-height:1.4;color:#2C3742;font-weight:500;margin-top:2px}
+.vtitle span#vMeta i{font-style:normal;color:#6B7580;padding:0 2px}
+.work{border-top:1.5px solid var(--ink);margin-top:4px}
 .nav .zoom{display:inline-flex;gap:2px}
 .nav .zoom button{min-width:30px}
 .nav .zoom button:disabled{opacity:.4;cursor:default}
@@ -154,8 +164,6 @@
   </div>
 </header>
 
-<section class="band band-fv" id="band" aria-label="Szűrés témakör szerint"></section>
-
 <main class="work">
   <aside class="panel">
     <div class="modes" role="tablist">
@@ -165,6 +173,9 @@
 
     <div id="paneSzures">
       <div class="filters">
+        <label class="wide">Témakör
+          <select id="fTema"></select>
+        </label>
         <label class="wide">Feladatlap
           <select id="fLap"></select>
         </label>
@@ -175,7 +186,6 @@
           <select id="fIg"></select>
         </label>
       </div>
-      <div class="active" id="activeTema"></div>
     </div>
 
     <div id="paneVizsga" hidden>
@@ -246,7 +256,7 @@
 <script src="/feladatadatbazis/pdfjs/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/auth.js?v=20"></script>
-<script src="/feladatadatbazis/fv-app.js?v=20261111b"></script>
+<script src="/feladatadatbazis/fv-app.js?v=20261111c"></script>
 <script src="/cookie-consent.js?v=3"></script>
 <script>
   (function(){ var t=document.getElementById('menuToggle'), m=document.getElementById('submenu'); if(!t||!m) return;

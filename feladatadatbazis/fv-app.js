@@ -135,25 +135,15 @@
     return szurt().sort((a, b) => b.v.ev - a.v.ev || a.v.ford - b.v.ford || a.n - b.n);
   }
 
-  /* ---------- témasáv ---------- */
+  /* ---------- témakör-szűrő (a szűrőpanelen) ---------- */
   function buildBand() {
-    const band = $('#band'); band.innerHTML = '';
-    GR[st.g].temak.forEach(([nev, rovid]) => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'seg'; b.dataset.kod = nev; b.title = nev;
-      b.innerHTML = `<span>${esc(rovid)}</span><span class="n"></span>`;
-      b.addEventListener('click', () => { st.temak.has(nev) ? st.temak.delete(nev) : st.temak.add(nev); if (st.mod !== 'szures') setMod('szures'); else render(); });
-      band.appendChild(b);
-    });
+    const sel = $('#fTema'); if (!sel) return;
+    sel.onchange = (ev) => { st.temak.clear(); if (ev.target.value) st.temak.add(ev.target.value); render(); };
   }
   function updateSegs() {
     const cnt = {}; szurt({ temaNelkul: true }).forEach((f) => { cnt[f.tema] = (cnt[f.tema] || 0) + 1; });
-    document.querySelectorAll('#band .seg').forEach((b) => {
-      const n = cnt[b.dataset.kod] || 0;
-      b.querySelector('.n').textContent = `${n} feladat`;
-      b.classList.toggle('off', n === 0);
-      b.setAttribute('aria-pressed', st.temak.has(b.dataset.kod));
-    });
+    const cur = [...st.temak][0] || '';
+    fillSelect($('#fTema'), [['', 'Minden témakör'], ...GR[st.g].temak.map(([nev, rovid]) => [nev, `${rovid} (${cnt[nev] || 0})`])], cur);
   }
 
   /* ---------- vezérlők ---------- */
@@ -220,13 +210,6 @@
   function render() {
     updateSegs(); updateLapSelect();
     const L = lista(); st.lista = L;
-    const act = $('#activeTema'); act.innerHTML = '';
-    [...st.temak].forEach((k) => {
-      const b = document.createElement('button');
-      b.className = 'chip'; b.type = 'button'; b.textContent = temaRovid(k); b.title = 'Szűrő eltávolítása';
-      b.onclick = () => { st.temak.delete(k); render(); };
-      act.appendChild(b);
-    });
     $('#count').textContent = `${L.length} feladat`;
     const ol = $('#results'); ol.innerHTML = '';
     if (!L.length) ol.innerHTML = '<li class="none">Nincs a szűrésnek megfelelő feladat. Bővítsd az évek körét, vagy vegyél ki egy szűrőt.</li>';
@@ -235,13 +218,15 @@
     if (tv) frag.appendChild(fullCard(tv, L.length));
     let last = null;
     L.forEach((f) => {
-      const grp = st.mod === 'vizsga' ? '' : `${vizsgaNev(f.v)} · ${f.v.datum}`;
+      const grp = st.mod === 'vizsga' ? '' : `${f.v.ev}`;
       if (grp && grp !== last) { const g = document.createElement('li'); g.className = 'groupname'; g.textContent = grp; frag.appendChild(g); last = grp; }
       const li = document.createElement('li');
       const b = document.createElement('button');
       b.type = 'button'; b.dataset.id = f.id;
       if (st.aktiv && st.aktiv.id === f.id) b.setAttribute('aria-current', 'true');
-      b.innerHTML = `<span class="r-no">${f.n}.</span><span class="r-cim">${esc(f.tema || `${f.n}. feladat`)}</span>`;
+      // szűrésnél a feladatlap adatai (dátum, sorszám) látszanak, a teljes feladatsornál a témakör
+      const cim = st.mod === 'vizsga' ? (temaRovid(f.tema) || `${f.n}. feladat`) : `${f.v.datum} · ${fordNev(f.v)}`;
+      b.innerHTML = `<span class="r-no">${f.n}.</span><span class="r-cim">${esc(cim)}</span>`;
       b.onclick = () => open(f);
       li.appendChild(pg.check(f)); li.appendChild(b); frag.appendChild(li);
     });
@@ -349,10 +334,10 @@
     st.aktiv = f;
     if (!keepDoc) st.doc = 'fl';
     document.querySelectorAll('.doc button').forEach((b) => b.setAttribute('aria-selected', b.dataset.doc === st.doc));
-    $('#vCim').textContent = f._full ? `${vizsgaNev(f.v)} – teljes feladatsor` : `${f.n}. feladat${f.tema ? ` – ${f.tema}` : ''}`;
-    const parts = [f.v.datum, fordNev(f.v), GR[st.g].nev];
-    if (f._full) parts.push(`${f.v.n} feladat`);
-    $('#vMeta').innerHTML = `<b>${esc(parts[0])}</b>${parts.slice(1).map((p) => ` <i>·</i> ${esc(p)}`).join('')}`;
+    // cím: a feladatlap dátuma, sorszáma és a feladat száma; alatta a témakör és az osztály
+    $('#vCim').textContent = `${f.v.datum} – ${fordNev(f.v)}, ${f._full ? 'teljes feladatsor' : `${f.n}. feladat`}`;
+    const parts = f._full ? [GR[st.g].nev, `${f.v.n} feladat`] : [f.tema, GR[st.g].nev];
+    $('#vMeta').innerHTML = parts.filter(Boolean).map(esc).join(' <i>·</i> ');
     document.querySelectorAll('.results button').forEach((b) => b.toggleAttribute('aria-current', b.dataset.id === f.id));
     document.body.classList.add('viewing');
     if (st.mod === 'vizsga' && aktualisVizsga() === f.v) syncFel();
