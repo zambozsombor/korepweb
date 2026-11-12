@@ -76,6 +76,15 @@ main{max-width:720px;margin:0 auto;padding:10px 24px 80px}
 .day.badtime .bad{display:block}
 .day.badtime select{border-color:#B4432F}
 #idoErr{margin-top:10px}
+.hely{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hopt{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:13px 15px;cursor:pointer;transition:border-color .15s,background .15s}
+.hopt:hover{border-color:#B9C6C0}
+.hopt:has(input:checked){border-color:var(--patina);background:#F1F7F5}
+.hopt input{width:20px;height:20px;margin:0;accent-color:var(--patina);flex:none}
+.hopt b{display:block;font-size:17px}
+.hopt small{display:block;color:var(--muted);font-size:14.5px}
+#helyErr{margin-top:8px}
+.idocim{font:800 19px/1.3 var(--serif);margin:26px 0 12px;color:var(--ink)}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .nav-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
 .nav-row .btn-primary{font-size:17px;padding:13px 26px;margin-left:auto}
@@ -94,7 +103,7 @@ main{max-width:720px;margin:0 auto;padding:10px 24px 80px}
 .jf-ok p{color:var(--muted);font-size:17px;max-width:46ch;margin:0 auto 10px}
 .jf-alt{text-align:center;color:var(--muted);font-size:15px;margin:22px 0 0}
 .jf-alt a{color:var(--patina);font-weight:700}
-@media(max-width:600px){main{padding:0 14px 70px}.jf{padding:22px 16px 20px;border-radius:18px}.who{grid-template-columns:1fr}.step h2{font-size:23px}.steps li{font-size:13.5px}.day .tm{flex-basis:100%;padding-left:32px}}
+@media(max-width:600px){.hely{grid-template-columns:1fr}main{padding:0 14px 70px}.jf{padding:22px 16px 20px;border-radius:18px}.who{grid-template-columns:1fr}.step h2{font-size:23px}.steps li{font-size:13.5px}.day .tm{flex-basis:100%;padding-left:32px}}
 </style>
 </head>
 <body>
@@ -125,7 +134,7 @@ main{max-width:720px;margin:0 auto;padding:10px 24px 80px}
   <ol class="steps" id="steps" aria-label="A jelentkezés lépései">
     <li class="on"><span class="dot">1</span>Ki jelentkezik?</li>
     <li><span class="dot">2</span>Adatok</li>
-    <li><span class="dot">3</span>Időpont</li>
+    <li><span class="dot">3</span>Hely és időpont</li>
   </ol>
 
   <form class="jf" id="jf" novalidate>
@@ -171,8 +180,14 @@ main{max-width:720px;margin:0 auto;padding:10px 24px 80px}
     </section>
 
     <section class="step" data-step="3" hidden>
-      <h2>Mikor lenne jó?</h2>
-      <p class="sub">Jelöld be a megfelelő napokat, és add meg, hány órától hány óráig érsz rá.</p>
+      <h2>Hol és mikor lenne jó?</h2>
+      <p class="sub" style="margin-bottom:12px">Először válaszd ki, hol szeretnéd az órát.</p>
+      <div class="hely" id="hely">
+        <label class="hopt"><input type="radio" name="helyszin" value="szemelyes"><span><b>Személyesen</b><small>Pápán</small></span></label>
+        <label class="hopt"><input type="radio" name="helyszin" value="online"><span><b>Online</b><small>Google Meeten</small></span></label>
+      </div>
+      <p class="err-msg" id="helyErr">Válaszd ki, hol legyen az óra.</p>
+      <h3 class="idocim">Melyik napokon, hány órától hány óráig?</h3>
       <div class="days" id="days">
           <div class="day" data-nap="Hétfő"><label class="dn"><input type="checkbox" name="nap" value="Hétfő">Hétfő</label>
             <span class="tm"><select aria-label="Hétfő – ettől" data-k="tol"></select>–<select aria-label="Hétfő – eddig" data-k="ig"></select></span>
@@ -229,7 +244,7 @@ main{max-width:720px;margin:0 auto;padding:10px 24px 80px}
   document.addEventListener('click',function(e){if(!sm.contains(e.target)&&!tg.contains(e.target)){sm.classList.remove('open');tg.classList.remove('open');}});
 })();
 </script>
-<script src="/jelentkezes.js?v=2"></script>
+<script src="/jelentkezes.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="auth.js?v=20"></script>
 <script src="/cookie-consent.js?v=2"></script>
