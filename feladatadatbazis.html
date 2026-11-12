@@ -111,6 +111,10 @@ body.panel-closed .ptoggle{background:var(--patina);border-color:var(--patina);c
 .nav .zoom{display:inline-flex;gap:2px}
 .nav .zoom button{min-width:30px}
 .nav .zoom button:disabled{opacity:.4;cursor:default}
+#vOpen,#vDl{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+#vOpen svg,#vDl svg{flex:none}
+@media (max-width:980px){.vbar .nav{flex-wrap:wrap;gap:6px;max-width:100%}}
+@media (max-width:600px){#vOpen .lbl,#vDl .lbl{display:none}.vbar .nav{gap:4px}.vbar .nav button,.vbar .nav a{white-space:nowrap;padding-left:9px;padding-right:9px}.nav .er-rate{margin-right:2px}.nav .er-rate .pri-tog{padding:0 7px 0 9px}#zLab{padding-left:6px;padding-right:6px}}
 .pages{overflow:auto}
 .tmark{position:absolute;left:6px;width:4px;height:42px;border-radius:999px;background:var(--patina);box-shadow:0 0 10px rgba(31,111,100,.6);pointer-events:none;animation:tmIn .35s cubic-bezier(.16,.84,.44,1)}
 @keyframes tmIn{0%{opacity:0;transform:translateX(-7px) scaleY(.55)}100%{opacity:1;transform:none}}
@@ -215,8 +219,8 @@ body.panel-closed .ptoggle{background:var(--patina);border-color:var(--patina);c
         <button id="vPrev" type="button" aria-label="Előző feladat">‹</button>
         <button id="vNext" type="button" aria-label="Következő feladat">›</button>
         <span class="zoom" role="group" aria-label="Nagyítás"><button id="zOut" type="button" aria-label="Kicsinyítés">−</button><button id="zLab" type="button" title="Vissza az alapméretre">100%</button><button id="zIn" type="button" aria-label="Nagyítás">+</button></span>
-        <a id="vOpen" target="_blank" rel="noopener" title="PDF megnyitása új lapon">Új lapon</a>
-        <a id="vDl" download title="A PDF letöltése">Letöltés</a>
+        <a id="vOpen" target="_blank" rel="noopener" title="PDF megnyitása új lapon" aria-label="PDF megnyitása új lapon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg><span class="lbl">Új lapon</span></a>
+        <a id="vDl" download title="A PDF letöltése" aria-label="A PDF letöltése"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span class="lbl">Letöltés</span></a>
       </div>
     </div>
     <div class="pages" id="pages">
