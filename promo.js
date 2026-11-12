@@ -2,7 +2,7 @@
 (function () {
   var KEY = 'pm_promo_closed_until', DAYS = 14;
   try { if (Date.now() < +(localStorage.getItem(KEY) || 0)) return; } catch (e) {}
-  var FORM = 'https://forms.gle/BPX5QuBQwEtLPZpPA';
+  var FORM = '/jelentkezes.html';
   var p = location.pathname, txt;
   if (/^\/erettsegi\//.test(p)) {
     var other = /(magyar|tori|angol|nemet)\.html$/.test(p);
