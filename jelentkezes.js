@@ -57,6 +57,8 @@
     });
   });
 
+  $all('input[name=helyszin]').forEach(function (r) { r.addEventListener('change', function () { $('#helyErr').style.display = 'none'; }); });
+
   /* 2. lépés: ellenőrzés */
   var SZABALY = {
     nev: function (v) { return v.length >= 2; },
@@ -86,17 +88,20 @@
       return mutat(3);
     }
     if (lepes === 3) {
+      var hely = (form.querySelector('input[name=helyszin]:checked') || {}).value || '';
       var ido = idopontok(), nap = $all('.day').every(ellenorizNap);
+      $('#helyErr').style.display = hely ? 'none' : 'block';
       $('#idoErr').style.display = ido.length ? 'none' : 'block';
+      if (!hely) { $('#hely').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
       if (!ido.length || !nap) return;
-      kuld(ido);
+      kuld(ido, hely);
     }
   });
 
-  function kuld(ido) {
+  function kuld(ido, hely) {
     var data = {
       ki: ki, nev: mezo('nev'), telefon: mezo('telefon'), email: mezo('email'), osztaly: Number(mezo('osztaly')),
-      idopontok: ido, weboldal: mezo('weboldal'), eltelt_ms: Date.now() - start,
+      helyszin: hely, idopontok: ido, weboldal: mezo('weboldal'), eltelt_ms: Date.now() - start,
       forras: document.referrer ? document.referrer.slice(0, 200) : ''
     };
     bNext.disabled = true; bNext.textContent = 'Küldés…';

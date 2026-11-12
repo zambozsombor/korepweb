@@ -3,7 +3,7 @@
  * A jelentkezést elmenti a Supabase `jelentkezesek` táblájába, és e-mailben elküldi (Resend).
  *
  * Környezeti változók (Vercel → Project → Settings → Environment Variables):
- *   SUPABASE_SERVICE_ROLE_KEY  – Supabase → Project Settings → API → service_role (TITKOS, csak itt szerepelhet)
+ *   SUPABASE_SERVICE_ROLE_KEY  – Supabase → Project Settings → API Keys: secret (sb_secret_…) vagy a régi service_role kulcs (TITKOS)
  *   RESEND_API_KEY             – Resend → API Keys
  *   JELENTKEZES_FROM           – feladó, pl. "papaimatek.hu <jelentkezes@papaimatek.hu>" (Resendben hitelesített domainről)
  *   JELENTKEZES_TO             – címzett (alapértelmezés: papaimatek@gmail.com)
@@ -14,6 +14,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://duiskdduecldmkuylckb.s
 const ENGEDETT = ['https://www.papaimatek.hu', 'https://papaimatek.hu'];
 const NAPOK = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek', 'Szombat', 'Vasárnap'];
 const KI = { szulo: 'szülő (a gyermeke nevében)', diak: 'diák (a saját nevében)' };
+const HELY = { szemelyes: 'személyesen (Pápán)', online: 'online (Google Meet)' };
 const IDO = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 const str = (v, max) => (typeof v === 'string' ? v.replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, max) : '');
@@ -27,6 +28,7 @@ function ellenoriz(b) {
     telefon: str(b.telefon, 40),
     email: str(b.email, 160),
     osztaly: Number.isInteger(osztaly) ? osztaly : 0,
+    helyszin: str(b.helyszin, 12),
     idopontok: (Array.isArray(b.idopontok) ? b.idopontok : [])
       .map((x) => ({ nap: str(x && x.nap, 12), tol: str(x && x.tol, 5), ig: str(x && x.ig, 5) }))
       .filter((x) => NAPOK.includes(x.nap) && IDO.test(x.tol) && IDO.test(x.ig) && x.ig > x.tol)
@@ -40,6 +42,7 @@ function ellenoriz(b) {
   if (d.telefon.replace(/\D/g, '').length < 8) hibak.push('telefonszám');
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) hibak.push('e-mail-cím');
   if (d.osztaly < 4 || d.osztaly > 12) hibak.push('osztály');
+  if (!HELY[d.helyszin]) hibak.push('helyszín');
   if (!d.idopontok.length) hibak.push('időpont');
   return { d, hibak };
 }
@@ -52,6 +55,7 @@ function sorok(d) {
     ['Telefon', d.telefon],
     ['E-mail', d.email],
     [d.ki === 'szulo' ? 'A gyermek osztálya' : 'Osztály', `${d.osztaly}. osztály`],
+    ['Az óra helye', HELY[d.helyszin]],
     ['Alkalmas időpontok', idoSzoveg(d).join('\n')],
   ];
 }
@@ -61,8 +65,11 @@ async function mentes(d) {
   if (!key) throw new Error('SUPABASE_SERVICE_ROLE_KEY hiányzik');
   const r = await fetch(`${SUPABASE_URL}/rest/v1/jelentkezesek`, {
     method: 'POST',
-    headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-    body: JSON.stringify({ ki: d.ki, nev: d.nev, telefon: d.telefon, email: d.email, osztaly: d.osztaly, idopontok: d.idopontok, forras: d.forras || null }),
+    headers: Object.assign(
+      { apikey: key, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {} // régi (JWT) service_role kulcsnál kell, az új sb_secret_ kulcsnál nem
+    ),
+    body: JSON.stringify({ ki: d.ki, nev: d.nev, telefon: d.telefon, email: d.email, osztaly: d.osztaly, helyszin: d.helyszin, idopontok: d.idopontok, forras: d.forras || null }),
   });
   if (!r.ok) throw new Error(`Supabase ${r.status}: ${(await r.text()).slice(0, 300)}`);
 }
@@ -85,7 +92,7 @@ function ertesitoLevel(d) {
     from: process.env.JELENTKEZES_FROM || 'papaimatek.hu <onboarding@resend.dev>',
     to: [process.env.JELENTKEZES_TO || 'papaimatek@gmail.com'],
     reply_to: d.email,
-    subject: `Új jelentkezés: ${d.nev} (${d.osztaly}. osztály, ${d.ki === 'szulo' ? 'szülő' : 'diák'})`,
+    subject: `Új jelentkezés: ${d.nev} (${d.osztaly}. osztály, ${d.ki === 'szulo' ? 'szülő' : 'diák'}, ${d.helyszin === 'online' ? 'online' : 'személyes'})`,
     html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#1D2733">
 <h2 style="margin:0 0 12px;color:#1F6F64">Új jelentkezés – papaimatek.hu</h2>
 <table cellpadding="7" style="border-collapse:collapse">${s.map(([k, v]) => `<tr><td style="vertical-align:top;color:#5B6672;white-space:nowrap;${td}"><b>${esc(k)}</b></td><td style="${td}">${esc(v).replace(/\n/g, '<br>')}</td></tr>`).join('')}</table>
@@ -105,8 +112,8 @@ function visszaigazolas(d) {
     to: [d.email],
     reply_to: process.env.JELENTKEZES_TO || 'papaimatek@gmail.com',
     subject: 'Megkaptam a jelentkezést – papaimatek.hu',
-    html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#1D2733;line-height:1.55"><p>${meg} ${esc(d.nev)}!</p><p>${t}</p><p style="color:#5B6672;font-size:14px">Megadott időpontok: ${esc(ido)}</p><p>Üdvözlettel:<br>Zámbó Zsombor<br>+36 30 216 5768 · papaimatek.hu</p></div>`,
-    text: `${meg} ${d.nev}!\n\n${t}\n\nMegadott időpontok: ${ido}\n\nÜdvözlettel:\nZámbó Zsombor\n+36 30 216 5768 · papaimatek.hu`,
+    html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#1D2733;line-height:1.55"><p>${meg} ${esc(d.nev)}!</p><p>${t}</p><p style="color:#5B6672;font-size:14px">Az óra helye: ${esc(HELY[d.helyszin])}<br>Megadott időpontok: ${esc(ido)}</p><p>Üdvözlettel:<br>Zámbó Zsombor<br>+36 30 216 5768 · papaimatek.hu</p></div>`,
+    text: `${meg} ${d.nev}!\n\n${t}\n\nAz óra helye: ${HELY[d.helyszin]}\nMegadott időpontok: ${ido}\n\nÜdvözlettel:\nZámbó Zsombor\n+36 30 216 5768 · papaimatek.hu`,
   };
 }
 
