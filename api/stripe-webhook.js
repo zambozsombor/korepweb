@@ -65,8 +65,8 @@ async function fizetve(sess) {
       html: K.keret('Sikeres jelentkezés', `<p>Kedves ${K.esc(d.szulo_nev)}!</p><p>${K.esc(t1)}</p><p>${K.esc(t2)}</p>
 <p style="margin:16px 0 6px"><b>Időpontok</b></p><p style="margin:0">${K.esc(K.IDOPONTOK)}</p>
 <p style="margin:16px 0 6px"><b>A megadott adatok</b></p>${K.tabla(s)}
-<p style="margin-top:16px">Ha kérdése van, válaszoljon erre a levélre, vagy hívjon: +36 30 216 5768.</p><p>Üdvözlettel:<br>Zámbó Zsombor<br>papaimatek.hu</p>`),
-      text: `Kedves ${d.szulo_nev}!\n\n${t1}\n\n${t2}\n\nIdőpontok: ${K.IDOPONTOK}\n\n${s.map(([k, v]) => `${k}: ${v}`).join('\n')}\n\nHa kérdése van, válaszoljon erre a levélre, vagy hívjon: +36 30 216 5768.\n\nÜdvözlettel:\nZámbó Zsombor\npapaimatek.hu`,
+<p style="margin-top:16px">A program feltételei (ÁSZF), a lemondás és az elállás módja: <a href="https://www.papaimatek.hu/aszf-8het.html">papaimatek.hu/aszf-8het.html</a></p><p style="margin-top:16px">Ha kérdése van, válaszoljon erre a levélre, vagy hívjon: +36 30 216 5768.</p><p>Üdvözlettel:<br>Zámbó Zsombor<br>papaimatek.hu</p>`),
+      text: `Kedves ${d.szulo_nev}!\n\n${t1}\n\n${t2}\n\nIdőpontok: ${K.IDOPONTOK}\n\n${s.map(([k, v]) => `${k}: ${v}`).join('\n')}\n\nA program feltételei (ÁSZF), a lemondás és az elállás módja: https://www.papaimatek.hu/aszf-8het.html\n\nHa kérdése van, válaszoljon erre a levélre, vagy hívjon: +36 30 216 5768.\n\nÜdvözlettel:\nZámbó Zsombor\npapaimatek.hu`,
     }));
   }
   const r = await Promise.allSettled(ki);
