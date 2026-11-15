@@ -15,7 +15,7 @@ const K = require('./_8het-kozos');
 /* nyers kérés-törzs (az aláírás-ellenőrzéshez); ha a futtatókörnyezet már beolvasta, null */
 function nyersTorzs(req) {
   return new Promise((ok) => {
-    if (req.readableEnded || req.complete) return ok(null);
+    if (typeof req.on !== 'function' || req.readableEnded || req.complete) return ok(null);
     const d = []; let kesz = false;
     const vege = (v) => { if (!kesz) { kesz = true; ok(v); } };
     req.on('data', (c) => d.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));

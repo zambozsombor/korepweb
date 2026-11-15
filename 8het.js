@@ -25,7 +25,13 @@
   /* mobilon lebegő gomb – eltűnik, amikor az űrlap látszik */
   var mcta = $('#mcta'), sec = $('#jelentkezes');
   if (mcta && sec && 'IntersectionObserver' in window) {
-    new IntersectionObserver(function (e) { mcta.classList.toggle('hide', e[0].isIntersecting); }, { threshold: 0.05 }).observe(sec);
+    /* elrejtjük, amíg a fenti ajánlat gombja vagy maga az űrlap látszik – ne legyen dupla gomb */
+    var latszik = new Map(), cel = [sec, $('.offer .go')].filter(Boolean);
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { latszik.set(e.target, e.isIntersecting); });
+      mcta.classList.toggle('hide', cel.some(function (t) { return latszik.get(t); }));
+    }, { threshold: 0.05 });
+    cel.forEach(function (t) { io.observe(t); });
   }
   document.addEventListener('click', function (e) {
     var a = e.target.closest('[data-lk]');
