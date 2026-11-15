@@ -72,7 +72,7 @@ module.exports = async function handler(req, res) {
       'line_items[0][price_data][currency]': 'huf',
       'line_items[0][price_data][unit_amount]': String(K.AR_FT * 100), // a Stripe a HUF-ot két tizedessel kéri
       'line_items[0][price_data][product_data][name]': K.PROGRAM_NEV,
-      'line_items[0][price_data][product_data][description]': `8 élő online alkalom 17:00-tól (2026. nov. 27. – 2027. jan. 22.), visszanézhető felvételekkel. Diák: ${d.diak_nev}`,
+      'line_items[0][price_data][product_data][description]': `8 élő online alkalom, egyenként 60 perc, 17:00–18:00 (2026. nov. 27. – 2027. jan. 22.), visszanézhető felvételekkel. Diák: ${d.diak_nev}`,
       'metadata[jelentkezes_id]': String(id),
       'metadata[program]': K.PROGRAM,
       'payment_intent_data[description]': `${K.PROGRAM_NEV} – ${d.diak_nev}`,

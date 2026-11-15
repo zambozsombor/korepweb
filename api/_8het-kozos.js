@@ -3,7 +3,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://duiskdduecldmkuylckb.s
 const PROGRAM = '8het-2027';
 const PROGRAM_NEV = '8 hét – 8 felvételi feladatsor';
 const AR_FT = 19990;
-const IDOPONTOK = 'Minden alkalom 17:00-kor: 2026. nov. 27. (P), dec. 4. (P), dec. 11. (P), dec. 18. (P), 2027. jan. 8. (P), jan. 15. (P), jan. 19. (K), jan. 22. (P)';
+const IDOPONTOK = 'Minden alkalom 60 perces, 17:00–18:00: 2026. nov. 27. (P), dec. 4. (P), dec. 11. (P), dec. 18. (P), 2027. jan. 8. (P), jan. 15. (P), jan. 19. (K), jan. 22. (P)';
 
 const tesztMod = () => /^(sk|rk)_test_/.test(String(process.env.STRIPE_SECRET_KEY || ''));
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
