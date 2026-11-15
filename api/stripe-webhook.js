@@ -61,7 +61,7 @@ async function fizetve(sess) {
     const t2 = `Az első óra előtt meghívót küldök a csoport Google Classroomjába a ${d.diak_email} címre. Ott lesznek az órák Google Meet-linkjei és a felvételek is.`;
     ki.push(K.level({
       from: process.env.JELENTKEZES_FROM, to: [d.email], reply_to: K.CIMZETT(),
-      subject: `${elo}Sikeres jelentkezés – ${K.PROGRAM_NEV}`,
+      subject: `Sikeres jelentkezés – ${K.PROGRAM_NEV}`, // a vevő soha nem kap [TESZT] jelölést
       html: K.keret('Sikeres jelentkezés', `<p>Kedves ${K.esc(d.szulo_nev)}!</p><p>${K.esc(t1)}</p><p>${K.esc(t2)}</p>
 <p style="margin:16px 0 6px"><b>Időpontok</b></p><p style="margin:0">${K.esc(K.IDOPONTOK)}</p>
 <p style="margin:16px 0 6px"><b>A megadott adatok</b></p>${K.tabla(s)}
