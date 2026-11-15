@@ -40,6 +40,10 @@
   ],
   "rewrites": [
     {
+      "source": "/8het-8feladatsor",
+      "destination": "/8het-8feladatsor.html"
+    },
+    {
       "source": "/erettsegi/",
       "destination": "https://torierettsegi.vercel.app/"
     },
