@@ -56,7 +56,6 @@ function sorok(d) {
     ['Szülő neve', d.szulo_nev],
     ['Szülő e-mail-címe', d.email],
     ['Telefon', d.telefon],
-    ['Felvételi éve', String(d.felveteli_ev)],
   ];
   if (d.megjegyzes) s.push(['Megjegyzés', d.megjegyzes]);
   return s;

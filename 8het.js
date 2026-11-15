@@ -12,8 +12,7 @@
     beleegyezes: function () { return form.elements.beleegyezes.checked; },
     szulo_nev: function (v) { return v.length >= 2; },
     email: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); },
-    telefon: function (v) { return v.replace(/\D/g, '').length >= 8; },
-    felveteli_ev: function (v) { return v === '2027' || v === '2028'; }
+    telefon: function (v) { return v.replace(/\D/g, '').length >= 8; }
   };
   function mezo(n) { var el = form.elements[n]; return el.type === 'checkbox' ? (el.checked ? '1' : '') : String(el.value || '').trim(); }
   function ellenoriz(f) { var k = f.dataset.req, ok = SZABALY[k](mezo(k)); f.classList.toggle('invalid', !ok); return ok; }
@@ -45,7 +44,7 @@
     if (bad.length) { bad[0].querySelector('input,select').focus(); bad[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
     var data = {
       diak_nev: mezo('diak_nev'), diak_email: mezo('diak_email'), beleegyezes: !!mezo('beleegyezes'), szulo_nev: mezo('szulo_nev'), email: mezo('email'), telefon: mezo('telefon'),
-      felveteli_ev: Number(mezo('felveteli_ev')), megjegyzes: mezo('megjegyzes'),
+      megjegyzes: mezo('megjegyzes'),
       weboldal: mezo('weboldal'), eltelt_ms: Date.now() - start,
       forras: document.referrer ? document.referrer.slice(0, 200) : ''
     };

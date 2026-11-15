@@ -14,14 +14,13 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const str = (v, max) => (typeof v === 'string' ? v.replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, ' ').trim().slice(0, max) : '');
 
 function ellenoriz(b) {
-  const ev = Number(b.felveteli_ev);
   const d = {
     diak_nev: str(b.diak_nev, 120),
     diak_email: str(b.diak_email, 160).toLowerCase(),
     szulo_nev: str(b.szulo_nev, 120),
     email: str(b.email, 160),
     telefon: str(b.telefon, 40),
-    felveteli_ev: ev === 2027 || ev === 2028 ? ev : 0,
+    felveteli_ev: 2027, // a program a 2027. januári írásbelire készít
     megjegyzes: str(b.megjegyzes, 1000),
     forras: str(b.forras, 200),
   };
@@ -31,7 +30,6 @@ function ellenoriz(b) {
   if (d.szulo_nev.length < 2) hibak.push('szülő neve');
   if (!EMAIL.test(d.email)) hibak.push('a szülő e-mail-címe');
   if (d.telefon.replace(/\D/g, '').length < 8) hibak.push('telefonszám');
-  if (!d.felveteli_ev) hibak.push('felvételi éve');
   if (b.beleegyezes !== true) hibak.push('a feltételek elfogadása');
   return { d, hibak };
 }
