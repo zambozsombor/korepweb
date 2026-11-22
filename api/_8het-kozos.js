@@ -57,6 +57,7 @@ function sorok(d) {
     ['Szülő e-mail-címe', d.email],
     ['Telefon', d.telefon],
   ];
+  if (d.szamla_nev) s.push(['Számlázási név', d.szamla_nev], ['Számlázási cím', `${d.szamla_irsz || ''} ${d.szamla_varos || ''}, ${d.szamla_cim || ''}`.trim()]);
   if (d.megjegyzes) s.push(['Megjegyzés', d.megjegyzes]);
   return s;
 }

@@ -12,7 +12,11 @@
     beleegyezes: function () { return form.elements.beleegyezes.checked; },
     szulo_nev: function (v) { return v.length >= 2; },
     email: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); },
-    telefon: function (v) { return v.replace(/\D/g, '').length >= 8; }
+    telefon: function (v) { return v.replace(/\D/g, '').length >= 8; },
+    szamla_nev: function (v) { return v.length >= 2; },
+    szamla_irsz: function (v) { return /^\d{4}$/.test(v); },
+    szamla_varos: function (v) { return v.length >= 2; },
+    szamla_cim: function (v) { return v.length >= 3; }
   };
   function mezo(n) { var el = form.elements[n]; return el.type === 'checkbox' ? (el.checked ? '1' : '') : String(el.value || '').trim(); }
   function ellenoriz(f) { var k = f.dataset.req, ok = SZABALY[k](mezo(k)); f.classList.toggle('invalid', !ok); return ok; }
@@ -20,6 +24,15 @@
     var h = function () { if (f.classList.contains('invalid')) ellenoriz(f); };
     f.addEventListener('input', h); f.addEventListener('change', h);
   });
+
+  /* a számlázási név alapból a szülő neve – amíg a felhasználó át nem írja */
+  var szNev = form.elements.szamla_nev, szuloNev = form.elements.szulo_nev, szKezi = false;
+  if (szNev && szuloNev) {
+    szNev.addEventListener('input', function () { szKezi = szNev.value.trim() !== ''; });
+    szuloNev.addEventListener('input', function () { if (!szKezi) szNev.value = szuloNev.value; });
+  }
+  var irsz = form.elements.szamla_irsz;
+  if (irsz) irsz.addEventListener('input', function () { var v = irsz.value.replace(/\D/g, '').slice(0, 4); if (v !== irsz.value) irsz.value = v; });
 
   /* mobilon lebegő gomb – eltűnik, amikor az űrlap látszik */
   var mcta = $('#mcta'), sec = $('#jelentkezes');
@@ -44,6 +57,7 @@
     if (bad.length) { bad[0].querySelector('input,select').focus(); bad[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
     var data = {
       diak_nev: mezo('diak_nev'), diak_email: mezo('diak_email'), beleegyezes: !!mezo('beleegyezes'), szulo_nev: mezo('szulo_nev'), email: mezo('email'), telefon: mezo('telefon'),
+      szamla_nev: mezo('szamla_nev'), szamla_irsz: mezo('szamla_irsz'), szamla_varos: mezo('szamla_varos'), szamla_cim: mezo('szamla_cim'),
       megjegyzes: mezo('megjegyzes'),
       weboldal: mezo('weboldal'), eltelt_ms: Date.now() - start,
       forras: document.referrer ? document.referrer.slice(0, 200) : ''

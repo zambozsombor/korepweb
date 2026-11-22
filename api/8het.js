@@ -21,6 +21,10 @@ function ellenoriz(b) {
     email: str(b.email, 160),
     telefon: str(b.telefon, 40),
     felveteli_ev: 2027, // a program a 2027. januári írásbelire készít
+    szamla_nev: str(b.szamla_nev, 120),
+    szamla_irsz: str(b.szamla_irsz, 10),
+    szamla_varos: str(b.szamla_varos, 80),
+    szamla_cim: str(b.szamla_cim, 160),
     megjegyzes: str(b.megjegyzes, 1000),
     forras: str(b.forras, 200),
   };
@@ -30,6 +34,10 @@ function ellenoriz(b) {
   if (d.szulo_nev.length < 2) hibak.push('szülő neve');
   if (!EMAIL.test(d.email)) hibak.push('a szülő e-mail-címe');
   if (d.telefon.replace(/\D/g, '').length < 8) hibak.push('telefonszám');
+  if (d.szamla_nev.length < 2) hibak.push('számlázási név');
+  if (!/^\d{4}$/.test(d.szamla_irsz)) hibak.push('irányítószám');
+  if (d.szamla_varos.length < 2) hibak.push('település');
+  if (d.szamla_cim.length < 3) hibak.push('utca, házszám');
   if (b.beleegyezes !== true) hibak.push('a feltételek elfogadása');
   return { d, hibak };
 }
@@ -52,14 +60,22 @@ module.exports = async function handler(req, res) {
 
   const alap = elonezet ? origin : 'https://www.papaimatek.hu';
   try {
-    const sor = await K.supabase('csoport_jelentkezesek', {
-      method: 'POST',
-      body: JSON.stringify({
-        program: K.PROGRAM, diak_nev: d.diak_nev, diak_email: d.diak_email, szulo_nev: d.szulo_nev, email: d.email,
-        telefon: d.telefon, felveteli_ev: d.felveteli_ev, megjegyzes: d.megjegyzes || null, forras: d.forras || null,
-        statusz: 'fizetesre_var', teszt: K.tesztMod(), osszeg: K.AR_FT, elallas_beleegyezes_at: new Date().toISOString(),
-      }),
-    });
+    const alapSor = {
+      program: K.PROGRAM, diak_nev: d.diak_nev, diak_email: d.diak_email, szulo_nev: d.szulo_nev, email: d.email,
+      telefon: d.telefon, felveteli_ev: d.felveteli_ev, megjegyzes: d.megjegyzes || null, forras: d.forras || null,
+      statusz: 'fizetesre_var', teszt: K.tesztMod(), osszeg: K.AR_FT, elallas_beleegyezes_at: new Date().toISOString(),
+    };
+    const szamla = { szamla_nev: d.szamla_nev, szamla_irsz: d.szamla_irsz, szamla_varos: d.szamla_varos, szamla_cim: d.szamla_cim };
+    let sor;
+    try {
+      sor = await K.supabase('csoport_jelentkezesek', { method: 'POST', body: JSON.stringify(Object.assign({}, alapSor, szamla)) });
+    } catch (e) {
+      // ha a számlázási oszlopok még nincsenek létrehozva, a jelentkezés ne vesszen el: a megjegyzésbe kerülnek
+      if (!/szamla_/.test(e.message)) throw e;
+      console.error('[8het] számlázási oszlopok hiányoznak, megjegyzésbe mentve');
+      const sz = `Számlázás: ${d.szamla_nev}, ${d.szamla_irsz} ${d.szamla_varos}, ${d.szamla_cim}`;
+      sor = await K.supabase('csoport_jelentkezesek', { method: 'POST', body: JSON.stringify(Object.assign({}, alapSor, { megjegyzes: d.megjegyzes ? `${d.megjegyzes}\n${sz}` : sz })) });
+    }
     const id = sor && sor[0] && sor[0].id;
     if (!id) throw new Error('Supabase: nem jött vissza azonosító');
 
@@ -75,6 +91,8 @@ module.exports = async function handler(req, res) {
       'line_items[0][price_data][product_data][description]': `8 élő online alkalom, egyenként 60 perc, 17:00–18:00 (2026. nov. 27. – 2027. jan. 22.), visszanézhető felvételekkel. Diák: ${d.diak_nev}`,
       'metadata[jelentkezes_id]': String(id),
       'metadata[program]': K.PROGRAM,
+      'metadata[szamla_nev]': d.szamla_nev,
+      'metadata[szamla_cim]': `${d.szamla_irsz} ${d.szamla_varos}, ${d.szamla_cim}`.slice(0, 500),
       'payment_intent_data[description]': `${K.PROGRAM_NEV} – ${d.diak_nev}`,
       'payment_intent_data[metadata][jelentkezes_id]': String(id),
       expires_at: String(Math.floor(Date.now() / 1000) + 60 * 60), // 1 óra után lejár → „félbehagyott” értesítés
