@@ -146,11 +146,14 @@
   var CONSENT_HTML = ''
     + '<div class="pm-consent2">'
     +   '<label><input type="checkbox" class="pmTerms"><span>Elolvastam és elfogadom az <a href="/adatkezeles.html" target="_blank" rel="noopener">adatkezelési tájékoztatót</a>, és hozzájárulok, hogy a nevem és e-mail-címem a fiókomhoz tárolják a haladás mentéséhez — <b>visszavonásig</b>.</span></label>'
+    +   '<label><input type="checkbox" class="pmAge"><span>Elmúltam 16 éves, <b>vagy</b> szülői/gondviselői hozzájárulással használom az oldalt.</span></label>'
     +   '<label><input type="checkbox" class="pmMkt"><span>Szeretnék később <b>marketing célú</b> megkereséseket (pl. új feladatok, hírek) kapni e-mailben. Ez nem feltétele a regisztrációnak, és bármikor visszavonható.</span></label>'
     + '</div>';
   function savePending(mkt) {
-    try { localStorage.setItem('pm_pending_consent', JSON.stringify({ terms:true, marketing: !!mkt, at: new Date().toISOString()})); } catch (e) {}
+    try { localStorage.setItem('pm_pending_consent', JSON.stringify({ terms:true, parental:true, marketing: !!mkt, at: new Date().toISOString()})); } catch (e) {}
   }
+  // A regisztrációkor megadott hozzájárulások: egyszer olvassuk ki, hogy a többszöri render() ne veszítse el
+  var PENDING = (function () { try { var r = localStorage.getItem('pm_pending_consent'); return r ? JSON.parse(r) : null; } catch (e) { return null; } })();
   function authErr(e) {
     var m = (e && (e.message || e.error_description)) || String(e || '');
     if (/Invalid login credentials/i.test(m)) return 'Hibás e-mail-cím vagy jelszó.';
@@ -200,7 +203,7 @@
       +     '<div class="pm-msg" role="alert"></div>'
       +     '<button class="pm-primary" type="submit" disabled>Regisztráció e-maillel</button>'
       +   '</form>'
-      +   '<div class="pm-note">Az adatkezelési tájékoztató elfogadása kötelező a regisztrációhoz. 16 év alatt a használathoz és a marketinghez szülői/gondviselői hozzájárulás szükséges — erről a következő lépésben kérdezünk.</div>'
+      +   '<div class="pm-note">Az első két pont elfogadása kötelező a regisztrációhoz. 16 év alatt a használathoz és a marketinghez szülői/gondviselői hozzájárulás szükséges.</div>'
       +   '<div class="pm-switch">Van már fiókod? <button type="button" class="pm-linkbtn" data-go="login">Lépj be</button></div>'
       + '</div>'
       // --- visszajelzés
@@ -223,12 +226,14 @@
 
     // regisztráció: hozzájárulás nélkül nem indítható
     var regPane = card.querySelector('[data-pane="register"]');
-    var terms = regPane.querySelector('.pmTerms'), mkt = regPane.querySelector('.pmMkt');
+    var terms = regPane.querySelector('.pmTerms'), age = regPane.querySelector('.pmAge'), mkt = regPane.querySelector('.pmMkt');
     var gReg = regPane.querySelector('[data-act="g-reg"]'), eReg = regPane.querySelector('form button[type=submit]');
-    terms.addEventListener('change', function () { gReg.disabled = eReg.disabled = !terms.checked; });
+    function regOk() { return terms.checked && age.checked; }
+    terms.addEventListener('change', function () { gReg.disabled = eReg.disabled = !regOk(); });
+    age.addEventListener('change', function () { gReg.disabled = eReg.disabled = !regOk(); });
 
     card.querySelector('[data-act="g-login"]').addEventListener('click', function () { loginGoogle(); });
-    gReg.addEventListener('click', function () { if (!terms.checked) return; savePending(mkt.checked); loginGoogle(); });
+    gReg.addEventListener('click', function () { if (!regOk()) return; savePending(mkt.checked); loginGoogle(); });
 
     // e-mailes belépés
     var lf = card.querySelector('form[data-form="login"]');
@@ -257,7 +262,7 @@
     var rf = card.querySelector('form[data-form="register"]');
     rf.addEventListener('submit', function (e) {
       e.preventDefault();
-      if (!terms.checked) { msg(rf, 'Az adatkezelési tájékoztató elfogadása kötelező.'); return; }
+      if (!regOk()) { msg(rf, 'A regisztrációhoz fogadd el az adatkezelési tájékoztatót, és erősítsd meg a 16 év feletti / szülői hozzájárulást.'); return; }
       var name = rf.name.value.trim(), email = rf.email.value.trim(), pw = rf.pw.value, pw2 = rf.pw2.value;
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg(rf, 'Érvénytelen e-mail-cím.'); return; }
       if (pw.length < 8) { msg(rf, 'A jelszó legalább 8 karakter legyen.'); return; }
@@ -267,7 +272,7 @@
       eReg.disabled = true; msg(rf, 'Regisztráció…', true);
       sb.auth.signUp({ email: email, password: pw, options: {
         emailRedirectTo: backUrl(),
-        data: { source:'papaimatek-web', full_name: name || undefined, name: name || undefined, terms_accepted_at: when, marketing_consent: !!mkt.checked}
+        data: { source:'papaimatek-web', full_name: name || undefined, name: name || undefined, terms_accepted_at: when, parental_consent: true, marketing_consent: !!mkt.checked}
       } }).then(function (res) {
         eReg.disabled = false;
         if (res.error) { msg(rf, authErr(res.error)); return; }
@@ -326,21 +331,21 @@
   function openTermsModal(user) {
     var ov = makeOverlay(
       '<h3>Üdv a papaimatek.hu-n!</h3>'
-      + '<p>Mielőtt használni kezded a fiókodat, kérjük, fogadd el az adatkezelési tájékoztatót.</p>'
+      + '<p>Mielőtt használni kezded a fiókodat, kérjük, erősítsd meg az alábbiakat.</p>'
       + CONSENT_HTML
       + '<button class="pm-primary" type="button" id="pm-terms-ok" disabled>Elfogadom</button>'
       + '<button class="pm-linkbtn" type="button" id="pm-terms-out">Mégsem, kijelentkezem</button>'
     );
-    var t = ov.querySelector('.pmTerms'), mk = ov.querySelector('.pmMkt'), ok = ov.querySelector('#pm-terms-ok');
-    t.addEventListener('change', function () { ok.disabled = !t.checked; });
+    var t = ov.querySelector('.pmTerms'), ag = ov.querySelector('.pmAge'), mk = ov.querySelector('.pmMkt'), ok = ov.querySelector('#pm-terms-ok');
+    var upd = function () { ok.disabled = !(t.checked && ag.checked); };
+    t.addEventListener('change', upd); ag.addEventListener('change', upd);
     ok.addEventListener('click', function () {
       ok.disabled = true;
-      var when = new Date().toISOString(), payload = { terms_accepted_at: when };
+      var when = new Date().toISOString(), payload = { terms_accepted_at: when, parental_consent: true, consent_at: when };
       if (mk.checked) { payload.marketing_consent = true; payload.marketing_consent_at = when; }
       sb.from('profiles').update(payload).eq('id', user.id).then(function () {
-        if (curProfile) { curProfile.terms_accepted_at = when; }
+        if (curProfile) { curProfile.terms_accepted_at = when; curProfile.parental_consent = true; }
         close(ov);
-        if (curProfile && curProfile.parental_consent === false) openConsentModal(user);
       });
     });
     ov.querySelector('#pm-terms-out').addEventListener('click', function () { close(ov); sb.auth.signOut(); });
@@ -349,19 +354,17 @@
 
   // A belépési modalban tett hozzájárulások mentése (az OAuth-visszatérés után)
   function applyPendingConsent(user) {
-    var raw = null;
-    try { raw = localStorage.getItem('pm_pending_consent'); } catch (e) {}
-    if (!raw) return;
+    var c = PENDING; PENDING = null;
     try { localStorage.removeItem('pm_pending_consent'); } catch (e) {}
-    var c = null;
-    try { c = JSON.parse(raw); } catch (e) {}
     if (!c) return;
     var when = c.at || new Date().toISOString();
     var payload = { terms_accepted_at: when };
+    if (c.parental) { payload.parental_consent = true; payload.consent_at = when; }
     if (c.marketing) { payload.marketing_consent = true; payload.marketing_consent_at = when; }
     sb.from('profiles').update(payload).eq('id', user.id).then(function () {
       if (curProfile) {
         curProfile.terms_accepted_at = when;
+        if (c.parental) curProfile.parental_consent = true;
         if (c.marketing) { curProfile.marketing_consent = true; curProfile.marketing_consent_at = when; }
       }
     }).catch(function () {});
@@ -414,7 +417,7 @@
     if (user) {
       if (area) loadProfileThenRender(user);
     } else {
-      curProfile = null;
+      curProfile = null; profileFor = null; profileLoad = null;
       if (area) {
         area.innerHTML = '<button class="pm-btn pm-reg" type="button">Regisztráció</button><button class="pm-btn pm-login" type="button">Belépés</button>';
         area.querySelector('.pm-login').addEventListener('click', openLoginModal);
@@ -423,12 +426,16 @@
     }
   }
 
+  var profileLoad = null, profileFor = null;
   function loadProfileThenRender(user) {
-    sb.from('profiles').select('*').eq('id', user.id).single().then(function (res) {
+    if (profileFor === user.id && profileLoad) { profileLoad.then(function () { renderAvatar(user); }); return; }
+    profileFor = user.id;
+    profileLoad = sb.from('profiles').select('*').eq('id', user.id).single().then(function (res) {
       curProfile = (res && res.data) || {};
       renderAvatar(user);
       ensureEmailSaved(user);
-      var hadPending = false; try { hadPending = !!localStorage.getItem('pm_pending_consent'); } catch (x) {}
+      var hadPending = !!PENDING;
+      var pendParental = !!(PENDING && PENDING.parental);
       applyPendingConsent(user);
       applyPendingName(user);
       var metaTerms = user.user_metadata && user.user_metadata.terms_accepted_at;
@@ -436,9 +443,11 @@
         // e-mailes regisztráció másik eszközön megerősítve: a hozzájárulás a fiók adataiból jön
         var p = { terms_accepted_at: metaTerms };
         if (user.user_metadata.marketing_consent) { p.marketing_consent = true; p.marketing_consent_at = metaTerms; }
+        if (user.user_metadata.parental_consent) { p.parental_consent = true; p.consent_at = metaTerms; curProfile.parental_consent = true; }
         sb.from('profiles').update(p).eq('id', user.id).then(function () {}).catch(function () {});
         curProfile.terms_accepted_at = metaTerms;
       }
+      if (pendParental) curProfile.parental_consent = true;
       if (!curProfile.terms_accepted_at && !hadPending && !metaTerms) openTermsModal(user);
       else if (curProfile.parental_consent === false) openConsentModal(user);
     }).catch(function () { curProfile = {}; renderAvatar(user); ensureEmailSaved(user); applyPendingConsent(user); });
