@@ -51,5 +51,16 @@
       "source": "/erettsegi/:path*",
       "destination": "https://torierettsegi.vercel.app/:path*"
     }
-  ]
+  ],
+  "crons": [
+    {
+      "path": "/api/marketing-sync",
+      "schedule": "0 3 * * *"
+    }
+  ],
+  "functions": {
+    "api/marketing-sync.js": {
+      "maxDuration": 60
+    }
+  }
 }
