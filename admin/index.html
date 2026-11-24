@@ -144,7 +144,7 @@ function api(muvelet, adat) {
     var tok = r.data.session && r.data.session.access_token;
     if (!tok) throw { kod: 401, hiba: 'Nem vagy bejelentkezve.' };
     return fetch('/api/admin', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tok }, body: JSON.stringify(Object.assign({ muvelet: muvelet }, adat || {})) })
-      .then(function (res) { return res.json().catch(function () { return {}; }).then(function (j) { if (!res.ok || !j.ok) throw { kod: res.status, hiba: j.hiba || ('Hiba (' + res.status + ')') }; return j.adat; }); });
+      .then(function (res) { return res.json().catch(function () { return {}; }).then(function (j) { if (!res.ok || !j.ok) throw { kod: res.status, hiba: j.hiba || ('Hiba (' + res.status + ')') }; if (j.hibak) { console.warn(j.hibak); toast('Adatbázis-hiba: ' + j.hibak.join(' | '), true); } return j.adat; }); });
   });
 }
 function hibaKezel(e) { console.error(e); if (e && e.kod === 403) return gate('Ehhez a fiókhoz nincs admin jogosultság.'); toast((e && e.hiba) || 'Hiba történt', true); }

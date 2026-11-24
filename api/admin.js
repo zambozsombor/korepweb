@@ -24,6 +24,8 @@ async function adminFelhasznalo(req) {
 
 /* ---------- segédek ---------- */
 const sb = (ut, o) => K.supabase(ut, o || { method: 'GET' });
+let HIBAK = [];
+const puha = (ut) => sb(ut).catch((e) => { HIBAK.push(ut.split('?')[0] + ': ' + e.message.slice(0, 200)); return []; });
 const enc = encodeURIComponent;
 const uuid = (s) => (/^[0-9a-f-]{36}$/i.test(String(s || '')) ? String(s) : null);
 const szoveg = (v, max) => { if (v == null) return null; const s = String(v).trim().slice(0, max || 500); return s || null; };
@@ -95,8 +97,8 @@ const M = {
       sb('tanitvanyok?select=*&order=nev'),
       sb('orak?select=id,tanitvany_id,kezdes,perc,statusz,fizetos,ar,tema,gcal_cim&order=kezdes'),
       sb('befizetesek?select=tanitvany_id,osszeg'),
-      sb('csoport_jelentkezesek?select=id,statusz,teszt&teszt=is.false').catch(() => []),
-      sb('jelentkezesek?select=id').catch(() => []),
+      puha('csoport_jelentkezesek?select=id,statusz,teszt&teszt=is.false'),
+      puha('jelentkezesek?select=id'),
     ]);
     const e = egyenlegek(orak, bef);
     const most = Date.now();
@@ -122,7 +124,7 @@ const M = {
     if (!t[0]) throw hiba('Nincs ilyen tanítvány.');
     let fiok = null;
     if (t[0].user_id) {
-      const p = await sb(`profiles?id=eq.${t[0].user_id}&select=id,email,display_name,evfolyam,created_at`).catch(() => []);
+      const p = await puha(`profiles?id=eq.${t[0].user_id}&select=id,email,display_name,evfolyam,created_at`);
       fiok = p[0] || { id: t[0].user_id };
     }
     return { tanitvany: t[0], orak, befizetesek: bef, kiadasok: kiad, fiok, egyenleg: egyenlegek(orak, bef)[id] || { dij: 0, fizetve: 0, egyenleg: 0 } };
@@ -205,8 +207,8 @@ const M = {
 
   async jelentkezok() {
     const [cs, egy, tan] = await Promise.all([
-      sb('csoport_jelentkezesek?select=*&order=created_at.desc').catch(() => []),
-      sb('jelentkezesek?select=*&order=created_at.desc').catch(() => []),
+      puha('csoport_jelentkezesek?select=*&order=created_at.desc'),
+      puha('jelentkezesek?select=*&order=created_at.desc'),
       sb('tanitvanyok?select=id,nev,csoport_jelentkezes_id,diak_email,szulo_email'),
     ]);
     return { csoport: cs, egyeni: egy, tanitvanyok: tan };
@@ -215,8 +217,8 @@ const M = {
   // minden eddigi weboldali jelentkezőt felvesz tanítványnak (a teszt-jelentkezéseket és a már felvetteket kihagyja)
   async jelentkezok_import() {
     const [cs, egy, tan, szolg] = await Promise.all([
-      sb('csoport_jelentkezesek?select=*&teszt=is.false&order=created_at').catch(() => []),
-      sb('jelentkezesek?select=*&order=created_at').catch(() => []),
+      puha('csoport_jelentkezesek?select=*&teszt=is.false&order=created_at'),
+      puha('jelentkezesek?select=*&order=created_at'),
       sb('tanitvanyok?select=id,nev,csoport_jelentkezes_id,diak_email,szulo_email,megjegyzes'),
       sb('szolgaltatasok?select=id,nev'),
     ]);
@@ -350,8 +352,9 @@ module.exports = async function handler(req, res) {
     if (!u) return res.status(403).json({ ok: false, hiba: 'Nincs jogosultságod az admin felülethez.' });
     const fn = M[b.muvelet];
     if (!fn) return res.status(400).json({ ok: false, hiba: 'Ismeretlen művelet.' });
+    HIBAK = [];
     const adat = await fn(b);
-    return res.status(200).json({ ok: true, adat });
+    return res.status(200).json({ ok: true, adat, hibak: HIBAK.length ? HIBAK : undefined });
   } catch (e) {
     console.error('[admin]', b.muvelet, e.message);
     return res.status(e.sajat ? 400 : 500).json({ ok: false, hiba: e.sajat ? e.message : 'Szerverhiba: ' + e.message.slice(0, 200) });
