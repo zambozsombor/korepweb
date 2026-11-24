@@ -212,6 +212,54 @@ const M = {
     return { csoport: cs, egyeni: egy, tanitvanyok: tan };
   },
 
+  // minden eddigi weboldali jelentkezőt felvesz tanítványnak (a teszt-jelentkezéseket és a már felvetteket kihagyja)
+  async jelentkezok_import() {
+    const [cs, egy, tan, szolg] = await Promise.all([
+      sb('csoport_jelentkezesek?select=*&teszt=is.false&order=created_at').catch(() => []),
+      sb('jelentkezesek?select=*&order=created_at').catch(() => []),
+      sb('tanitvanyok?select=id,nev,csoport_jelentkezes_id,diak_email,szulo_email,megjegyzes'),
+      sb('szolgaltatasok?select=id,nev'),
+    ]);
+    const kisb = (x) => String(x || '').trim().toLowerCase();
+    const emailek = new Set(); const csIdk = new Set();
+    tan.forEach((t) => { [t.diak_email, t.szulo_email].forEach((e) => e && emailek.add(kisb(e))); if (t.csoport_jelentkezes_id) csIdk.add(t.csoport_jelentkezes_id); });
+    const szid = (re) => { const x = szolg.find((s) => re.test(s.nev)); return x ? x.id : null; };
+    const SZ8 = szid(/^8\. osztályos/), SZ57 = szid(/^5–7/), SZKOZ = szid(/^Középiskolás/), SZ46 = szid(/^4\. \/ 6\./);
+    const HELY = { papa: 'papa', online: 'online' };
+    const uj = [];
+    const datumHu = (x) => (x ? new Date(x).toLocaleDateString('hu-HU', { timeZone: 'Europe/Budapest' }) : '');
+    for (const x of cs) {
+      if (csIdk.has(x.id)) continue;
+      const em = [kisb(x.diak_email), kisb(x.email)].filter(Boolean);
+      if (em.some((e) => emailek.has(e))) continue;
+      em.forEach((e) => emailek.add(e));
+      uj.push({
+        nev: szoveg(x.diak_nev, 120) || '(név nélkül)', evfolyam: '8.', diak_email: szoveg(x.diak_email, 160),
+        szulo_nev: szoveg(x.szulo_nev, 120), szulo_email: szoveg(x.email, 160), szulo_telefon: szoveg(x.telefon, 40),
+        szamla_nev: szoveg(x.szamla_nev, 160), szamla_irsz: szoveg(x.szamla_irsz, 10), szamla_varos: szoveg(x.szamla_varos, 80), szamla_cim: szoveg(x.szamla_cim, 200),
+        helyszin: 'online', statusz: 'aktiv', csoport_jelentkezes_id: x.id,
+        megjegyzes: `Weboldali jelentkezés: 8 hét – 8 felvételi feladatsor (${datumHu(x.created_at)}, ${x.statusz === 'fizetve' ? 'fizetve' : 'nem fizetett: ' + (x.statusz || '?')})${x.megjegyzes ? '\n' + x.megjegyzes : ''}`,
+      });
+    }
+    for (const x of egy) {
+      const e = kisb(x.email);
+      if (e && emailek.has(e)) continue;
+      if (e) emailek.add(e);
+      const o = Number(x.osztaly);
+      const sz = o === 8 ? SZ8 : (o >= 5 && o <= 7 ? SZ57 : (o >= 9 ? SZKOZ : (o === 4 || o === 3 ? SZ46 : null)));
+      const szulo = x.ki === 'szulo';
+      uj.push(Object.assign({
+        nev: szulo ? `${szoveg(x.nev, 100) || 'Szülő'} gyermeke` : (szoveg(x.nev, 120) || '(név nélkül)'),
+        evfolyam: x.osztaly ? `${x.osztaly}.` : null, szolgaltatas_id: sz, helyszin: HELY[x.helyszin] || null, statusz: 'aktiv',
+        megjegyzes: `Weboldali jelentkezés egyéni órára (${datumHu(x.created_at)})${x.idopontok ? '\nAlkalmas időpontok: ' + (typeof x.idopontok === 'string' ? x.idopontok : JSON.stringify(x.idopontok)) : ''}${szulo ? '\nA gyermek nevét még ki kell tölteni.' : ''}`,
+      }, szulo
+        ? { szulo_nev: szoveg(x.nev, 120), szulo_email: szoveg(x.email, 160), szulo_telefon: szoveg(x.telefon, 40) }
+        : { diak_email: szoveg(x.email, 160), diak_telefon: szoveg(x.telefon, 40) }));
+    }
+    if (uj.length) await sb('tanitvanyok', { method: 'POST', body: JSON.stringify(uj) });
+    return { felveve: uj.length };
+  },
+
   async szamlazando() {
     const [tan, orak, bef] = await Promise.all([
       sb('tanitvanyok?select=id,nev,szulo_nev,szulo_email,szamla_nev,szamla_irsz,szamla_varos,szamla_cim&order=nev'),

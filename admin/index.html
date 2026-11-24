@@ -329,11 +329,19 @@ function vTanitvanyok() {
     var q = document.getElementById('kereso').value.toLowerCase(), s = document.getElementById('szuro').value;
     sessionStorage.setItem('adm_tsz', s);
     var l = ST.tan.filter(function (t) { return (!s || t.statusz === s) && (!q || [t.nev, t.szulo_nev, t.diak_email, t.szulo_email].join(' ').toLowerCase().indexOf(q) >= 0); });
-    document.getElementById('tt').innerHTML = '<tr><th>Név</th><th>Évf.</th><th>Szolgáltatás</th><th>Megtartott óra</th><th>Következő óra</th><th>Fiók</th><th style="text-align:right">Egyenleg</th></tr>'
+    document.getElementById('tt').innerHTML = '<tr><th>Név</th><th>Évf.</th><th>Szolgáltatás</th><th>Megtartott óra</th><th>Következő óra</th><th>Fiók</th><th style="text-align:right">Egyenleg</th><th></th></tr>'
       + (l.length ? l.map(function (t) {
-        return '<tr class="click" onclick="location.hash=\'#/t/' + t.id + '\'"><td><b>' + esc(t.nev) + '</b>' + (t.statusz !== 'aktiv' ? ' ' + chip(t.statusz) : '') + '<div class="muted sm">' + esc(t.szulo_nev || '') + '</div></td><td>' + esc(t.evfolyam || '–') + '</td><td class="sm">' + esc(szolgNev(t.szolgaltatas_id)) + (t.egyedi_ar != null ? '<div class="muted">egyedi: ' + ft(t.egyedi_ar) + '</div>' : '') + '</td><td>' + (t._e.megtartott || 0) + '</td><td class="sm">' + (t._e.kovetkezo ? datumIdo(t._e.kovetkezo) : '<span class="muted">–</span>') + '</td><td>' + (t.user_id ? '<span class="chip aktiv">van</span>' : '<span class="muted sm">nincs</span>') + '</td><td style="text-align:right">' + egyenlegHtml(t._e) + '</td></tr>';
-      }).join('') : '<tr><td colspan="7"><div class="empty" style="border:0">Nincs találat.</div></td></tr>');
+        return '<tr class="click" onclick="location.hash=\'#/t/' + t.id + '\'"><td><b>' + esc(t.nev) + '</b>' + (t.statusz !== 'aktiv' ? ' ' + chip(t.statusz) : '') + '<div class="muted sm">' + esc(t.szulo_nev || '') + '</div></td><td>' + esc(t.evfolyam || '–') + '</td><td class="sm">' + esc(szolgNev(t.szolgaltatas_id)) + (t.egyedi_ar != null ? '<div class="muted">egyedi: ' + ft(t.egyedi_ar) + '</div>' : '') + '</td><td>' + (t._e.megtartott || 0) + '</td><td class="sm">' + (t._e.kovetkezo ? datumIdo(t._e.kovetkezo) : '<span class="muted">–</span>') + '</td><td>' + (t.user_id ? '<span class="chip aktiv">van</span>' : '<span class="muted sm">nincs</span>') + '</td><td style="text-align:right">' + egyenlegHtml(t._e) + '</td><td><button class="btn s d" data-del="' + t.id + '">Törlés</button></td></tr>';
+      }).join('') : '<tr><td colspan="8"><div class="empty" style="border:0">Nincs találat.</div></td></tr>');
   }
+  document.getElementById('tt').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-del]'); if (!b) return;
+    e.stopPropagation();
+    var t = ST.tan.filter(function (x) { return x.id === b.dataset.del; })[0];
+    if (!confirm('Törlöd ' + (t ? t.nev : '') + ' adatlapját? Az órái, befizetései és kiadott feladatai is törlődnek.')) return;
+    b.disabled = true;
+    api('tanitvany_torles', { id: b.dataset.del }).then(function () { toast('Törölve'); return frissit(); }).then(rajz, function (er) { b.disabled = false; hibaKezel(er); });
+  }, true);
   document.getElementById('kereso').oninput = rajz; document.getElementById('szuro').onchange = rajz; rajz();
 }
 
@@ -496,7 +504,7 @@ function vJelentkezok() {
     var felvett = {}; j.tanitvanyok.forEach(function (t) { if (t.csoport_jelentkezes_id) felvett[t.csoport_jelentkezes_id] = t; });
     var emailek = {}; j.tanitvanyok.forEach(function (t) { [t.diak_email, t.szulo_email].forEach(function (e) { if (e) emailek[e.toLowerCase()] = t; }); });
     var cs = j.csoport.filter(function (x) { return !x.teszt; }), teszt = j.csoport.length - cs.length;
-    $app.innerHTML = '<h1 class="t">Jelentkezők</h1>'
+    $app.innerHTML = '<div class="row"><h1 class="t" style="margin:0">Jelentkezők</h1><span class="sp"></span><button class="btn p" id="imp">Mindenki felvétele tanítványnak</button></div>'
       + '<h2 class="t">8 hét – 8 felvételi feladatsor <span class="muted sm">(' + cs.filter(function (x) { return x.statusz === 'fizetve'; }).length + ' fizetett / ' + cs.length + ')' + (teszt ? ' · ' + teszt + ' teszt-jelentkezés elrejtve' : '') + '</span></h2>'
       + '<div class="tbw"><table class="tb"><tr><th>Mikor</th><th>Diák</th><th>Szülő</th><th>Számlázás</th><th>Státusz</th><th></th></tr>'
       + (cs.length ? cs.map(function (x) {
@@ -511,6 +519,11 @@ function vJelentkezok() {
         var idok = Array.isArray(x.idopontok) ? x.idopontok.map(function (i) { return typeof i === 'string' ? i : [i.nap, i.tol, i.ig].filter(Boolean).join(' '); }).join(', ') : (typeof x.idopontok === 'object' && x.idopontok ? JSON.stringify(x.idopontok) : (x.idopontok || ''));
         return '<tr><td class="sm">' + datumIdo(x.created_at) + '</td><td><b>' + esc(x.nev) + '</b><div class="sm muted">' + (x.ki === 'szulo' ? 'szülő jelentkezett' : 'diák jelentkezett') + '</div></td><td class="sm">' + esc(x.email || '') + '<br>' + esc(x.telefon || '') + '</td><td>' + esc(x.osztaly || '') + '.</td><td class="sm">' + esc(x.helyszin || '') + '</td><td class="sm">' + esc(idok) + '</td><td>' + (t ? '<a class="btn s" href="#/t/' + t.id + '">Adatlap</a>' : '<button class="btn s p" data-egy="' + x.id + '">Felvétel</button>') + '</td></tr>';
       }).join('') : '<tr><td colspan="7"><div class="empty" style="border:0">Még nincs jelentkezés.</div></td></tr>') + '</table></div>';
+    document.getElementById('imp').onclick = function (ev) {
+      if (!confirm('Minden eddigi weboldali jelentkezőt (8 hetes és egyéni) felveszek tanítványnak. A teszt-jelentkezéseket és akit már felvettél, kihagyom. A felesleges adatlapokat utána a Tanítványok fülön egyenként törölheted. Mehet?')) return;
+      ev.target.disabled = true;
+      api('jelentkezok_import').then(function (r) { toast(r.felveve + ' tanítvány felvéve'); return frissit(); }).then(vJelentkezok, function (e) { ev.target.disabled = false; hibaKezel(e); });
+    };
     var nyolcas = ST.szolg.filter(function (s) { return /8\. osztályos felvételi/.test(s.nev); })[0];
     $app.querySelectorAll('[data-cs]').forEach(function (b) {
       var x = j.csoport.filter(function (y) { return String(y.id) === b.dataset.cs; })[0];
