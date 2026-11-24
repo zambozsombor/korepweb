@@ -102,6 +102,7 @@ label.f>input,label.f>select,label.f>textarea{margin-top:5px}
     <a href="#/" data-t="">Áttekintés</a>
     <a href="#/tanitvanyok" data-t="tanitvanyok">Tanítványok</a>
     <a href="#/orak" data-t="orak">Órák</a>
+    <a href="#/feladatok" data-t="feladatok">Feladatok</a>
     <a href="#/jelentkezok" data-t="jelentkezok">Jelentkezők</a>
     <a href="#/szamlazas" data-t="szamlazas">Számlázás</a>
     <a href="#/szolgaltatasok" data-t="szolgaltatasok">Szolgáltatások</a>
@@ -189,7 +190,7 @@ function urlapAblak(cim, mezok, ertekek, mentes, extra) {
     b.disabled = true; var adat = olvas(ov, mezok);
     new Promise(function (r) { r(mentes(adat)); }).then(function () { ov.remove(); toast('Mentve'); }, function (e) { b.disabled = false; hibaKezel(e); });
   } }];
-  if (extra) gombok.unshift(extra);
+  if (extra) [].concat(extra).reverse().forEach(function (g) { gombok.unshift(g); });
   return dialog(cim, urlap(mezok, ertekek), gombok);
 }
 
@@ -244,12 +245,27 @@ function oraAblak(ora, tanId, utana) {
   var uj = !ora || !ora.id;
   var e = Object.assign({ statusz: 'tervezett', fizetos: true }, ora || {});
   var mezok = oraMezok(!!tanId);
-  urlapAblak(uj ? 'Új óra' : 'Óra szerkesztése', mezok, e, function (a) {
+  if (uj) mezok = mezok.concat([{ l: 'Ismétlés', t: 'h' },
+    { n: 'ism', l: 'Gyakoriság', t: 'select', o: [['', 'Egyszeri alkalom'], ['het', 'Hetente (ugyanabban az időpontban)'], ['2het', 'Kéthetente']] },
+    { n: 'ism_ig', l: 'Utolsó alkalom legkésőbb', t: 'date' }, { n: 'ism_db', l: 'vagy: alkalmak száma (max. 60)', t: 'number' }]);
+  var torles = [];
+  if (!uj) {
+    torles.push({ t: ora.sorozat_id ? 'Csak ezt törlöm' : 'Törlés', cls: 'd', fn: function (ov) { if (!confirm('Biztosan törlöd ezt az órát?')) return; api('ora_torles', { id: ora.id }).then(function () { ov.remove(); toast('Törölve'); utana(); }, hibaKezel); } });
+    if (ora.sorozat_id) torles.push({ t: 'Ez + a következők törlése', cls: 'd', fn: function (ov) { if (!confirm('Törlöd ezt és a sorozat összes későbbi (még tervezett) óráját?')) return; api('ora_torles', { id: ora.id, kovetkezok: true }).then(function (r) { ov.remove(); toast('Törölve: ' + ((r.db || 0) + 1) + ' óra'); utana(); }, hibaKezel); } });
+  }
+  var dlg = urlapAblak(uj ? 'Új óra' : 'Óra szerkesztése' + (ora.sorozat_id ? ' (ismétlődő)' : ''), mezok, e, function (a) {
     if (tanId) a.tanitvany_id = tanId;
     if (!uj) a.id = ora.id;
     if (uj && !a.tanitvany_id) throw { hiba: 'Válassz tanítványt.' };
-    return api('ora_mentes', a).then(utana);
-  }, uj ? null : { t: 'Törlés', cls: 'd', fn: function (ov) { if (!confirm('Biztosan törlöd ezt az órát?')) return; api('ora_torles', { id: ora.id }).then(function () { ov.remove(); toast('Törölve'); utana(); }, hibaKezel); } });
+    if (uj && a.ism) a.ismetles = { gyakorisag: a.ism, ig: a.ism_ig, db: a.ism_db };
+    delete a.ism; delete a.ism_ig; delete a.ism_db;
+    return api('ora_mentes', a).then(function (r) { if (r && r._db > 1) toast(r._db + ' óra felvéve'); utana(); });
+  }, torles.length ? torles : null);
+  if (uj) {
+    var sel = dlg.querySelector('[name=ism]'), egyeb = [dlg.querySelector('[name=ism_ig]').parentNode, dlg.querySelector('[name=ism_db]').parentNode];
+    var valt = function () { egyeb.forEach(function (x) { x.style.display = sel.value ? '' : 'none'; }); };
+    sel.onchange = valt; valt();
+  }
 }
 function oraGyors(id, statusz, utana) {
   var a = { id: id, statusz: statusz };
@@ -284,8 +300,13 @@ function frissit() {
   return api('attekintes').then(function (a) {
     ST.att = a; ST.szolg = a.szolgaltatasok; ST.tan = a.tanitvanyok;
     var j = a.jelentkezok || {};
-    var el = $tabs.querySelector('[data-t="orak"]');
-    el.innerHTML = 'Órák' + ((a.lezaratlan + a.hozzarendelendo.length) ? '<span class="cnt">' + (a.lezaratlan + a.hozzarendelendo.length) + '</span>' : '');
+    var jel = function (t, nev, n) { $tabs.querySelector('[data-t="' + t + '"]').innerHTML = nev + (n ? '<span class="cnt">' + n + '</span>' : ''); };
+    jel('orak', 'Órák', a.lezaratlan + a.hozzarendelendo.length);
+    jel('feladatok', 'Feladatok', (a.beadott || []).length);
+    jel('jelentkezok', 'Jelentkezők', a.uj_jelentkezok ? a.uj_jelentkezok.csoport.length + a.uj_jelentkezok.egyeni.length : 0);
+    var ossz = a.lezaratlan + a.hozzarendelendo.length + (a.beadott || []).length + (a.lejart || []).length + (a.uj_jelentkezok ? a.uj_jelentkezok.csoport.length + a.uj_jelentkezok.egyeni.length : 0);
+    jel('', 'Áttekintés', ossz);
+    document.title = (ossz ? '(' + ossz + ') ' : '') + 'Admin | papaimatek.hu';
     return a;
   });
 }
@@ -293,7 +314,18 @@ function frissit() {
 function vAttekintes() {
   var a = ST.att, aktiv = ST.tan.filter(function (t) { return t.statusz === 'aktiv'; });
   var tart = ST.tan.reduce(function (s, t) { return s + Math.min(0, t._e.egyenleg || 0); }, 0);
+  var ert = [];
+  (a.beadott || []).forEach(function (k) { ert.push(['beadva', 'Beadott feladat: <b>' + esc((k.tanitvanyok && k.tanitvanyok.nev) || '') + '</b> – ' + esc(k.cim), '#/t/' + k.tanitvany_id, k.beadva_at]); });
+  var uj = a.uj_jelentkezok || { csoport: [], egyeni: [] };
+  uj.csoport.forEach(function (x) { ert.push(['fizetesre_var', 'Új jelentkező (8 hét): <b>' + esc(x.diak_nev) + '</b>' + (x.statusz === 'fizetve' ? ' – fizetett' : ''), '#/jelentkezok']); });
+  uj.egyeni.forEach(function (x) { ert.push(['fizetesre_var', 'Új jelentkező (egyéni óra): <b>' + esc(x.nev) + '</b>', '#/jelentkezok']); });
+  (a.lejart || []).forEach(function (k) { ert.push(['lemondott', 'Lejárt határidő, még nincs beadva: <b>' + esc((k.tanitvanyok && k.tanitvanyok.nev) || '') + '</b> – ' + esc(k.cim), '#/t/' + k.tanitvany_id, k.hatarido]); });
+  if (a.lezaratlan) ert.push(['tervezett', '<b>' + a.lezaratlan + '</b> lezáratlan múltbeli óra (megtartva / lemondva?)', '#/orak']);
+  if (a.hozzarendelendo.length) ert.push(['tervezett', '<b>' + a.hozzarendelendo.length + '</b> naptárból jött óra vár tanítványra', '#/orak']);
   $app.innerHTML = '<h1 class="t">Áttekintés</h1>'
+    + '<div class="card" style="margin-bottom:16px"><div class="row" style="margin-bottom:' + (ert.length ? '10px' : '0') + '"><b style="font:800 19px/1.2 var(--serif)">Értesítések</b>' + (ert.length ? '<span class="tabs" style="margin:0;padding:0;border:0"><span class="cnt" style="margin:0">' + ert.length + '</span></span>' : '<span class="muted sm">Nincs új teendő. ✓</span>') + '</div>'
+    + ert.map(function (e) { return '<a href="' + e[2] + '" style="display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid #ECEEE9;text-decoration:none">' + chip(e[0]).replace(/>[^<]*</, '>' + ({ beadva: 'Átnézendő', fizetesre_var: 'Új', lemondott: 'Lejárt', tervezett: 'Órák' }[e[0]]) + '<') + '<span>' + e[1] + '</span><span class="sp"></span>' + (e[3] ? '<span class="muted sm">' + datumIdo(e[3]) + '</span>' : '') + '<span class="muted">›</span></a>'; }).join('')
+    + '</div>'
     + '<div class="grid g4">'
     + '<a class="card kpi" href="#/tanitvanyok" style="text-decoration:none"><b>' + aktiv.length + '</b><span>aktív tanítvány</span></a>'
     + '<a class="card kpi" href="#/orak" style="text-decoration:none"><b>' + a.kovetkezo_orak.length + '</b><span>óra a következő 7 napban</span></a>'
@@ -420,38 +452,88 @@ function kiadasLista(t, lista, ujra) {
   lista.forEach(function (k) {
     var c = document.createElement('div'); c.className = 'card'; c.style.marginBottom = '10px';
     var kesve = k.hatarido && k.beadva_at && Date.parse(k.beadva_at) > Date.parse(k.hatarido);
+    var dFajl = (k.beadas_fajlok || []).filter(function (f) { return !f.tanartol; }), tFajl = (k.beadas_fajlok || []).filter(function (f) { return f.tanartol; });
     c.innerHTML = '<div class="row"><b style="font-size:17px">' + esc(k.cim) + '</b>' + chip(k.statusz) + (kesve ? '<span class="chip lemondott">késve</span>' : '') + '<span class="sp"></span>'
       + '<span class="muted sm">' + (k.hatarido ? 'Határidő: ' + datumIdo(k.hatarido) : 'nincs határidő') + (k.beadva_at ? ' · beadva: ' + datumIdo(k.beadva_at) : '') + '</span></div>'
       + ((k.feladatok || []).length ? '<div class="hl" style="margin-top:8px">' + k.feladatok.map(function (f) { return '<a class="chip kiadva" target="_blank" rel="noopener" href="' + esc(f.url) + '">' + esc(f.cim) + ' ↗</a>'; }).join('') + '</div>' : '')
       + (k.leiras ? '<div class="sm" style="margin-top:8px;white-space:pre-line">' + esc(k.leiras) + '</div>' : '')
-      + '<div class="sm" style="margin-top:8px"><b>Beadott fájlok:</b> ' + ((k.beadas_fajlok || []).length ? k.beadas_fajlok.map(function (f) { return '<a href="#" data-fajl="' + f.id + '">' + esc(f.nev || 'fájl') + '</a>'; }).join(' · ') : '<span class="muted">még nincs</span>') + '</div>'
+      + '<div class="sm" style="margin-top:8px"><b>Beadott fájlok:</b> ' + (dFajl.length ? dFajl.map(function (f) { return '<a href="#" data-fajl="' + f.id + '">' + esc(f.nev || 'fájl') + '</a>'; }).join(' · ') + ' <button class="btn s" data-a="zip" style="margin-left:6px">⬇ Összes letöltése</button>' : '<span class="muted">még nincs</span>') + '</div>'
+      + '<div class="sm" style="margin-top:6px"><b>Visszaküldött (javított) fájlok:</b> ' + (tFajl.length ? tFajl.map(function (f) { return '<a href="#" data-fajl="' + f.id + '">' + esc(f.nev || 'fájl') + '</a> <a href="#" class="neg" data-tdel="' + f.id + '" title="Törlés" style="text-decoration:none">×</a>'; }).join(' · ') : '<span class="muted">nincs</span>') + ' <button class="btn s" data-a="feltolt" style="margin-left:6px">📎 Javított fájl feltöltése</button></div>'
       + (k.visszajelzes ? '<div class="sm" style="margin-top:8px;background:#FAFAF6;border-left:3px solid var(--patina);padding:8px 10px;white-space:pre-line"><b>Visszajelzésed:</b> ' + esc(k.visszajelzes) + '</div>' : '')
       + '<div class="row" style="margin-top:10px"><span class="sp"></span>'
       + (k.statusz === 'beadva' ? '<button class="btn s p" data-a="kesz">✓ Kész</button><button class="btn s" data-a="javitando">Javítandó…</button>' : '')
       + '<button class="btn s" data-a="szerk">Szerkeszt</button></div>';
+    c.querySelectorAll('[data-tdel]').forEach(function (a) { a.onclick = function (e) { e.preventDefault(); if (!confirm('Törlöd ezt a visszaküldött fájlt?')) return; api('fajl_torles', { id: a.dataset.tdel }).then(ujra, hibaKezel); }; });
     c.querySelectorAll('[data-fajl]').forEach(function (a) { a.onclick = function (e) { e.preventDefault(); var w = window.open('', '_blank'); api('fajl_link', { id: a.dataset.fajl }).then(function (r) { w.location = r.url; }, function (er) { w.close(); hibaKezel(er); }); }; });
     c.querySelectorAll('[data-a]').forEach(function (b) {
       b.onclick = function () {
         var a = b.dataset.a;
         if (a === 'szerk') return kiadasAblak(t, k, ujra);
-        if (a === 'kesz') return urlapAblak('Kész – ' + k.cim, [{ n: 'visszajelzes', l: 'Visszajelzés a diáknak (nem kötelező)', t: 'textarea', w: 1 }], k, function (v) { return api('kiadas_mentes', { id: k.id, statusz: 'kesz', visszajelzes: v.visszajelzes }).then(ujra); });
+        if (a === 'zip') return zipLetoltes(t, k, b);
+        if (a === 'feltolt') return tanariFeltoltes(k, ujra);
+        if (a === 'kesz') return urlapAblak('Kész – ' + k.cim, [{ n: 'visszajelzes', l: 'Visszajelzés a diáknak (nem kötelező)', t: 'textarea', w: 1 }, { n: 'ertesit', l: 'E-mail a diáknak (a visszajelzéssel és a javított fájlokkal)', t: 'check', w: 1 }], Object.assign({}, k, { ertesit: true }), function (v) { return api('kiadas_mentes', { id: k.id, statusz: 'kesz', visszajelzes: v.visszajelzes, ertesit: v.ertesit }).then(function (r) { ertesitesToast(r); ujra(); }); });
         urlapAblak('Javítandó – ' + k.cim, [{ n: 'visszajelzes', l: 'Mit javítson? (e-mailben is megkapja)', t: 'textarea', w: 1 }], k, function (v) { return api('kiadas_mentes', { id: k.id, statusz: 'javitando', visszajelzes: v.visszajelzes }).then(function (r) { ertesitesToast(r); ujra(); }); });
       };
     });
     kl.appendChild(c);
   });
 }
+function zipLetoltes(t, k, gomb) {
+  gomb.disabled = true; var eredeti = gomb.textContent; gomb.textContent = 'Csomagolás…';
+  var kesz = function () { gomb.disabled = false; gomb.textContent = eredeti; };
+  var jszip = window.JSZip ? Promise.resolve() : new Promise(function (ok, nem) { var sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'; sc.onload = ok; sc.onerror = nem; document.head.appendChild(sc); });
+  Promise.all([jszip, api('fajlok_linkek', { kiadas_id: k.id })]).then(function (r) {
+    var l = r[1], zip = new JSZip(), nevek = {};
+    return Promise.all(l.map(function (f, i) {
+      return fetch(f.url).then(function (x) { if (!x.ok) throw new Error('letöltés'); return x.blob(); }).then(function (bl) {
+        var n = (f.nev || ('fajl-' + (i + 1))).replace(/[\\/:*?"<>|]/g, '_');
+        if (nevek[n]) n = (i + 1) + '-' + n; nevek[n] = 1;
+        zip.file(n, bl);
+      });
+    })).then(function () { return zip.generateAsync({ type: 'blob' }); });
+  }).then(function (blob) {
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = (t.nev + ' – ' + k.cim).replace(/[\\/:*?"<>|]/g, '_').slice(0, 120) + '.zip';
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000); kesz();
+  }, function (e) { kesz(); hibaKezel(e && e.hiba ? e : { hiba: 'A csomagolás nem sikerült.' }); });
+}
+function tanariFeltoltes(k, ujra) {
+  var inp = document.createElement('input'); inp.type = 'file'; inp.multiple = true; inp.accept = 'application/pdf,image/*';
+  inp.onchange = function () {
+    var fajlok = [].slice.call(inp.files), i = 0; if (!fajlok.length) return;
+    toast('Feltöltés…');
+    (function kov() {
+      if (i >= fajlok.length) { toast('Feltöltve – a diák a Feladataim oldalon látja'); return ujra(); }
+      var f = fajlok[i++], tip = (f.type || '').toLowerCase() || (/\.pdf$/i.test(f.name) ? 'application/pdf' : '');
+      api('tanar_feltoltes_link', { kiadas_id: k.id, tipus: tip, meret: f.size }).then(function (l) {
+        return PM.sb.storage.from('beadasok').uploadToSignedUrl(l.utvonal, l.token, f, { contentType: tip }).then(function (r) {
+          if (r.error) throw { hiba: 'Feltöltési hiba: ' + r.error.message };
+          return api('tanar_fajl_mentes', { kiadas_id: k.id, utvonal: l.utvonal, nev: f.name, meret: f.size, tipus: tip });
+        });
+      }).then(kov, function (e) { hibaKezel(e); kov(); });
+    })();
+  };
+  inp.click();
+}
 function ertesitesToast(r) { var e = r && r._ertesites; if (!e) return; if (e.kuldve) toast('E-mail elküldve: ' + e.cim); else toast('E-mail nem ment ki: ' + (e.ok || ''), true); }
 function lapNev(ev, v) { return ev + ' · ' + v.fordulo + '. feladatlap'; }
+var ERETTSEGI = [['mat', 'Matematika', 'matek.html', 'mat/data.js'], ['tori', 'Történelem', 'tori.html', 'data.js'], ['magy', 'Magyar', 'magyar.html', 'magy/data.js'], ['ang', 'Angol', 'angol.html', 'ang/data.js'], ['nem', 'Német', 'nemet.html', 'nem/data.js'], ['bio', 'Biológia', 'biologia.html', 'bio/data.js'], ['kem', 'Kémia', 'kemia.html', 'kem/data.js'], ['fiz', 'Fizika', 'fizika.html', 'fiz/data.js'], ['foldr', 'Földrajz', 'foldrajz.html', 'foldr/data.js']];
+var ERB = {};
+function erBank(tt) { return ERB[tt[0]] || (ERB[tt[0]] = fetch('/erettsegi/' + tt[3]).then(function (r) { if (!r.ok) throw new Error(); return r.text(); }).then(function (x) { return JSON.parse(x.slice(x.indexOf('=') + 1).trim().replace(/;\s*$/, '')); }).catch(function (e) { delete ERB[tt[0]]; throw e; })); }
+function bankAkt(g, ev, i) { return BANK[g].evek[ev][i]; }
 function kiadasAblak(t, k, ujra) {
   var uj = !k;
   var kiv = (k && k.feladatok ? k.feladatok.slice() : []);
   var g0 = (String(t.evfolyam || '').match(/\d+/) || ['8'])[0]; if (['4', '6', '8'].indexOf(g0) < 0) g0 = '8';
   var html = '<div class="fg">'
     + '<h4>Feladatok a feladatbankból</h4>'
-    + '<label class="f">Felvételi<select id="kg"><option value="8">8. osztályos (középiskolai)</option><option value="6">6. osztályos (6 évf. gimn.)</option><option value="4">4. osztályos (8 évf. gimn.)</option></select></label>'
+    + '<label class="f w">Forrás<select id="kfor"><option value="f">Felvételi feladatbank</option><option value="e">Érettségi feladatbank</option></select></label>'
+    + '<div class="w fg" id="bf"><label class="f">Felvételi<select id="kg"><option value="8">8. osztályos (középiskolai)</option><option value="6">6. osztályos (6 évf. gimn.)</option><option value="4">4. osztályos (8 évf. gimn.)</option></select></label>'
     + '<label class="f">Év<select id="ke"></select></label>'
-    + '<label class="f w">Feladatlap<select id="kf"></select></label>'
+    + '<label class="f w">Feladatlap<select id="kf"></select></label></div>'
+    + '<div class="w fg" id="be" hidden><label class="f">Tantárgy<select id="ets">' + ERETTSEGI.map(function (x) { return '<option value="' + x[0] + '">' + x[1] + '</option>'; }).join('') + '</select></label>'
+    + '<label class="f">Szint<select id="esz"><option value="k">Középszint</option><option value="e">Emelt szint</option></select></label>'
+    + '<label class="f w">Vizsga<select id="evz"></select></label></div>'
     + '<div class="w" id="kn" style="display:flex;flex-wrap:wrap;gap:6px"></div>'
     + '<div class="w row"><button class="btn s" id="kadd" type="button">+ Kijelöltek hozzáadása</button><span class="muted sm">Több feladatlapról is válogathatsz.</span></div>'
     + '<div class="w"><b class="sm">Kiadandó:</b> <div id="ksel" class="hl" style="margin-top:6px"></div></div>'
@@ -482,28 +564,68 @@ function kiadasAblak(t, k, ujra) {
     $s.innerHTML = kiv.length ? '' : '<span class="muted sm">Még nincs kiválasztva feladat (cím és utasítás önmagában is kiadható).</span>';
     kiv.forEach(function (f, i) { var x = document.createElement('span'); x.innerHTML = esc(f.cim) + ' <a href="#" style="text-decoration:none;margin-left:4px">×</a>'; x.querySelector('a').onclick = function (e) { e.preventDefault(); kiv.splice(i, 1); rajzSel(); }; $s.appendChild(x); });
   }
-  bank().then(function (B) {
-    function evek() { var ev = Object.keys(B[$g.value].evek).sort().reverse(); $e.innerHTML = ev.map(function (y) { return '<option>' + y + '</option>'; }).join(''); lapok(); }
-    function lapok() { var l = B[$g.value].evek[$e.value] || []; $f.innerHTML = l.map(function (v, i) { return '<option value="' + i + '">' + esc(v.fordulo + '. feladatlap' + (v.datum ? ' – ' + v.datum : '')) + '</option>'; }).join(''); feladatok(); }
-    function feladatok() {
-      var v = (B[$g.value].evek[$e.value] || [])[$f.value]; if (!v) { $n.innerHTML = ''; return; }
-      $n.innerHTML = '<label class="chip" style="cursor:pointer"><input type="checkbox" value="full" style="width:auto;margin-right:4px">Teljes feladatsor</label>'
-        + v.tasks.map(function (x) { return '<label class="chip" style="cursor:pointer" title="' + esc(x.tema || '') + '"><input type="checkbox" value="' + x.n + '" style="width:auto;margin-right:4px">' + x.n + '.</label>'; }).join('');
+  var $for = ov.querySelector('#kfor'), $ets = ov.querySelector('#ets'), $esz = ov.querySelector('#esz'), $evz = ov.querySelector('#evz');
+  var ER = null;
+  function felveteli() {
+    $n.innerHTML = '<span class="muted sm">Betöltés…</span>';
+    bank().then(function (B) {
+      function evek() { var ev = Object.keys(B[$g.value].evek).sort().reverse(); $e.innerHTML = ev.map(function (y) { return '<option>' + y + '</option>'; }).join(''); lapok(); }
+      function lapok() { var l = B[$g.value].evek[$e.value] || []; $f.innerHTML = l.map(function (v, i) { return '<option value="' + i + '">' + esc(v.fordulo + '. feladatlap' + (v.datum ? ' – ' + v.datum : '')) + '</option>'; }).join(''); feladatok(); }
+      function feladatok() {
+        var v = (B[$g.value].evek[$e.value] || [])[$f.value]; if (!v) { $n.innerHTML = ''; return; }
+        $n.innerHTML = '<label class="chip" style="cursor:pointer"><input type="checkbox" value="full" style="width:auto;margin-right:4px">Teljes feladatsor</label>'
+          + v.tasks.map(function (x) { return '<label class="chip" style="cursor:pointer" title="' + esc(x.tema || '') + '"><input type="checkbox" value="' + x.n + '" style="width:auto;margin-right:4px">' + x.n + '.</label>'; }).join('');
+      }
+      $g.onchange = evek; $e.onchange = lapok; $f.onchange = feladatok; evek();
+    }, function () { $n.innerHTML = '<span class="neg sm">A feladatbank nem töltődött be.</span>'; });
+  }
+  function erettsegi() {
+    var tt = ERETTSEGI.filter(function (x) { return x[0] === $ets.value; })[0];
+    $n.innerHTML = '<span class="muted sm">Betöltés…</span>'; $evz.innerHTML = '';
+    erBank(tt).then(function (D) {
+      ER = D;
+      function vizsgak() {
+        var l = D.vizsgak.filter(function (v) { return v.szint === $esz.value; }).sort(function (a, b) { return b.ev - a.ev || String(b.id).localeCompare(String(a.id)); });
+        $evz.innerHTML = l.map(function (v) { return '<option value="' + esc(v.id) + '">' + v.ev + ' ' + esc(v.ho) + '</option>'; }).join('');
+        feladatok();
+      }
+      function feladatok() {
+        var fl = D.feladatok.filter(function (f) { return f.v === $evz.value; }).sort(function (a, b) { return (a.sor || a.n) - (b.sor || b.n); });
+        $n.innerHTML = '<label class="chip" style="cursor:pointer"><input type="checkbox" value="full" style="width:auto;margin-right:4px">Teljes feladatsor</label>'
+          + fl.map(function (f) { return '<label class="chip" style="cursor:pointer" title="' + esc(f.cim || '') + '"><input type="checkbox" value="' + esc(f.id) + '" style="width:auto;margin-right:4px">' + (f.resz ? esc(f.resz) + '/' : '') + f.n + '.</label>'; }).join('');
+      }
+      $esz.onchange = vizsgak; $evz.onchange = feladatok; vizsgak();
+    }, function () { $n.innerHTML = '<span class="neg sm">Az érettségi feladatbank nem töltődött be.</span>'; });
+  }
+  $for.onchange = function () { var e = $for.value === 'e'; ov.querySelector('#bf').hidden = e; ov.querySelector('#be').hidden = !e; (e ? erettsegi : felveteli)(); };
+  $ets.onchange = erettsegi;
+  felveteli();
+  ov.querySelector('#kadd').onclick = function () {
+    var jel = [].slice.call($n.querySelectorAll('input:checked')).map(function (i) { return i.value; });
+    if (!jel.length) return toast('Jelölj ki legalább egy feladatot.', true);
+    var ujak = [], cimJav;
+    if ($for.value === 'e') {
+      var tt = ERETTSEGI.filter(function (x) { return x[0] === $ets.value; })[0], vid = $evz.value;
+      var v = ER.vizsgak.filter(function (x) { return x.id === vid; })[0];
+      var vn = tt[1] + ' ' + (v.szint === 'e' ? 'emelt' : 'közép') + ' · ' + v.ev + ' ' + v.ho;
+      var alap = '/erettsegi/' + tt[2] + '?vizsga=' + encodeURIComponent(vid);
+      if (jel.indexOf('full') >= 0) { ujak.push({ kulcs: 'e:' + tt[0] + ':v:' + vid, cim: vn + ' (teljes)', url: alap }); cimJav = vn + ' – teljes feladatsor'; }
+      else {
+        var nk = [];
+        jel.forEach(function (fid) { var f = ER.feladatok.filter(function (x) { return x.id === fid; })[0]; if (!f) return; var nn = (f.resz ? f.resz + '/' : '') + f.n; nk.push(nn); ujak.push({ kulcs: 'e:' + tt[0] + ':' + fid, cim: vn + ' · ' + nn + '. feladat', tema: f.cim, url: alap + '&f=' + encodeURIComponent(fid) }); });
+        cimJav = vn + ' – ' + nk.join('., ') + '. feladat';
+      }
+    } else {
+      var g = $g.value, ev = $e.value, v2 = bankAkt($g.value, $e.value, $f.value);
+      if (jel.indexOf('full') >= 0) ujak.push({ kulcs: 's:' + g + '_' + ev + '_' + v2.fordulo, cim: g + '. o. · ' + lapNev(ev, v2) + ' (teljes)', url: '/feladatadatbazis.html?' + (g !== '8' ? 'osztaly=' + g + '&' : '') + 'ev=' + ev + '&ford=' + v2.fordulo + '&feladat=full' });
+      else jel.forEach(function (n) { var tk = v2.tasks.filter(function (x) { return String(x.n) === n; })[0]; ujak.push({ kulcs: 't:' + g + '_' + ev + '_' + v2.fordulo + '_' + n, cim: g + '. o. · ' + lapNev(ev, v2) + ' · ' + n + '. feladat', tema: tk && tk.tema, url: '/feladatadatbazis.html?' + (g !== '8' ? 'osztaly=' + g + '&' : '') + 'ev=' + ev + '&ford=' + v2.fordulo + '&feladat=' + n }); });
+      cimJav = jel.indexOf('full') >= 0 ? lapNev(ev, v2) + ' – teljes feladatsor' : lapNev(ev, v2) + ' – ' + jel.join('., ') + '. feladat';
     }
-    $g.onchange = evek; $e.onchange = lapok; $f.onchange = feladatok; evek();
-    ov.querySelector('#kadd').onclick = function () {
-      var g = $g.value, ev = $e.value, v = B[g].evek[ev][$f.value];
-      var jel = [].slice.call($n.querySelectorAll('input:checked')).map(function (i) { return i.value; });
-      if (!jel.length) return toast('Jelölj ki legalább egy feladatot.', true);
-      var ujak = [];
-      if (jel.indexOf('full') >= 0) ujak.push({ kulcs: 's:' + g + '_' + ev + '_' + v.fordulo, cim: g + '. o. · ' + lapNev(ev, v) + ' (teljes)', url: '/feladatadatbazis.html?' + (g !== '8' ? 'osztaly=' + g + '&' : '') + 'ev=' + ev + '&ford=' + v.fordulo + '&feladat=full' });
-      else jel.forEach(function (n) { var tk = v.tasks.filter(function (x) { return String(x.n) === n; })[0]; ujak.push({ kulcs: 't:' + g + '_' + ev + '_' + v.fordulo + '_' + n, cim: g + '. o. · ' + lapNev(ev, v) + ' · ' + n + '. feladat', tema: tk && tk.tema, url: '/feladatadatbazis.html?' + (g !== '8' ? 'osztaly=' + g + '&' : '') + 'ev=' + ev + '&ford=' + v.fordulo + '&feladat=' + n }); });
-      ujak.forEach(function (u) { if (!kiv.some(function (x) { return x.kulcs === u.kulcs; })) kiv.push(u); });
-      if (!$c.value.trim()) $c.value = jel.indexOf('full') >= 0 ? lapNev(ev, v) + ' – teljes feladatsor' : lapNev(ev, v) + ' – ' + jel.join('., ') + '. feladat';
-      $n.querySelectorAll('input:checked').forEach(function (i) { i.checked = false; });
-      rajzSel();
-    };
-  }, function () { $n.innerHTML = '<span class="neg sm">A feladatbank nem töltődött be.</span>'; });
+    ujak.forEach(function (u) { if (!kiv.some(function (x) { return x.kulcs === u.kulcs; })) kiv.push(u); });
+    if (!$c.value.trim()) $c.value = cimJav;
+    $n.querySelectorAll('input:checked').forEach(function (i) { i.checked = false; });
+    rajzSel();
+  };
   rajzSel();
 }
 
@@ -512,6 +634,8 @@ function haladasKulcs(k) {
   if (m) return m[1] + '. o. · ' + m[2] + ' · ' + (m[3] === '1' ? 'felvételi' : (m[3] === '2' ? 'pótfelv.' : m[3] + '. forduló')) + ' · ' + m[4] + '. fa.';
   m = /^s:(\d+)_(\d{4})_(\d+)$/.exec(k);
   if (m) return m[1] + '. o. · ' + m[2] + ' · teljes feladatsor (' + m[3] + ')';
+  m = /^e:(\w+):(v:)?(.+)$/.exec(k);
+  if (m) { var tt = ERETTSEGI.filter(function (x) { return x[0] === m[1]; })[0]; return 'Érettségi · ' + (tt ? tt[1] : m[1]) + ' · ' + m[3] + (m[2] ? ' (teljes)' : ''); }
   return k;
 }
 function fiokPanel(t, fiok, ujra) {
@@ -597,19 +721,31 @@ function vJelentkezok() {
     var cs = j.csoport.filter(function (x) { return !x.teszt; }), teszt = j.csoport.length - cs.length;
     $app.innerHTML = '<div class="row"><h1 class="t" style="margin:0">Jelentkezők</h1><span class="sp"></span><button class="btn p" id="imp">Mindenki felvétele tanítványnak</button></div>'
       + '<h2 class="t">8 hét – 8 felvételi feladatsor <span class="muted sm">(' + cs.filter(function (x) { return x.statusz === 'fizetve'; }).length + ' fizetett / ' + cs.length + ')' + (teszt ? ' · ' + teszt + ' teszt-jelentkezés elrejtve' : '') + '</span></h2>'
-      + '<div class="tbw"><table class="tb"><tr><th>Mikor</th><th>Diák</th><th>Szülő</th><th>Számlázás</th><th>Státusz</th><th></th></tr>'
+      + '<div class="tbw"><table class="tb"><tr><th>Mikor</th><th>Diák</th><th>Szülő</th><th>Számlázás</th><th>Státusz</th><th></th><th></th></tr>'
       + (cs.length ? cs.map(function (x) {
         var t = felvett[x.id] || emailek[(x.diak_email || '').toLowerCase()] || emailek[(x.email || '').toLowerCase()];
         var sz = [x.szamla_nev, [x.szamla_irsz, x.szamla_varos].filter(Boolean).join(' '), x.szamla_cim].filter(Boolean).join('\n');
-        return '<tr><td class="sm">' + datumIdo(mikor(x)) + '</td><td><b>' + esc(x.diak_nev) + '</b><div class="sm muted">' + esc(x.diak_email || '') + '</div></td><td>' + esc(x.szulo_nev || '') + '<div class="sm muted">' + esc(x.email || '') + '<br>' + esc(x.telefon || '') + '</div></td><td>' + (sz ? '<div class="billblock copy sm" onclick="__copy(this.innerText)">' + esc(sz) + '</div>' : '<span class="muted">–</span>') + '</td><td>' + chip(x.statusz) + (x.osszeg ? '<div class="sm muted">' + ft(x.osszeg) + '</div>' : '') + '</td><td>' + (t ? '<a class="btn s" href="#/t/' + t.id + '">Adatlap</a>' : '<button class="btn s p" data-cs="' + x.id + '">Felvétel</button>') + '</td></tr>';
-      }).join('') : '<tr><td colspan="6"><div class="empty" style="border:0">Még nincs jelentkezés.</div></td></tr>') + '</table></div>'
+        return '<tr><td class="sm">' + datumIdo(mikor(x)) + '</td><td><b>' + esc(x.diak_nev) + '</b><div class="sm muted">' + esc(x.diak_email || '') + '</div></td><td>' + esc(x.szulo_nev || '') + '<div class="sm muted">' + esc(x.email || '') + '<br>' + esc(x.telefon || '') + '</div></td><td>' + (sz ? '<div class="billblock copy sm" onclick="__copy(this.innerText)">' + esc(sz) + '</div>' : '<span class="muted">–</span>') + '</td><td>' + chip(x.statusz) + (x.osszeg ? '<div class="sm muted">' + ft(x.osszeg) + '</div>' : '') + '</td><td>' + (t ? '<a class="btn s" href="#/t/' + t.id + '">Adatlap</a>' : '<button class="btn s p" data-cs="' + x.id + '">Felvétel</button>') + '</td><td><button class="btn s d" data-torol="csoport:' + x.id + '">Törlés</button></td></tr>';
+      }).join('') : '<tr><td colspan="7"><div class="empty" style="border:0">Még nincs jelentkezés.</div></td></tr>') + '</table></div>'
       + '<h2 class="t">Egyéni órára jelentkezők <span class="muted sm">(weboldali űrlap)</span></h2>'
-      + '<div class="tbw"><table class="tb"><tr><th>Mikor</th><th>Név</th><th>Kapcsolat</th><th>Osztály</th><th>Helyszín</th><th>Időpontok</th><th></th></tr>'
+      + '<div class="tbw"><table class="tb"><tr><th>Mikor</th><th>Név</th><th>Kapcsolat</th><th>Osztály</th><th>Helyszín</th><th>Időpontok</th><th></th><th></th></tr>'
       + (j.egyeni.length ? j.egyeni.map(function (x) {
         var t = emailek[(x.email || '').toLowerCase()];
         var idok = Array.isArray(x.idopontok) ? x.idopontok.map(function (i) { return typeof i === 'string' ? i : [i.nap, i.tol, i.ig].filter(Boolean).join(' '); }).join(', ') : (typeof x.idopontok === 'object' && x.idopontok ? JSON.stringify(x.idopontok) : (x.idopontok || ''));
-        return '<tr><td class="sm">' + datumIdo(mikor(x)) + '</td><td><b>' + esc(x.nev) + '</b><div class="sm muted">' + (x.ki === 'szulo' ? 'szülő jelentkezett' : 'diák jelentkezett') + '</div></td><td class="sm">' + esc(x.email || '') + '<br>' + esc(x.telefon || '') + '</td><td>' + esc(x.osztaly || '') + '.</td><td class="sm">' + esc(x.helyszin || '') + '</td><td class="sm">' + esc(idok) + '</td><td>' + (t ? '<a class="btn s" href="#/t/' + t.id + '">Adatlap</a>' : '<button class="btn s p" data-egy="' + x.id + '">Felvétel</button>') + '</td></tr>';
-      }).join('') : '<tr><td colspan="7"><div class="empty" style="border:0">Még nincs jelentkezés.</div></td></tr>') + '</table></div>';
+        return '<tr><td class="sm">' + datumIdo(mikor(x)) + '</td><td><b>' + esc(x.nev) + '</b><div class="sm muted">' + (x.ki === 'szulo' ? 'szülő jelentkezett' : 'diák jelentkezett') + '</div></td><td class="sm">' + esc(x.email || '') + '<br>' + esc(x.telefon || '') + '</td><td>' + esc(x.osztaly || '') + '.</td><td class="sm">' + esc(x.helyszin || '') + '</td><td class="sm">' + esc(idok) + '</td><td>' + (t ? '<a class="btn s" href="#/t/' + t.id + '">Adatlap</a>' : '<button class="btn s p" data-egy="' + x.id + '">Felvétel</button>') + '</td><td><button class="btn s d" data-torol="egyeni:' + x.id + '">Törlés</button></td></tr>';
+      }).join('') : '<tr><td colspan="8"><div class="empty" style="border:0">Még nincs jelentkezés.</div></td></tr>') + '</table></div>';
+    var uj = ST.att && ST.att.uj_jelentkezok ? { cs: ST.att.uj_jelentkezok.csoport.map(function (x) { return x.id; }), egy: ST.att.uj_jelentkezok.egyeni.map(function (x) { return x.id; }) } : { cs: [], egy: [] };
+    $app.querySelectorAll('[data-cs]').forEach(function (b) { if (uj.cs.indexOf(Number(b.dataset.cs)) >= 0) b.closest('tr').querySelector('td').insertAdjacentHTML('afterbegin', '<span class="chip lemondott" style="margin-bottom:4px">ÚJ</span><br>'); });
+    $app.querySelectorAll('[data-egy]').forEach(function (b) { if (uj.egy.indexOf(Number(b.dataset.egy)) >= 0) b.closest('tr').querySelector('td').insertAdjacentHTML('afterbegin', '<span class="chip lemondott" style="margin-bottom:4px">ÚJ</span><br>'); });
+    if (uj.cs.length || uj.egy.length) api('jelentkezok_latta').then(function () { return frissit(); }).catch(function () {});
+    $app.querySelectorAll('[data-torol]').forEach(function (b) {
+      b.onclick = function () {
+        var r = b.dataset.torol.split(':');
+        if (!confirm('Törlöd ezt a jelentkezést? A tanítványi adatlap (ha felvetted) megmarad. Ez nem vonható vissza.')) return;
+        b.disabled = true;
+        api('jelentkezes_torles', { tabla: r[0], id: Number(r[1]) }).then(function () { toast('Jelentkezés törölve'); vJelentkezok(); }, function (e) { b.disabled = false; hibaKezel(e); });
+      };
+    });
     document.getElementById('imp').onclick = function (ev) {
       if (!confirm('Minden eddigi weboldali jelentkezőt (8 hetes és egyéni) felveszek tanítványnak. A teszt-jelentkezéseket és akit már felvettél, kihagyom. A felesleges adatlapokat utána a Tanítványok fülön egyenként törölheted. Mehet?')) return;
       ev.target.disabled = true;
@@ -630,6 +766,25 @@ function vJelentkezok() {
         ujTanitvany(e);
       };
     });
+  }, hibaKezel);
+}
+
+/* --- összes kiadott feladat --- */
+function vFeladatok() {
+  $app.innerHTML = '<p class="muted">Betöltés…</p>';
+  api('feladatok').then(function (l) {
+    var most = Date.now();
+    var csop = [['beadva', 'Átnézendő (beadva)'], ['javitando', 'Javítandó – a diáknál'], ['kiadva', 'Kiadva – megoldásra vár'], ['kesz', 'Kész']];
+    $app.innerHTML = '<h1 class="t">Kiadott feladatok</h1>' + csop.map(function (c) {
+      var x = l.filter(function (k) { return k.statusz === c[0]; });
+      if (c[0] === 'kesz') x = x.slice(0, 30);
+      return '<h2 class="t">' + esc(c[1]) + ' <span class="muted sm">(' + x.length + ')</span>' + (c[0] === 'beadva' && x.length ? ' <span class="tabs" style="display:inline;border:0;padding:0"><span class="cnt">' + x.length + '</span></span>' : '') + '</h2>'
+        + (x.length ? '<div class="tbw"><table class="tb"><tr><th>Tanítvány</th><th>Feladat</th><th>Határidő</th><th>' + (c[0] === 'beadva' ? 'Beadva' : 'Kiadva') + '</th><th>Fájl</th></tr>' + x.map(function (k) {
+          var lej = k.hatarido && Date.parse(k.hatarido) < most && (k.statusz === 'kiadva' || k.statusz === 'javitando');
+          var dk = (k.beadas_fajlok || []).filter(function (f) { return !f.tanartol; }).length;
+          return '<tr class="click" onclick="location.hash=\'#/t/' + k.tanitvany_id + '\'"><td><b>' + esc((k.tanitvanyok && k.tanitvanyok.nev) || '') + '</b></td><td>' + esc(k.cim) + '</td><td class="sm' + (lej ? ' neg' : '') + '">' + (k.hatarido ? datumIdo(k.hatarido) + (lej ? ' – lejárt' : '') : '–') + '</td><td class="sm">' + datumIdo(c[0] === 'beadva' ? k.beadva_at : k.created_at) + '</td><td>' + (dk || '–') + '</td></tr>';
+        }).join('') + '</table></div>' : '<div class="empty">Nincs ilyen feladat.</div>');
+    }).join('');
   }, hibaKezel);
 }
 
@@ -678,7 +833,7 @@ function route() {
   $tabs.querySelectorAll('a').forEach(function (a) { a.classList.toggle('on', a.dataset.t === (tab === 't' ? 'tanitvanyok' : tab)); });
   window.scrollTo(0, 0);
   if (tab === 't') return vTanitvany(h.split('/')[1]);
-  var fn = { '': vAttekintes, tanitvanyok: vTanitvanyok, orak: vOrak, jelentkezok: vJelentkezok, szamlazas: vSzamlazas, szolgaltatasok: vSzolg }[tab] || vAttekintes;
+  var fn = { '': vAttekintes, feladatok: vFeladatok, tanitvanyok: vTanitvanyok, orak: vOrak, jelentkezok: vJelentkezok, szamlazas: vSzamlazas, szolgaltatasok: vSzolg }[tab] || vAttekintes;
   frissit().then(fn, hibaKezel);
 }
 window.addEventListener('hashchange', route);

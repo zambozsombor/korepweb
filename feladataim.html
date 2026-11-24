@@ -148,9 +148,20 @@ function kartya(k, nyitott) {
     + (k.leiras ? '<p class="leiras">' + esc(k.leiras) + '</p>' : '')
     + (fel.length ? '<div class="fel">' + fel.map(function (f) { var ok = ST.kesz[f.kulcs]; return '<a class="' + (ok ? 'ok' : '') + '" href="' + esc(f.url) + '" target="_blank" rel="noopener">' + (ok ? '✓ ' : '') + esc(f.cim.replace(/^\d+\. o\. · /, '')) + ' ↗</a>'; }).join('') + '</div>' : '')
     + (k.visszajelzes ? '<div class="vj' + (k.statusz === 'javitando' ? ' jav' : '') + '"><b>Visszajelzés:</b> ' + esc(k.visszajelzes) + '</div>' : '')
-    + '<div class="up"><div class="files"></div><div class="btns"></div></div>';
+    + '<div class="tanari"></div><div class="up"><div class="files"></div><div class="btns"></div></div>';
+  var tanari = (k.beadas_fajlok || []).filter(function (f) { return f.tanartol; });
+  if (tanari.length) {
+    var tb = c.querySelector('.tanari');
+    tb.innerHTML = '<div class="vj" style="margin-top:14px"><b>📎 Javított megoldás tőlem:</b><div class="files" style="margin:8px 0 0"></div></div>';
+    tanari.forEach(function (f) {
+      var e = document.createElement('div'); e.className = 'file'; e.style.background = '#fff';
+      e.innerHTML = '<span>' + (f.tipus === 'application/pdf' ? '📄' : '🖼️') + '</span><a href="#">' + esc(f.nev || 'javítás') + '</a>';
+      e.querySelector('a').onclick = function (ev) { ev.preventDefault(); var w = window.open('', '_blank'); api('fajl_link', { kiadas_id: k.id, id: f.id }).then(function (r) { w.location = r.url; }, function (er) { w.close(); toast(er.hiba, true); }); };
+      tb.querySelector('.files').appendChild(e);
+    });
+  }
   var files = c.querySelector('.files'), btns = c.querySelector('.btns');
-  var lista = (k.beadas_fajlok || []).slice();
+  var lista = (k.beadas_fajlok || []).filter(function (f) { return !f.tanartol; });
   var szerk = k.statusz === 'kiadva' || k.statusz === 'javitando';
   function rajz() {
     files.innerHTML = '';

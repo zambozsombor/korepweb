@@ -98,13 +98,22 @@ async function ertesitDiak(t, kiadas, tipus) {
   const h = hatarSzoveg(kiadas.hatarido);
   const fel = (kiadas.feladatok || []).map((f) => `<li style="margin:0 0 4px">${K.esc(String(f.cim || '').replace(/^\d+\. o\. · /, ''))}</li>`).join('');
   let html, targy;
-  if (tipus === 'javitando') {
+  const tanari = kiadas._tanari ? doboz(`📎 Feltöltöttem a <b>javított megoldást</b> (${kiadas._tanari} fájl) – a Feladataim oldalon megnyithatod.`, '#1F6F64') : '';
+  if (tipus === 'kesz') {
+    targy = `Átnéztem: ${kiadas.cim}`;
+    html = sablon({
+      elonezet: 'Átnéztem a beadott megoldásodat.', felirat: 'ÁTNÉZETT FELADAT', cim: kiadas.cim,
+      belso: p(`Szia ${K.esc(keresztnev)}!`) + p('Átnéztem a beadott megoldásodat. ✓')
+        + (kiadas.visszajelzes ? doboz(`<b>Visszajelzés:</b><br>${K.esc(kiadas.visszajelzes).replace(/\n/g, '<br>')}`) : '') + tanari,
+      gombUrl: `${ALAP_URL}/feladataim.html`, gombSzoveg: 'Megnézem',
+    });
+  } else if (tipus === 'javitando') {
     targy = `Javítandó: ${kiadas.cim}`;
     html = sablon({
       elonezet: 'Átnéztem a megoldásodat – van még rajta javítanivaló.', felirat: 'JAVÍTANDÓ FELADAT', cim: kiadas.cim,
       belso: p(`Szia ${K.esc(keresztnev)}!`) + p('Átnéztem a beadott megoldásodat, és van még rajta javítanivaló.')
         + (kiadas.visszajelzes ? doboz(`<b>Visszajelzés:</b><br>${K.esc(kiadas.visszajelzes).replace(/\n/g, '<br>')}`, '#C8432F') : '')
-        + p('<br>A javított megoldást ugyanott töltheted fel, ahol az elsőt.'),
+        + tanari + p('<br>A javított megoldást ugyanott töltheted fel, ahol az elsőt.'),
       gombUrl: `${ALAP_URL}/feladataim.html`, gombSzoveg: 'Javítás feltöltése',
     });
   } else {

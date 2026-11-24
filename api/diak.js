@@ -20,7 +20,7 @@ async function sajatKiadas(t, id) {
 const M = {
   async lista(b, t) {
     const [kiad, orak] = await Promise.all([
-      sb(`kiadasok?tanitvany_id=eq.${t.id}&select=*,beadas_fajlok(id,nev,meret,tipus,created_at)&order=created_at.desc`),
+      sb(`kiadasok?tanitvany_id=eq.${t.id}&select=*,beadas_fajlok(id,nev,meret,tipus,created_at,tanartol)&order=created_at.desc`),
       sb(`orak?tanitvany_id=eq.${t.id}&select=kezdes,perc,statusz,tema&statusz=in.(tervezett,megtartott)&order=kezdes.desc&limit=40`),
     ]);
     const kulcsok = [...new Set(kiad.flatMap((k) => (k.feladatok || []).map((f) => f.kulcs)).filter(Boolean))];
@@ -34,7 +34,7 @@ const M = {
   async feltoltes_link(b, t) {
     const k = await sajatKiadas(t, b.kiadas_id);
     if (k.statusz === 'kesz') throw hiba('Ez a feladat már le van zárva.');
-    if ((k.beadas_fajlok || []).length >= MAX_FAJL) throw hiba(`Legfeljebb ${MAX_FAJL} fájlt tölthetsz fel egy feladathoz.`);
+    if ((k.beadas_fajlok || []).filter((x) => !x.tanartol).length >= MAX_FAJL) throw hiba(`Legfeljebb ${MAX_FAJL} fájlt tölthetsz fel egy feladathoz.`);
     const tipus = String(b.tipus || '').toLowerCase();
     if (!TIPUSOK[tipus]) throw hiba('Csak képet (JPG, PNG, WEBP, HEIC) vagy PDF-et tölthetsz fel.');
     if (!(Number(b.meret) > 0) || Number(b.meret) > MAX_MERET) throw hiba('Egy fájl legfeljebb 10 MB lehet.');
@@ -54,7 +54,7 @@ const M = {
   async fajl_torles(b, t) {
     const k = await sajatKiadas(t, b.kiadas_id);
     if (k.statusz === 'beadva' || k.statusz === 'kesz') throw hiba('Beadás után már nem törölhetsz fájlt.');
-    const f = (k.beadas_fajlok || []).find((x) => x.id === b.id);
+    const f = (k.beadas_fajlok || []).find((x) => x.id === b.id && !x.tanartol);
     if (!f) throw hiba('Nincs ilyen fájl.');
     await sb(`beadas_fajlok?id=eq.${f.id}`, { method: 'DELETE' });
     await T.fajlTorles([f.utvonal]);
@@ -71,11 +71,11 @@ const M = {
   async beadas(b, t) {
     const k = await sajatKiadas(t, b.kiadas_id);
     if (k.statusz === 'kesz') throw hiba('Ez a feladat már le van zárva.');
-    if (!(k.beadas_fajlok || []).length) throw hiba('Előbb tölts fel legalább egy képet vagy PDF-et.');
+    if (!(k.beadas_fajlok || []).filter((x) => !x.tanartol).length) throw hiba('Előbb tölts fel legalább egy képet vagy PDF-et.');
     const most = new Date().toISOString();
     const u = (await sb(`kiadasok?id=eq.${k.id}`, { method: 'PATCH', body: JSON.stringify({ statusz: 'beadva', beadva_at: most, updated_at: most }) }))[0];
     try {
-      await T.ertesitAdmin(t, k, k.beadas_fajlok.length);
+      await T.ertesitAdmin(t, k, k.beadas_fajlok.filter((x) => !x.tanartol).length);
     } catch (e) { console.error('[diak] értesítő', e.message); }
     return u;
   },

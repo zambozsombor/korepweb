@@ -101,7 +101,16 @@ const M = {
       puha('csoport_jelentkezesek?select=id,statusz,teszt&teszt=is.false'),
       puha('jelentkezesek?select=id'),
     ]);
-    const beadott = await sb('kiadasok?statusz=eq.beadva&select=id,cim,beadva_at,hatarido,tanitvany_id,tanitvanyok(nev)&order=beadva_at');
+    const [beadott, lejart, latott, csMax, egyMax] = await Promise.all([
+      sb('kiadasok?statusz=eq.beadva&select=id,cim,beadva_at,hatarido,tanitvany_id,tanitvanyok(nev)&order=beadva_at'),
+      sb(`kiadasok?statusz=in.(kiadva,javitando)&hatarido=lt.${new Date().toISOString()}&select=id,cim,hatarido,tanitvany_id,tanitvanyok(nev)&order=hatarido`),
+      sb('admin_beallitasok?kulcs=eq.latott_jelentkezes&select=ertek'),
+      puha('csoport_jelentkezesek?select=id,diak_nev,teszt,statusz&order=id.desc&limit=200'),
+      puha('jelentkezesek?select=id,nev&order=id.desc&limit=200'),
+    ]);
+    const lat = (latott[0] && latott[0].ertek) || { cs: 0, egy: 0 };
+    const ujCs = csMax.filter((x) => x.teszt !== true && x.id > (lat.cs || 0));
+    const ujEgy = egyMax.filter((x) => x.id > (lat.egy || 0));
     const e = egyenlegek(orak, bef);
     const most = Date.now();
     const het = most + 7 * 864e5;
@@ -110,7 +119,7 @@ const M = {
       tanitvanyok: tan.map((t) => Object.assign({}, t, { _e: e[t.id] || { dij: 0, fizetve: 0, egyenleg: 0, orak_szama: 0, megtartott: 0 } })),
       kovetkezo_orak: orak.filter((o) => o.statusz === 'tervezett' && Date.parse(o.kezdes) >= most - 3600e3 && Date.parse(o.kezdes) <= het),
       hozzarendelendo: orak.filter((o) => !o.tanitvany_id),
-      beadott: beadott,
+      beadott, lejart, uj_jelentkezok: { csoport: ujCs, egyeni: ujEgy },
       lezaratlan: orak.filter((o) => o.tanitvany_id && o.statusz === 'tervezett' && Date.parse(o.kezdes) < most - 3600e3).length,
       jelentkezok: { csoport: cs.length, csoport_fizetve: cs.filter((x) => x.statusz === 'fizetve').length, egyeni: egy.length },
     };
@@ -165,6 +174,28 @@ const M = {
         if (d.perc == null && a.perc) d.perc = a.perc;
       }
       if (d.statusz === 'lemondott' && !('fizetos' in b)) d.fizetos = false;
+      const ism = b.ismetles || {};
+      const lepes = ism.gyakorisag === 'het' ? 7 : (ism.gyakorisag === '2het' ? 14 : 0);
+      if (lepes) {
+        const kezd = new Date(d.kezdes);
+        const igDatum = ism.ig ? Date.parse(ism.ig + 'T23:59:59') : null;
+        const db = Math.min(Number(ism.db) || 0, 60);
+        if (!igDatum && !db) throw hiba('Ismétlésnél add meg az utolsó alkalom dátumát vagy az alkalmak számát.');
+        const sorozat = require('crypto').randomUUID();
+        const sorok = [];
+        for (let i = 0; i < 60; i++) {
+          // a helyi (budapesti) időpont maradjon, téli/nyári időszámítás-váltáskor is
+          const t = new Date(kezd.getTime() + i * lepes * 864e5);
+          const eltolas = (budapestOffset(kezd) - budapestOffset(t)) * 60e3;
+          const k = new Date(t.getTime() + eltolas);
+          if (db && i >= db) break;
+          if (igDatum && k.getTime() > igDatum) break;
+          sorok.push(Object.assign({}, d, { kezdes: k.toISOString(), sorozat_id: sorozat, updated_at: new Date().toISOString() }));
+        }
+        if (!sorok.length) throw hiba('Az ismétlési beállítással egy alkalom sem jön ki.');
+        const ki = await sb('orak', { method: 'POST', body: JSON.stringify(sorok) });
+        return Object.assign({}, ki[0], { _db: ki.length });
+      }
     } else if (d.tanitvany_id && b.ar_ujra) {
       const a = await oraAr(d.tanitvany_id); d.ar = a.ar; if (a.perc) d.perc = a.perc;
     }
@@ -177,6 +208,14 @@ const M = {
 
   async ora_torles(b) {
     const id = uuid(b.id); if (!id) throw hiba('Hiányzó azonosító.');
+    if (b.kovetkezok) {
+      const o = (await sb(`orak?id=eq.${id}&select=sorozat_id,kezdes`))[0];
+      if (o && o.sorozat_id) {
+        const torolt = await sb(`orak?sorozat_id=eq.${o.sorozat_id}&kezdes=gte.${enc(o.kezdes)}&statusz=eq.tervezett`, { method: 'DELETE' });
+        await sb(`orak?id=eq.${id}`, { method: 'DELETE' });
+        return { ok: true, db: (torolt || []).length };
+      }
+    }
     await sb(`orak?id=eq.${id}`, { method: 'DELETE' });
     return { ok: true };
   },
@@ -276,6 +315,59 @@ const M = {
     return { felveve: uj.length, osszes_8het: cs.length, osszes_egyeni: egy.length, teszt: tesztDb, mar_felvett: marVolt };
   },
 
+  async jelentkezok_latta() {
+    const [cs, egy] = await Promise.all([puha('csoport_jelentkezesek?select=id&order=id.desc&limit=1'), puha('jelentkezesek?select=id&order=id.desc&limit=1')]);
+    const ertek = { cs: (cs[0] && cs[0].id) || 0, egy: (egy[0] && egy[0].id) || 0 };
+    await sb('admin_beallitasok?kulcs=eq.latott_jelentkezes', { method: 'DELETE' });
+    await sb('admin_beallitasok', { method: 'POST', body: JSON.stringify({ kulcs: 'latott_jelentkezes', ertek, updated_at: new Date().toISOString() }) });
+    return ertek;
+  },
+
+  async jelentkezes_torles(b) {
+    const id = egesz(b.id); if (!id) throw hiba('Hiányzó azonosító.');
+    const tabla = b.tabla === 'csoport' ? 'csoport_jelentkezesek' : (b.tabla === 'egyeni' ? 'jelentkezesek' : null);
+    if (!tabla) throw hiba('Ismeretlen jelentkezéstípus.');
+    await sb(`${tabla}?id=eq.${id}`, { method: 'DELETE' });
+    return { ok: true };
+  },
+
+  async feladatok() {
+    return sb('kiadasok?select=id,cim,statusz,hatarido,beadva_at,created_at,tanitvany_id,tanitvanyok(nev),beadas_fajlok(id,tanartol)&order=created_at.desc&limit=500');
+  },
+
+  async fajlok_linkek(b) {
+    const id = uuid(b.kiadas_id); if (!id) throw hiba('Hiányzó azonosító.');
+    const f = await sb(`beadas_fajlok?kiadas_id=eq.${id}&tanartol=is.false&select=id,nev,utvonal&order=created_at`);
+    const out = [];
+    for (const x of f) out.push({ nev: x.nev, url: await T.letoltesiLink(x.utvonal, 900) });
+    return out;
+  },
+
+  async tanar_feltoltes_link(b) {
+    const id = uuid(b.kiadas_id); if (!id) throw hiba('Hiányzó azonosító.');
+    const k = (await sb(`kiadasok?id=eq.${id}&select=id,tanitvany_id`))[0]; if (!k) throw hiba('Nincs ilyen feladat.');
+    const tip = { 'application/pdf': 'pdf', 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'image/heif': 'heif' }[String(b.tipus || '').toLowerCase()];
+    if (!tip) throw hiba('Csak PDF vagy kép tölthető fel.');
+    if (!(Number(b.meret) > 0) || Number(b.meret) > 10 * 1024 * 1024) throw hiba('Egy fájl legfeljebb 10 MB lehet.');
+    return T.feltoltesiLink(`${k.tanitvany_id}/${k.id}/tanar-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${tip}`);
+  },
+
+  async tanar_fajl_mentes(b) {
+    const id = uuid(b.kiadas_id); if (!id) throw hiba('Hiányzó azonosító.');
+    const k = (await sb(`kiadasok?id=eq.${id}&select=id,tanitvany_id`))[0]; if (!k) throw hiba('Nincs ilyen feladat.');
+    const ut = String(b.utvonal || '');
+    if (!ut.startsWith(`${k.tanitvany_id}/${k.id}/tanar-`) || ut.includes('..')) throw hiba('Hibás fájl.');
+    return (await sb('beadas_fajlok', { method: 'POST', body: JSON.stringify({ kiadas_id: k.id, utvonal: ut, nev: szoveg(b.nev, 160) || 'javítás', meret: egesz(b.meret), tipus: szoveg(b.tipus, 60), tanartol: true }) }))[0];
+  },
+
+  async fajl_torles(b) {
+    const id = uuid(b.id); if (!id) throw hiba('Hiányzó azonosító.');
+    const f = (await sb(`beadas_fajlok?id=eq.${id}&select=utvonal`))[0]; if (!f) throw hiba('Nincs ilyen fájl.');
+    await sb(`beadas_fajlok?id=eq.${id}`, { method: 'DELETE' });
+    await T.fajlTorles([f.utvonal]);
+    return { ok: true };
+  },
+
   async szamlazando() {
     const [tan, orak, bef] = await Promise.all([
       sb('tanitvanyok?select=id,nev,szulo_nev,szulo_email,szamla_nev,szamla_irsz,szamla_varos,szamla_cim&order=nev'),
@@ -350,11 +442,12 @@ const M = {
       ? (await sb(`kiadasok?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(d) }))[0]
       : (await sb('kiadasok', { method: 'POST', body: JSON.stringify(d) }))[0];
     // értesítő a diáknak: új feladatnál és ha javítandóra állítod
-    const tipus = !id ? 'uj' : (k.statusz === 'javitando' && regi && regi.statusz !== 'javitando' ? 'javitando' : null);
+    const tipus = !id ? 'uj' : (k.statusz === 'javitando' && regi && regi.statusz !== 'javitando' ? 'javitando' : (k.statusz === 'kesz' && regi && regi.statusz !== 'kesz' && b.ertesit ? 'kesz' : null));
     let ertesites = null;
     if (tipus && b.ertesit !== false) {
       const t = (await sb(`tanitvanyok?id=eq.${k.tanitvany_id}&select=nev,user_id,diak_email`))[0];
-      try { ertesites = await T.ertesitDiak(t, k, tipus); } catch (e) { ertesites = { kuldve: false, ok: e.message.slice(0, 120) }; }
+      const tanariFajl = (await sb(`beadas_fajlok?kiadas_id=eq.${k.id}&tanartol=is.true&select=id`)).length;
+      try { ertesites = await T.ertesitDiak(t, Object.assign({}, k, { _tanari: tanariFajl }), tipus); } catch (e) { ertesites = { kuldve: false, ok: e.message.slice(0, 120) }; }
     }
     return Object.assign({}, k, { _ertesites: ertesites });
   },
@@ -374,6 +467,14 @@ const M = {
     return { ok: true };
   },
 };
+
+function budapestOffset(d) {
+  // percben: mennyivel jár előrébb Budapest az UTC-nél az adott pillanatban
+  const s = d.toLocaleString('en-US', { timeZone: 'Europe/Budapest', hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  const m = /(\d+)\/(\d+)\/(\d+),\s*(\d+):(\d+)/.exec(s);
+  const helyi = Date.UTC(+m[3], +m[1] - 1, +m[2], +m[4] % 24, +m[5]);
+  return Math.round((helyi - Math.floor(d.getTime() / 60e3) * 60e3) / 60e3);
+}
 
 function hiba(uzenet) { const e = new Error(uzenet); e.sajat = true; return e; }
 
