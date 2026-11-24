@@ -1,6 +1,7 @@
 /* PápaiMatek admin API – csak az ADMIN_EMAILS-ben megadott, bejelentkezett fiók érheti el.
    Minden kérés: POST /api/admin  { muvelet: '...', ...adatok }  + Authorization: Bearer <a bejelentkezett felhasználó tokenje> */
 const K = require('./_8het-kozos.js');
+const T = require('./_tanitvany-kozos.js');
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://duiskdduecldmkuylckb.supabase.co';
 const ALAP_URL = 'https://www.papaimatek.hu';
 
@@ -100,6 +101,7 @@ const M = {
       puha('csoport_jelentkezesek?select=id,statusz,teszt&teszt=is.false'),
       puha('jelentkezesek?select=id'),
     ]);
+    const beadott = await sb('kiadasok?statusz=eq.beadva&select=id,cim,beadva_at,hatarido,tanitvany_id,tanitvanyok(nev)&order=beadva_at');
     const e = egyenlegek(orak, bef);
     const most = Date.now();
     const het = most + 7 * 864e5;
@@ -108,6 +110,7 @@ const M = {
       tanitvanyok: tan.map((t) => Object.assign({}, t, { _e: e[t.id] || { dij: 0, fizetve: 0, egyenleg: 0, orak_szama: 0, megtartott: 0 } })),
       kovetkezo_orak: orak.filter((o) => o.statusz === 'tervezett' && Date.parse(o.kezdes) >= most - 3600e3 && Date.parse(o.kezdes) <= het),
       hozzarendelendo: orak.filter((o) => !o.tanitvany_id),
+      beadott: beadott,
       lezaratlan: orak.filter((o) => o.tanitvany_id && o.statusz === 'tervezett' && Date.parse(o.kezdes) < most - 3600e3).length,
       jelentkezok: { csoport: cs.length, csoport_fizetve: cs.filter((x) => x.statusz === 'fizetve').length, egyeni: egy.length },
     };
@@ -142,6 +145,10 @@ const M = {
 
   async tanitvany_torles(b) {
     const id = uuid(b.id); if (!id) throw hiba('Hiányzó azonosító.');
+    const t = (await sb(`tanitvanyok?id=eq.${id}&select=user_id`))[0];
+    const kiad = await sb(`kiadasok?tanitvany_id=eq.${id}&select=beadas_fajlok(utvonal)`);
+    await T.fajlTorles(kiad.flatMap((k) => (k.beadas_fajlok || []).map((f) => f.utvonal)));
+    if (t && t.user_id) await T.tanitvanyJeloles(t.user_id, false);
     await sb(`tanitvanyok?id=eq.${id}`, { method: 'DELETE' });
     return { ok: true };
   },
@@ -294,12 +301,17 @@ const M = {
     if (!id || !uid) throw hiba('Hiányzó azonosító.');
     const marVan = await sb(`tanitvanyok?user_id=eq.${uid}&id=neq.${id}&select=nev`);
     if (marVan[0]) throw hiba(`Ez a fiók már ${marVan[0].nev} adatlapjához van kötve.`);
-    return (await sb(`tanitvanyok?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ user_id: uid, updated_at: new Date().toISOString() }) }))[0];
+    const t = (await sb(`tanitvanyok?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ user_id: uid, updated_at: new Date().toISOString() }) }))[0];
+    await T.tanitvanyJeloles(uid, true);
+    return t;
   },
 
   async fiok_levalaszt(b) {
     const id = uuid(b.id); if (!id) throw hiba('Hiányzó azonosító.');
-    return (await sb(`tanitvanyok?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ user_id: null }) }))[0];
+    const regi = (await sb(`tanitvanyok?id=eq.${id}&select=user_id`))[0];
+    const t = (await sb(`tanitvanyok?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ user_id: null }) }))[0];
+    if (regi && regi.user_id) await T.tanitvanyJeloles(regi.user_id, false);
+    return t;
   },
 
   async fiok_meghivo(b) {
@@ -333,13 +345,31 @@ const M = {
     d.updated_at = new Date().toISOString();
     const id = uuid(b.id);
     if (!id && (!d.tanitvany_id || !d.cim)) throw hiba('Tanítvány és cím kötelező.');
-    return id
+    const regi = id ? (await sb(`kiadasok?id=eq.${id}&select=statusz`))[0] : null;
+    const k = id
       ? (await sb(`kiadasok?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(d) }))[0]
       : (await sb('kiadasok', { method: 'POST', body: JSON.stringify(d) }))[0];
+    // értesítő a diáknak: új feladatnál és ha javítandóra állítod
+    const tipus = !id ? 'uj' : (k.statusz === 'javitando' && regi && regi.statusz !== 'javitando' ? 'javitando' : null);
+    let ertesites = null;
+    if (tipus && b.ertesit !== false) {
+      const t = (await sb(`tanitvanyok?id=eq.${k.tanitvany_id}&select=nev,user_id,diak_email`))[0];
+      try { ertesites = await T.ertesitDiak(t, k, tipus); } catch (e) { ertesites = { kuldve: false, ok: e.message.slice(0, 120) }; }
+    }
+    return Object.assign({}, k, { _ertesites: ertesites });
+  },
+
+  async fajl_link(b) {
+    const id = uuid(b.id); if (!id) throw hiba('Hiányzó azonosító.');
+    const f = (await sb(`beadas_fajlok?id=eq.${id}&select=utvonal`))[0];
+    if (!f) throw hiba('Nincs ilyen fájl.');
+    return { url: await T.letoltesiLink(f.utvonal, 3600) };
   },
 
   async kiadas_torles(b) {
     const id = uuid(b.id); if (!id) throw hiba('Hiányzó azonosító.');
+    const fajlok = await sb(`beadas_fajlok?kiadas_id=eq.${id}&select=utvonal`);
+    await T.fajlTorles(fajlok.map((f) => f.utvonal));
     await sb(`kiadasok?id=eq.${id}`, { method: 'DELETE' });
     return { ok: true };
   },

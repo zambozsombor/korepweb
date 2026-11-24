@@ -486,6 +486,7 @@
       +   '<div class="pm-menu" id="pmMenu" hidden>'
       +     '<div class="pm-menu-name">' + esc(name) + '</div>'
       +     '<a class="pm-menu-item" href="' + esc(window.PM_HALADAS_URL || '/haladas.html') + '">Haladásom</a>'
+      +     (user && user.app_metadata && user.app_metadata.tanitvany ? '<a class="pm-menu-item" href="/feladataim.html">Feladataim</a>' : '')
       +     '<button class="pm-menu-item" id="pmAccount" type="button">Saját fiók</button>'
       +     '<button class="pm-menu-item pm-danger" id="pmLogout" type="button">Kijelentkezés</button>'
       +   '</div>'
