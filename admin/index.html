@@ -522,7 +522,7 @@ function vJelentkezok() {
     document.getElementById('imp').onclick = function (ev) {
       if (!confirm('Minden eddigi weboldali jelentkezőt (8 hetes és egyéni) felveszek tanítványnak. A teszt-jelentkezéseket és akit már felvettél, kihagyom. A felesleges adatlapokat utána a Tanítványok fülön egyenként törölheted. Mehet?')) return;
       ev.target.disabled = true;
-      api('jelentkezok_import').then(function (r) { toast(r.felveve + ' tanítvány felvéve'); return frissit(); }).then(vJelentkezok, function (e) { ev.target.disabled = false; hibaKezel(e); });
+      api('jelentkezok_import').then(function (r) { alert(r.felveve + ' tanítvány felvéve.\n\nTalált jelentkezés: ' + r.osszes_8het + ' db (8 hetes) + ' + r.osszes_egyeni + ' db (egyéni óra)\nKihagyva tesztként: ' + r.teszt + '\nKihagyva, mert már felvetted: ' + r.mar_felvett); return frissit(); }).then(vJelentkezok, function (e) { ev.target.disabled = false; hibaKezel(e); });
     };
     var nyolcas = ST.szolg.filter(function (s) { return /8\. osztályos felvételi/.test(s.nev); })[0];
     $app.querySelectorAll('[data-cs]').forEach(function (b) {

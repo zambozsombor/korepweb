@@ -217,7 +217,7 @@ const M = {
   // minden eddigi weboldali jelentkezőt felvesz tanítványnak (a teszt-jelentkezéseket és a már felvetteket kihagyja)
   async jelentkezok_import() {
     const [cs, egy, tan, szolg] = await Promise.all([
-      puha('csoport_jelentkezesek?select=*&teszt=is.false&order=created_at'),
+      puha('csoport_jelentkezesek?select=*&order=created_at'),
       puha('jelentkezesek?select=*&order=created_at'),
       sb('tanitvanyok?select=id,nev,csoport_jelentkezes_id,diak_email,szulo_email,megjegyzes'),
       sb('szolgaltatasok?select=id,nev'),
@@ -230,10 +230,12 @@ const M = {
     const HELY = { papa: 'papa', online: 'online' };
     const uj = [];
     const datumHu = (x) => (x ? new Date(x).toLocaleDateString('hu-HU', { timeZone: 'Europe/Budapest' }) : '');
+    let tesztDb = 0, marVolt = 0;
     for (const x of cs) {
-      if (csIdk.has(x.id)) continue;
+      if (x.teszt === true) { tesztDb++; continue; }
+      if (csIdk.has(x.id)) { marVolt++; continue; }
       const em = [kisb(x.diak_email), kisb(x.email)].filter(Boolean);
-      if (em.some((e) => emailek.has(e))) continue;
+      if (em.some((e) => emailek.has(e))) { marVolt++; continue; }
       em.forEach((e) => emailek.add(e));
       uj.push({
         nev: szoveg(x.diak_nev, 120) || '(név nélkül)', evfolyam: '8.', diak_email: szoveg(x.diak_email, 160),
@@ -245,7 +247,7 @@ const M = {
     }
     for (const x of egy) {
       const e = kisb(x.email);
-      if (e && emailek.has(e)) continue;
+      if (e && emailek.has(e)) { marVolt++; continue; }
       if (e) emailek.add(e);
       const o = Number(x.osztaly);
       const sz = o === 8 ? SZ8 : (o >= 5 && o <= 7 ? SZ57 : (o >= 9 ? SZKOZ : (o === 4 || o === 3 ? SZ46 : null)));
@@ -259,7 +261,7 @@ const M = {
         : { diak_email: szoveg(x.email, 160), diak_telefon: szoveg(x.telefon, 40) }));
     }
     if (uj.length) await sb('tanitvanyok', { method: 'POST', body: JSON.stringify(uj) });
-    return { felveve: uj.length };
+    return { felveve: uj.length, osszes_8het: cs.length, osszes_egyeni: egy.length, teszt: tesztDb, mar_felvett: marVolt };
   },
 
   async szamlazando() {
