@@ -22,3 +22,6 @@ User-agent: Bingbot
 Allow: /
 
 Sitemap: https://www.papaimatek.hu/sitemap.xml
+
+User-agent: *
+Disallow: /admin/

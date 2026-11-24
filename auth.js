@@ -304,9 +304,10 @@
   }
 
   /* ---------- új jelszó (jelszó-visszaállító link után) ---------- */
-  function openNewPasswordModal() {
+  function openNewPasswordModal(meghivo) {
     var ov = makeOverlay(
-      '<h3>Új jelszó megadása</h3><p>Add meg az új jelszavadat (legalább 8 karakter).</p>'
+      (meghivo ? '<h3>Üdv a papaimatek.hu-n!</h3><p>A fiókodat Zámbó Zsombor hozta létre neked. Állíts be egy jelszót (legalább 8 karakter), ezzel később e-mail-címmel és jelszóval is be tudsz lépni.</p>'
+               : '<h3>Új jelszó megadása</h3><p>Add meg az új jelszavadat (legalább 8 karakter).</p>')
       + '<form class="pm-form" novalidate>'
       +   '<label class="pm-acc-label">Új jelszó<input type="password" name="pw" autocomplete="new-password" minlength="8" required></label>'
       +   '<label class="pm-acc-label">Új jelszó még egyszer<input type="password" name="pw2" autocomplete="new-password" minlength="8" required></label>'
@@ -724,6 +725,7 @@
         var u = res && res.data && res.data.user;
         render(u ? { user:u} : null);
         if (hp.get('type') === 'recovery') openNewPasswordModal();
+        else if (hp.get('type') === 'invite') openNewPasswordModal(true);
         else if (hp.get('type') === 'signup') showBanner('Sikeres megerősítés – üdv a papaimatek.hu-n!', true);
         listeners.forEach(function (cb) { try { cb(u || null); } catch (e) {} });
       });
