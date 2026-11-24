@@ -63,23 +63,74 @@ async function diakEmail(t) {
   return t.diak_email || null;
 }
 
-const gomb = (url, szoveg) => `<p style="margin:22px 0"><a href="${url}" style="background:#1F6F64;color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:10px;display:inline-block">${K.esc(szoveg)}</a></p>`;
-const hatarSzoveg = (h) => (h ? new Date(h).toLocaleString('hu-HU', { timeZone: 'Europe/Budapest', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : null);
+// PápaiMatek e-mail sablon (ugyanaz a stílus, mint a hírlevélé)
+const F_SANS = "'Alegreya Sans',Arial,sans-serif", F_SERIF = "'Alegreya',Georgia,serif";
+const gomb = (url, szoveg) => `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0 6px"><tr><td style="background:#FFC21A;border-radius:999px"><a href="${url}" style="display:inline-block;padding:15px 30px;font-family:${F_SANS};font-size:18px;font-weight:800;color:#0B2B27;text-decoration:none">${K.esc(szoveg)}</a></td></tr></table>`;
+const doboz = (html, szin) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:18px 0 4px"><tr><td style="background:#F6F5EF;border-left:4px solid ${szin || '#1F6F64'};border-radius:0 12px 12px 0;padding:14px 18px;font-family:${F_SANS};font-size:17px;line-height:1.5;color:#1D2733">${html}</td></tr></table>`;
+function sablon({ elonezet, felirat, cim, belso, gombUrl, gombSzoveg, labjegyzet }) {
+  return `<!doctype html><html lang="hu"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light">
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@800&family=Alegreya+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<style>@media (max-width:620px){.wrap{width:100%!important}.px{padding-left:22px!important;padding-right:22px!important}.h1{font-size:28px!important}}</style></head>
+<body style="margin:0;padding:0;background:#F4F1EA">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">${K.esc(elonezet || '')}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F4F1EA"><tr><td align="center" style="padding:28px 12px">
+<table role="presentation" class="wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px;background:#FFFFFD;border-radius:20px;overflow:hidden;border:1px solid #E3DED3">
+<tr><td style="background:#0F3F39;padding:22px 32px" class="px"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+<td style="padding-right:12px"><img src="${ALAP_URL}/icon-192.png" width="40" height="40" alt="" style="display:block;border-radius:10px"></td>
+<td style="font-family:${F_SERIF};font-weight:800;font-size:26px;color:#FFFFFF">Pápai<span style="color:#9FE3D3">Matek</span></td></tr></table></td></tr>
+<tr><td class="px" style="padding:32px 40px 30px;font-family:${F_SANS};color:#1D2733;font-size:17px;line-height:1.55">
+${felirat ? `<p style="margin:0 0 6px;font-size:13px;font-weight:800;letter-spacing:.12em;color:#1F6F64">${K.esc(felirat)}</p>` : ''}
+<h1 class="h1" style="margin:0 0 16px;font-family:${F_SERIF};font-weight:800;font-size:32px;line-height:1.15;color:#123631">${K.esc(cim)}</h1>
+${belso}
+${gombUrl ? gomb(gombUrl, gombSzoveg) : ''}
+</td></tr>
+<tr><td class="px" style="padding:18px 40px 24px;border-top:1px solid #ECE8DF;font-family:${F_SANS};font-size:13.5px;line-height:1.5;color:#6B7480">${labjegyzet || 'Zámbó Zsombor · papaimatek.hu'}</td></tr>
+</table></td></tr></table></body></html>`;
+}
+const hatarSzoveg = (h) => (h ? new Date(h).toLocaleString('hu-HU', { timeZone: 'Europe/Budapest', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit' }) : null);
+const p = (html) => `<p style="margin:0 0 12px">${html}</p>`;
 
 async function ertesitDiak(t, kiadas, tipus) {
   const cim = await diakEmail(t);
   if (!cim) return { kuldve: false, ok: 'nincs e-mail-cím' };
-  const keresztnev = String(t.nev || '').trim().split(/\s+/).slice(-1)[0] || '';
+  const nevek = String(t.nev || '').trim().split(/\s+/);
+  const keresztnev = nevek.length > 1 ? nevek.slice(1).join(' ') : nevek[0] || '';
   const h = hatarSzoveg(kiadas.hatarido);
-  const targy = tipus === 'javitando' ? `Javítandó feladat: ${kiadas.cim}` : `Új feladat: ${kiadas.cim}`;
-  const belso = tipus === 'javitando'
-    ? `<p>Szia ${K.esc(keresztnev)}!</p><p>Átnéztem a beadott megoldásodat (<b>${K.esc(kiadas.cim)}</b>), és van még rajta javítanivaló.</p>${kiadas.visszajelzes ? `<p style="background:#F6F5EF;border-left:4px solid #1F6F64;padding:10px 14px;white-space:pre-line">${K.esc(kiadas.visszajelzes)}</p>` : ''}`
-    : `<p>Szia ${K.esc(keresztnev)}!</p><p>Új feladatot kaptál: <b>${K.esc(kiadas.cim)}</b>${h ? `<br>Határidő: <b>${K.esc(h)}</b>` : ''}</p>${kiadas.leiras ? `<p style="white-space:pre-line">${K.esc(kiadas.leiras)}</p>` : ''}`;
-  await K.level({
-    from: K.FELADO(), to: [cim], reply_to: K.CIMZETT(), subject: targy,
-    html: `<div style="font-family:Arial,sans-serif;font-size:15px;color:#1D2733;line-height:1.55;max-width:560px">${belso}${gomb(ALAP_URL + '/feladataim.html', 'Feladataim megnyitása')}<p style="color:#5B6672;font-size:13px">A megoldásodat lefényképezve vagy PDF-ben töltheted fel ugyanott. – Zámbó Zsombor, papaimatek.hu</p></div>`,
-  });
+  const fel = (kiadas.feladatok || []).map((f) => `<li style="margin:0 0 4px">${K.esc(String(f.cim || '').replace(/^\d+\. o\. · /, ''))}</li>`).join('');
+  let html, targy;
+  if (tipus === 'javitando') {
+    targy = `Javítandó: ${kiadas.cim}`;
+    html = sablon({
+      elonezet: 'Átnéztem a megoldásodat – van még rajta javítanivaló.', felirat: 'JAVÍTANDÓ FELADAT', cim: kiadas.cim,
+      belso: p(`Szia ${K.esc(keresztnev)}!`) + p('Átnéztem a beadott megoldásodat, és van még rajta javítanivaló.')
+        + (kiadas.visszajelzes ? doboz(`<b>Visszajelzés:</b><br>${K.esc(kiadas.visszajelzes).replace(/\n/g, '<br>')}`, '#C8432F') : '')
+        + p('<br>A javított megoldást ugyanott töltheted fel, ahol az elsőt.'),
+      gombUrl: `${ALAP_URL}/feladataim.html`, gombSzoveg: 'Javítás feltöltése',
+    });
+  } else {
+    targy = `Új feladat: ${kiadas.cim}`;
+    html = sablon({
+      elonezet: h ? `Határidő: ${h}` : 'Új feladatot kaptál a papaimatek.hu-n.', felirat: 'ÚJ FELADAT', cim: kiadas.cim,
+      belso: p(`Szia ${K.esc(keresztnev)}!`) + p('Új feladatot kaptál tőlem.')
+        + (h ? doboz(`<b>Határidő:</b> ${K.esc(h)}`, '#FFC21A') : '')
+        + (fel ? `<p style="margin:18px 0 6px;font-weight:800">Feladatok:</p><ul style="margin:0 0 8px;padding-left:22px">${fel}</ul>` : '')
+        + (kiadas.leiras ? `<p style="margin:14px 0 0;white-space:pre-line">${K.esc(kiadas.leiras)}</p>` : '')
+        + p('<br>A megoldásodat lefényképezve vagy PDF-ben töltheted fel a Feladataim oldalon.'),
+      gombUrl: `${ALAP_URL}/feladataim.html`, gombSzoveg: 'Feladataim megnyitása',
+    });
+  }
+  await K.level({ from: K.FELADO(), to: [cim], reply_to: K.CIMZETT(), subject: targy, html });
   return { kuldve: true, cim };
 }
 
-module.exports = { SUPABASE_URL, ALAP_URL, BUCKET, kulcsFejlec, felhasznalo, tanitvanyJeloles, feltoltesiLink, letoltesiLink, fajlTorles, diakEmail, ertesitDiak, gomb, hatarSzoveg };
+async function ertesitAdmin(t, k, fajlDb) {
+  const kesve = k.hatarido && Date.parse(k.hatarido) < Date.now();
+  const html = sablon({
+    elonezet: `${t.nev} beadta: ${k.cim}`, felirat: 'BEADOTT FELADAT', cim: `${t.nev} beadta a feladatot`,
+    belso: p(`<b>${K.esc(k.cim)}</b>`) + p(`${fajlDb} feltöltött fájl${kesve ? ' · <span style="color:#B53A27;font-weight:800">határidő után</span>' : ''}`),
+    gombUrl: `${ALAP_URL}/admin/#/t/${t.id}`, gombSzoveg: 'Megnyitás az adminban', labjegyzet: 'Automatikus értesítő a papaimatek.hu admin felületéről.',
+  });
+  await K.level({ from: K.FELADO(), to: [K.CIMZETT()], subject: `Beadott feladat: ${t.nev} – ${k.cim}`, html });
+}
+
+module.exports = { SUPABASE_URL, ALAP_URL, BUCKET, kulcsFejlec, felhasznalo, tanitvanyJeloles, feltoltesiLink, letoltesiLink, fajlTorles, diakEmail, ertesitDiak, ertesitAdmin, sablon, gomb, hatarSzoveg };

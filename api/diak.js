@@ -75,10 +75,7 @@ const M = {
     const most = new Date().toISOString();
     const u = (await sb(`kiadasok?id=eq.${k.id}`, { method: 'PATCH', body: JSON.stringify({ statusz: 'beadva', beadva_at: most, updated_at: most }) }))[0];
     try {
-      await K.level({
-        from: K.FELADO(), to: [K.CIMZETT()], subject: `Beadott feladat: ${t.nev} – ${k.cim}`,
-        html: K.keret('Beadott feladat', `<p><b>${K.esc(t.nev)}</b> beadta: <b>${K.esc(k.cim)}</b><br>${k.beadas_fajlok.length} fájl${k.hatarido && Date.parse(k.hatarido) < Date.now() ? ' · <span style="color:#B53A27">határidő után</span>' : ''}</p>${T.gomb(`${T.ALAP_URL}/admin/#/t/${t.id}`, 'Megnyitás az adminban')}`),
-      });
+      await T.ertesitAdmin(t, k, k.beadas_fajlok.length);
     } catch (e) { console.error('[diak] értesítő', e.message); }
     return u;
   },
