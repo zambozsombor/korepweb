@@ -261,7 +261,11 @@ const M = {
         ? { szulo_nev: szoveg(x.nev, 120), szulo_email: szoveg(x.email, 160), szulo_telefon: szoveg(x.telefon, 40) }
         : { diak_email: szoveg(x.email, 160), diak_telefon: szoveg(x.telefon, 40) }));
     }
-    if (uj.length) await sb('tanitvanyok', { method: 'POST', body: JSON.stringify(uj) });
+    // tömeges beszúrásnál minden sornak ugyanazok a mezői kellenek
+    const mezok = [...new Set(uj.flatMap((r) => Object.keys(r)))];
+    const sorok = uj.map((r) => Object.fromEntries(mezok.map((k) => [k, r[k] === undefined ? null : r[k]])));
+    sorok.forEach((r) => { if (!r.statusz) r.statusz = 'aktiv'; });
+    if (sorok.length) await sb('tanitvanyok', { method: 'POST', body: JSON.stringify(sorok) });
     return { felveve: uj.length, osszes_8het: cs.length, osszes_egyeni: egy.length, teszt: tesztDb, mar_felvett: marVolt };
   },
 
