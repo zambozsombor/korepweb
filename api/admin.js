@@ -50,7 +50,7 @@ function szur(b, mezok) {
 const TANITVANY = {
   nev: 120, evfolyam: 40, iskola: 160, cel_iskola: 200, diak_email: 160, diak_telefon: 40,
   szulo_nev: 120, szulo_email: 160, szulo_telefon: 40, szamla_nev: 160, szamla_irsz: 10, szamla_varos: 80, szamla_cim: 200,
-  szolgaltatas_id: 'int', egyedi_ar: 'int', helyszin: ['papa', 'online', null], statusz: ['aktiv', 'szunetel', 'befejezett'],
+  szolgaltatas_id: 'int', egyedi_ar: 'int', helyszin: ['papa', 'ugod', 'online', null], statusz: ['aktiv', 'szunetel', 'befejezett'],
   csoport_jelentkezes_id: 'int', megjegyzes: 4000,
 };
 const ORA = { tanitvany_id: 40, kezdes: 'ts', perc: 'int', statusz: ['tervezett', 'megtartott', 'lemondott', 'elmaradt'], fizetos: 'bool', ar: 'int', tema: 300, jegyzet: 4000 };
@@ -273,7 +273,7 @@ const M = {
     tan.forEach((t) => { [t.diak_email, t.szulo_email].forEach((e) => e && emailek.add(kisb(e))); if (t.csoport_jelentkezes_id) csIdk.add(t.csoport_jelentkezes_id); });
     const szid = (re) => { const x = szolg.find((s) => re.test(s.nev)); return x ? x.id : null; };
     const SZ8 = szid(/^8\. osztályos/), SZ57 = szid(/^5–7/), SZKOZ = szid(/^Középiskolás/), SZ46 = szid(/^4\. \/ 6\./);
-    const HELY = { papa: 'papa', online: 'online' };
+    const HELY = { papa: 'papa', ugod: 'ugod', online: 'online' };
     const uj = [];
     const mikor = (r) => { for (const k of ['created_at', 'letrehozva', 'inserted_at', 'datum', 'idopont', 'fizetve_at', 'elallas_beleegyezes_at']) if (r[k]) return r[k]; return null; };
     const datumHu = (r) => { const x = mikor(r); return x ? new Date(x).toLocaleDateString('hu-HU', { timeZone: 'Europe/Budapest' }) : 'ismeretlen dátum'; };

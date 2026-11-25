@@ -207,7 +207,7 @@ function tanMezok() {
     { l: 'Szolgáltatás', t: 'h' },
     { n: 'szolgaltatas_id', l: 'Igénybe vett szolgáltatás', t: 'select', o: [['', '– nincs megadva –']].concat(ST.szolg.map(function (s) { return [s.id, s.nev + ' (' + s.perc + ' perc, ' + ft(s.ar) + ')' + (s.aktiv ? '' : ' – inaktív')]; })) },
     { n: 'egyedi_ar', l: 'Egyedi óradíj (Ft) – üresen az árlista szerinti', t: 'number' },
-    { n: 'helyszin', l: 'Helyszín', t: 'select', o: [['', '–'], ['papa', 'Pápán, nálam'], ['online', 'Online']] },
+    { n: 'helyszin', l: 'Helyszín', t: 'select', o: [['', '–'], ['papa', 'Pápa'], ['ugod', 'Ugod'], ['online', 'Online']] },
     { n: 'statusz', l: 'Státusz', t: 'select', o: [['aktiv', 'Aktív'], ['szunetel', 'Szünetel'], ['befejezett', 'Befejezett']] },
     { l: 'Számlázási adatok', t: 'h' },
     { n: 'szamla_nev', l: 'Számlázási név' }, { n: 'szamla_irsz', l: 'Irányítószám' },
@@ -399,7 +399,7 @@ function vTanitvany(id) {
       + '<div class="card"><h2 class="t" style="margin-top:0">Adatok</h2><dl class="kv">'
       + kv('Évfolyam', t.evfolyam) + kv('Iskola', t.iskola) + kv('Célzott iskola', t.cel_iskola) + kv('Diák e-mail', t.diak_email, 1) + kv('Diák telefon', t.diak_telefon, 1)
       + kv('Szülő', t.szulo_nev) + kv('Szülő e-mail', t.szulo_email, 1) + kv('Szülő telefon', t.szulo_telefon, 1)
-      + kv('Helyszín', t.helyszin === 'papa' ? 'Pápán, nálam' : (t.helyszin === 'online' ? 'Online' : ''))
+      + kv('Helyszín', { papa: 'Pápa', ugod: 'Ugod', online: 'Online' }[t.helyszin] || '')
       + '<dt>Számlázás</dt><dd>' + (szamla ? '<div class="billblock copy" onclick="__copy(this.innerText)">' + esc(szamla) + '</div>' : '<span class="muted">–</span>') + '</dd>'
       + (t.megjegyzes ? '<dt>Megjegyzés</dt><dd style="white-space:pre-line">' + esc(t.megjegyzes) + '</dd>' : '') + '</dl></div>'
       + '<div class="card" id="fiok"></div></div>'
