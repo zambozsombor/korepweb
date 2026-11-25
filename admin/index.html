@@ -536,7 +536,7 @@ function tanariFeltoltes(k, ujra) {
   };
   inp.click();
 }
-function naptarJelzes(r) { var n = r && r._naptar; if (n && n.hibak) toast('Google Naptár: ' + n.hibak.join(' | '), true); }
+function naptarJelzes(r) { var n = r && r._naptar; if (!n) return; if (n.hibak) toast('Google Naptár: ' + n.hibak.join(' | '), true); else if (n.ok) setTimeout(function () { toast('📅 Naptárba felvéve' + (n.ok > 1 ? ' (' + n.ok + ' óra)' : '')); }, 1200); }
 function ertesitesToast(r) { var e = r && r._ertesites; if (!e) return; if (e.kuldve) toast('E-mail elküldve: ' + e.cim); else toast('E-mail nem ment ki: ' + (e.ok || ''), true); }
 function lapNev(ev, v) { return ev + ' · ' + v.fordulo + '. feladatlap'; }
 var ERETTSEGI = [['mat', 'Matematika', 'matek.html', 'mat/data.js'], ['tori', 'Történelem', 'tori.html', 'data.js'], ['magy', 'Magyar', 'magyar.html', 'magy/data.js'], ['ang', 'Angol', 'angol.html', 'ang/data.js'], ['nem', 'Német', 'nemet.html', 'nem/data.js'], ['bio', 'Biológia', 'biologia.html', 'bio/data.js'], ['kem', 'Kémia', 'kemia.html', 'kem/data.js'], ['fiz', 'Fizika', 'fizika.html', 'fiz/data.js'], ['foldr', 'Földrajz', 'foldrajz.html', 'foldr/data.js']];
@@ -709,7 +709,21 @@ function vOrak() {
   document.getElementById('kov').onclick = function () { sessionStorage.setItem('adm_het', ofs + 1); vOrak(); };
   document.getElementById('ma').onclick = function () { sessionStorage.setItem('adm_het', 0); vOrak(); };
   document.getElementById('uj').onclick = function () { oraAblak(null, null, route); };
-  document.getElementById('npr').onclick = function () { api('naptar_proba').then(function (r) { if (r.ok) toast('Google Naptár kapcsolat rendben (' + r.fiok + ')'); else toast(r.hiba, true); }, hibaKezel); };
+  document.getElementById('npr').onclick = function () {
+    api('naptar_proba').then(function (r) {
+      if (!r.ok) return toast(r.hiba, true);
+      if (!confirm('A Google Naptár kapcsolat rendben (' + r.fiok + ').\n\nFeltöltsem a „PápaiMatek órák” naptárba a mai naptól MINDEN tervezett órát (a régi naptárból importáltakat is)? A már feltöltötteket nem duplikálja.')) return;
+      toast('Feltöltés folyamatban…');
+      (function kor(ossz) {
+        api('naptar_feltoltes').then(function (x) {
+          ossz += x.ok || 0;
+          if (x.hibak) return toast('Google Naptár: ' + x.hibak.join(' | '), true);
+          if (x.maradt > 0 && x.ok > 0) { toast('Feltöltve: ' + ossz + ', még ' + x.maradt + '…'); return kor(ossz); }
+          toast('📅 Kész: ' + ossz + ' óra a naptárban' + (x.maradt ? ' (' + x.maradt + ' nem sikerült)' : ''));
+        }, hibaKezel);
+      })(0);
+    }, hibaKezel);
+  };
   var ujra = function () { frissit().then(vOrak); };
   if (a.lezaratlan || a.hozzarendelendo.length) {
     api('orak', { ig: new Date(Date.now() - 3600e3).toISOString() }).then(function (l) {

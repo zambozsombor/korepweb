@@ -230,6 +230,20 @@ const M = {
     return G.proba();
   },
 
+  // a mai naptól (vagy megadott dátumtól) minden tervezett óra feltöltése a „PápaiMatek órák” naptárba (az importáltak is)
+  async naptar_feltoltes(b) {
+    const tol = b.tol ? new Date(b.tol).toISOString() : new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+    const l = await sb(`orak?kezdes=gte.${enc(tol)}&statusz=eq.tervezett&tanitvany_id=not.is.null&naptar_id=is.null&select=id&order=kezdes&limit=1000`);
+    const hatar = Date.now() + 45e3; let ok = 0; const hibak = [];
+    for (let i = 0; i < l.length && Date.now() < hatar; i += 10) {
+      const r = await naptarba(l.slice(i, i + 10).map((x) => x.id), true);
+      ok += r.ok || 0; (r.hibak || []).forEach((h) => hibak.push(h));
+      if (hibak.length > 5) break;
+    }
+    const maradt = (await sb(`orak?kezdes=gte.${enc(tol)}&statusz=eq.tervezett&tanitvany_id=not.is.null&naptar_id=is.null&select=id&limit=1000`)).length;
+    return { ok, maradt, hibak: hibak.length ? [...new Set(hibak)] : undefined };
+  },
+
   async orak(b) {
     const tol = b.tol ? `&kezdes=gte.${enc(b.tol)}` : '';
     const ig = b.ig ? `&kezdes=lt.${enc(b.ig)}` : '';
@@ -488,9 +502,15 @@ function budapestOffset(d) {
 
 /* ---------- Google Naptár (egyirányú: admin → naptár) ----------
    Csak az adminban felvett órák kerülnek a naptárba (a régi naptárból importáltak – gcal_event_id – nem). */
-async function naptarba(idk) {
-  if (!G.beallitva() || !idk.length) return null;
-  const orak = await sb(`orak?id=in.(${idk.join(',')})&gcal_event_id=is.null&select=*,tanitvanyok(id,nev,evfolyam,helyszin,szulo_nev,szulo_telefon,szolgaltatasok(nev))`);
+async function naptarba(idk, mind) {
+  if (!G.beallitva()) return { ok: 0, hibak: ['A Google Naptár nincs beállítva a Vercelen.'] };
+  if (!idk.length) return { ok: 0 };
+  let orak;
+  try {
+    // alapból csak az adminban felvett (vagy már a naptárban lévő) órák; „mind” esetén az importáltak is
+    const szuro = mind ? '' : '&or=(gcal_event_id.is.null,naptar_id.not.is.null)';
+    orak = await sb(`orak?id=in.(${idk.join(',')})${szuro}&select=*,tanitvanyok(id,nev,evfolyam,helyszin,szulo_nev,szulo_telefon,szolgaltatasok(nev))`);
+  } catch (e) { return { ok: 0, hibak: ['Adatbázis: ' + e.message.slice(0, 200)] }; }
   let ok = 0; const hibak = [];
   for (const o of orak) {
     try {
