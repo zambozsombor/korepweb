@@ -269,7 +269,7 @@ function oraAblak(ora, tanId, utana) {
     if (uj && !a.tanitvany_id) throw { hiba: 'Válassz tanítványt.' };
     if (uj && a.ism) a.ismetles = { gyakorisag: a.ism, ig: a.ism_ig, db: a.ism_db };
     delete a.ism; delete a.ism_ig; delete a.ism_db;
-    return api('ora_mentes', a).then(function (r) { if (r && r._db > 1) toast(r._db + ' óra felvéve'); utana(); });
+    return api('ora_mentes', a).then(function (r) { naptarJelzes(r); if (r && r._db > 1) toast(r._db + ' óra felvéve'); utana(); });
   }, torles.length ? torles : null);
   if (uj) {
     var sel = dlg.querySelector('[name=ism]'), egyeb = [dlg.querySelector('[name=ism_ig]').parentNode, dlg.querySelector('[name=ism_db]').parentNode];
@@ -536,6 +536,7 @@ function tanariFeltoltes(k, ujra) {
   };
   inp.click();
 }
+function naptarJelzes(r) { var n = r && r._naptar; if (n && n.hibak) toast('Google Naptár: ' + n.hibak.join(' | '), true); }
 function ertesitesToast(r) { var e = r && r._ertesites; if (!e) return; if (e.kuldve) toast('E-mail elküldve: ' + e.cim); else toast('E-mail nem ment ki: ' + (e.ok || ''), true); }
 function lapNev(ev, v) { return ev + ' · ' + v.fordulo + '. feladatlap'; }
 var ERETTSEGI = [['mat', 'Matematika', 'matek.html', 'mat/data.js'], ['tori', 'Történelem', 'tori.html', 'data.js'], ['magy', 'Magyar', 'magyar.html', 'magy/data.js'], ['ang', 'Angol', 'angol.html', 'ang/data.js'], ['nem', 'Német', 'nemet.html', 'nem/data.js'], ['bio', 'Biológia', 'biologia.html', 'bio/data.js'], ['kem', 'Kémia', 'kemia.html', 'kem/data.js'], ['fiz', 'Fizika', 'fizika.html', 'fiz/data.js'], ['foldr', 'Földrajz', 'foldrajz.html', 'foldr/data.js']];
@@ -702,12 +703,13 @@ function vOrak() {
   var kezd = hetfo(new Date()); kezd.setDate(kezd.getDate() + ofs * 7);
   var veg = new Date(kezd); veg.setDate(veg.getDate() + 7);
   var a = ST.att;
-  $app.innerHTML = '<div class="row"><h1 class="t" style="margin:0">Órák</h1><span class="sp"></span><button class="btn" id="elo">‹</button><b>' + datum(kezd) + ' – ' + datum(new Date(veg - 1)) + '</b><button class="btn" id="kov">›</button><button class="btn" id="ma">Ez a hét</button><button class="btn p" id="uj">+ Új óra</button></div>'
+  $app.innerHTML = '<div class="row"><h1 class="t" style="margin:0">Órák</h1><span class="sp"></span><button class="btn" id="elo">‹</button><b>' + datum(kezd) + ' – ' + datum(new Date(veg - 1)) + '</b><button class="btn" id="kov">›</button><button class="btn" id="ma">Ez a hét</button><button class="btn" id="npr" title="Google Naptár kapcsolat ellenőrzése">📅 Naptár</button><button class="btn p" id="uj">+ Új óra</button></div>'
     + '<div id="lez"></div><div id="hl"></div>';
   document.getElementById('elo').onclick = function () { sessionStorage.setItem('adm_het', ofs - 1); vOrak(); };
   document.getElementById('kov').onclick = function () { sessionStorage.setItem('adm_het', ofs + 1); vOrak(); };
   document.getElementById('ma').onclick = function () { sessionStorage.setItem('adm_het', 0); vOrak(); };
   document.getElementById('uj').onclick = function () { oraAblak(null, null, route); };
+  document.getElementById('npr').onclick = function () { api('naptar_proba').then(function (r) { if (r.ok) toast('Google Naptár kapcsolat rendben (' + r.fiok + ')'); else toast(r.hiba, true); }, hibaKezel); };
   var ujra = function () { frissit().then(vOrak); };
   if (a.lezaratlan || a.hozzarendelendo.length) {
     api('orak', { ig: new Date(Date.now() - 3600e3).toISOString() }).then(function (l) {

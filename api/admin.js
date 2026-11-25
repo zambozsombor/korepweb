@@ -2,6 +2,7 @@
    Minden kérés: POST /api/admin  { muvelet: '...', ...adatok }  + Authorization: Bearer <a bejelentkezett felhasználó tokenje> */
 const K = require('./_8het-kozos.js');
 const T = require('./_tanitvany-kozos.js');
+const G = require('./_gcal.js');
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://duiskdduecldmkuylckb.supabase.co';
 const ALAP_URL = 'https://www.papaimatek.hu';
 
@@ -158,6 +159,7 @@ const M = {
     const kiad = await sb(`kiadasok?tanitvany_id=eq.${id}&select=beadas_fajlok(utvonal)`);
     await T.fajlTorles(kiad.flatMap((k) => (k.beadas_fajlok || []).map((f) => f.utvonal)));
     if (t && t.user_id) await T.tanitvanyJeloles(t.user_id, false);
+    await naptarbolTorol(`orak?tanitvany_id=eq.${id}&naptar_id=not.is.null&kezdes=gte.${enc(new Date().toISOString())}&select=naptar_id`);
     await sb(`tanitvanyok?id=eq.${id}`, { method: 'DELETE' });
     return { ok: true };
   },
@@ -194,7 +196,8 @@ const M = {
         }
         if (!sorok.length) throw hiba('Az ismétlési beállítással egy alkalom sem jön ki.');
         const ki = await sb('orak', { method: 'POST', body: JSON.stringify(sorok) });
-        return Object.assign({}, ki[0], { _db: ki.length });
+        const nap = await naptarba(ki.map((o) => o.id));
+        return Object.assign({}, ki[0], { _db: ki.length, _naptar: nap });
       }
     } else if (d.tanitvany_id && b.ar_ujra) {
       const a = await oraAr(d.tanitvany_id); d.ar = a.ar; if (a.perc) d.perc = a.perc;
@@ -203,7 +206,8 @@ const M = {
     const ora = id
       ? (await sb(`orak?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(d) }))[0]
       : (await sb('orak', { method: 'POST', body: JSON.stringify(d) }))[0];
-    return ora;
+    const nap = ora ? await naptarba([ora.id]) : null;
+    return Object.assign({}, ora, { _naptar: nap });
   },
 
   async ora_torles(b) {
@@ -211,13 +215,19 @@ const M = {
     if (b.kovetkezok) {
       const o = (await sb(`orak?id=eq.${id}&select=sorozat_id,kezdes`))[0];
       if (o && o.sorozat_id) {
+        await naptarbolTorol(`orak?or=(id.eq.${id},and(sorozat_id.eq.${o.sorozat_id},kezdes.gte.${enc(o.kezdes)},statusz.eq.tervezett))&naptar_id=not.is.null&select=naptar_id`);
         const torolt = await sb(`orak?sorozat_id=eq.${o.sorozat_id}&kezdes=gte.${enc(o.kezdes)}&statusz=eq.tervezett`, { method: 'DELETE' });
         await sb(`orak?id=eq.${id}`, { method: 'DELETE' });
         return { ok: true, db: (torolt || []).length };
       }
     }
+    await naptarbolTorol(`orak?id=eq.${id}&naptar_id=not.is.null&select=naptar_id`);
     await sb(`orak?id=eq.${id}`, { method: 'DELETE' });
     return { ok: true };
+  },
+
+  async naptar_proba() {
+    return G.proba();
   },
 
   async orak(b) {
@@ -474,6 +484,28 @@ function budapestOffset(d) {
   const m = /(\d+)\/(\d+)\/(\d+),\s*(\d+):(\d+)/.exec(s);
   const helyi = Date.UTC(+m[3], +m[1] - 1, +m[2], +m[4] % 24, +m[5]);
   return Math.round((helyi - Math.floor(d.getTime() / 60e3) * 60e3) / 60e3);
+}
+
+/* ---------- Google Naptár (egyirányú: admin → naptár) ----------
+   Csak az adminban felvett órák kerülnek a naptárba (a régi naptárból importáltak – gcal_event_id – nem). */
+async function naptarba(idk) {
+  if (!G.beallitva() || !idk.length) return null;
+  const orak = await sb(`orak?id=in.(${idk.join(',')})&gcal_event_id=is.null&select=*,tanitvanyok(id,nev,evfolyam,helyszin,szulo_nev,szulo_telefon,szolgaltatasok(nev))`);
+  let ok = 0; const hibak = [];
+  for (const o of orak) {
+    try {
+      const t = o.tanitvanyok;
+      const r = await G.szinkronOra(o, t, t && t.szolgaltatasok && t.szolgaltatasok.nev);
+      if (r && 'naptar_id' in r && r.naptar_id !== o.naptar_id) await sb(`orak?id=eq.${o.id}`, { method: 'PATCH', body: JSON.stringify({ naptar_id: r.naptar_id }) });
+      ok++;
+    } catch (e) { hibak.push(e.message.slice(0, 160)); }
+  }
+  return { ok, hibak: hibak.length ? [...new Set(hibak)] : undefined };
+}
+async function naptarbolTorol(lekerdezes) {
+  if (!G.beallitva()) return;
+  const l = await sb(lekerdezes).catch(() => []);
+  for (const o of l) await G.torles(o.naptar_id).catch((e) => console.error('[naptar] törlés', e.message));
 }
 
 function hiba(uzenet) { const e = new Error(uzenet); e.sajat = true; return e; }
