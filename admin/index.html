@@ -84,6 +84,15 @@ label.f>input,label.f>select,label.f>textarea{margin-top:5px}
 .hl{display:flex;flex-wrap:wrap;gap:6px}
 .hl span{font:700 12.5px/1 var(--sans);padding:6px 8px;border-radius:8px;background:var(--patina-soft);color:#164F47}
 .billblock{white-space:pre-line;font-size:14.5px;background:#FAFAF6;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.bellw{position:relative}
+.bell{position:relative;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--paper);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.bell:hover{background:var(--hover)}
+.bell-c{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#C8432F;color:#fff;font:800 12px/20px var(--sans);text-align:center}
+.bell-m{position:absolute;left:0;top:50px;width:380px;max-width:calc(100vw - 24px);max-height:70vh;overflow:auto;background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-lg);padding:6px;z-index:80}
+.bm-h{font:800 16px/1 var(--serif);padding:10px 10px 8px}
+.bm-i{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:10px;text-decoration:none;font-size:14.5px;line-height:1.35;border-top:1px solid #ECEEE9}
+.bm-i:hover{background:var(--hover)}
+.bm-e{padding:12px 10px;color:var(--muted);font-size:14.5px}
 </style>
 </head>
 <body>
@@ -92,6 +101,7 @@ label.f>input,label.f>select,label.f>textarea{margin-top:5px}
     <div class="header-left adm-head">
       <a class="logo" href="/"><span class="l1">Zámbó</span><span>Zsombor</span></a>
       <span class="adm-badge">Admin</span>
+      <div class="bellw"><button id="bell" class="bell" type="button" aria-label="Értesítések" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span id="bellCnt" class="bell-c" hidden>0</span></button><div id="bellMenu" class="bell-m" hidden></div></div>
     </div>
     <div class="header-right"><div id="authArea" class="auth-area"></div></div>
   </div>
@@ -305,15 +315,14 @@ function frissit() {
     jel('feladatok', 'Feladatok', (a.beadott || []).length);
     jel('jelentkezok', 'Jelentkezők', a.uj_jelentkezok ? a.uj_jelentkezok.csoport.length + a.uj_jelentkezok.egyeni.length : 0);
     var ossz = a.lezaratlan + a.hozzarendelendo.length + (a.beadott || []).length + (a.lejart || []).length + (a.uj_jelentkezok ? a.uj_jelentkezok.csoport.length + a.uj_jelentkezok.egyeni.length : 0);
-    jel('', 'Áttekintés', ossz);
+    jel('', 'Áttekintés', 0);
     document.title = (ossz ? '(' + ossz + ') ' : '') + 'Admin | papaimatek.hu';
+    harang();
     return a;
   });
 }
 
-function vAttekintes() {
-  var a = ST.att, aktiv = ST.tan.filter(function (t) { return t.statusz === 'aktiv'; });
-  var tart = ST.tan.reduce(function (s, t) { return s + Math.min(0, t._e.egyenleg || 0); }, 0);
+function ertesitesek(a) {
   var ert = [];
   (a.beadott || []).forEach(function (k) { ert.push(['beadva', 'Beadott feladat: <b>' + esc((k.tanitvanyok && k.tanitvanyok.nev) || '') + '</b> – ' + esc(k.cim), '#/t/' + k.tanitvany_id, k.beadva_at]); });
   var uj = a.uj_jelentkezok || { csoport: [], egyeni: [] };
@@ -322,10 +331,22 @@ function vAttekintes() {
   (a.lejart || []).forEach(function (k) { ert.push(['lemondott', 'Lejárt határidő, még nincs beadva: <b>' + esc((k.tanitvanyok && k.tanitvanyok.nev) || '') + '</b> – ' + esc(k.cim), '#/t/' + k.tanitvany_id, k.hatarido]); });
   if (a.lezaratlan) ert.push(['tervezett', '<b>' + a.lezaratlan + '</b> lezáratlan múltbeli óra (megtartva / lemondva?)', '#/orak']);
   if (a.hozzarendelendo.length) ert.push(['tervezett', '<b>' + a.hozzarendelendo.length + '</b> naptárból jött óra vár tanítványra', '#/orak']);
+  return ert;
+}
+var BELL = ['beadva', 'fizetesre_var', 'lemondott', 'tervezett'];
+function harang() {
+  var ert = ST.att ? ertesitesek(ST.att) : [];
+  var b = document.getElementById('bell'), c = document.getElementById('bellCnt'), m = document.getElementById('bellMenu');
+  b.hidden = !ST.att;
+  c.textContent = ert.length; c.hidden = !ert.length;
+  m.innerHTML = '<div class="bm-h">Értesítések</div>' + (ert.length ? ert.map(function (e) {
+    return '<a class="bm-i" href="' + e[2] + '">' + chip(e[0]).replace(/>[^<]*</, '>' + ({ beadva: 'Átnézendő', fizetesre_var: 'Új', lemondott: 'Lejárt', tervezett: 'Órák' }[e[0]]) + '<') + '<span>' + e[1] + (e[3] ? '<br><span class="muted sm">' + datumIdo(e[3]) + '</span>' : '') + '</span></a>';
+  }).join('') : '<div class="bm-e">Nincs új értesítés. ✓</div>');
+}
+function vAttekintes() {
+  var a = ST.att, aktiv = ST.tan.filter(function (t) { return t.statusz === 'aktiv'; });
+  var tart = ST.tan.reduce(function (s, t) { return s + Math.min(0, t._e.egyenleg || 0); }, 0);
   $app.innerHTML = '<h1 class="t">Áttekintés</h1>'
-    + '<div class="card" style="margin-bottom:16px"><div class="row" style="margin-bottom:' + (ert.length ? '10px' : '0') + '"><b style="font:800 19px/1.2 var(--serif)">Értesítések</b>' + (ert.length ? '<span class="tabs" style="margin:0;padding:0;border:0"><span class="cnt" style="margin:0">' + ert.length + '</span></span>' : '<span class="muted sm">Nincs új teendő. ✓</span>') + '</div>'
-    + ert.map(function (e) { return '<a href="' + e[2] + '" style="display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid #ECEEE9;text-decoration:none">' + chip(e[0]).replace(/>[^<]*</, '>' + ({ beadva: 'Átnézendő', fizetesre_var: 'Új', lemondott: 'Lejárt', tervezett: 'Órák' }[e[0]]) + '<') + '<span>' + e[1] + '</span><span class="sp"></span>' + (e[3] ? '<span class="muted sm">' + datumIdo(e[3]) + '</span>' : '') + '<span class="muted">›</span></a>'; }).join('')
-    + '</div>'
     + '<div class="grid g4">'
     + '<a class="card kpi" href="#/tanitvanyok" style="text-decoration:none"><b>' + aktiv.length + '</b><span>aktív tanítvány</span></a>'
     + '<a class="card kpi" href="#/orak" style="text-decoration:none"><b>' + a.kovetkezo_orak.length + '</b><span>óra a következő 7 napban</span></a>'
@@ -837,6 +858,9 @@ function route() {
   frissit().then(fn, hibaKezel);
 }
 window.addEventListener('hashchange', route);
+document.getElementById('bell').addEventListener('click', function (e) { e.stopPropagation(); var m = document.getElementById('bellMenu'); m.hidden = !m.hidden; });
+document.addEventListener('click', function (e) { var m = document.getElementById('bellMenu'); if (!m.hidden && !m.contains(e.target)) m.hidden = true; });
+document.getElementById('bellMenu').addEventListener('click', function (e) { if (e.target.closest('a')) this.hidden = true; });
 
 var indult = false;
 function indit(user) {
