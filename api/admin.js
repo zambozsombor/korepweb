@@ -392,6 +392,33 @@ const M = {
     return { ok: true };
   },
 
+  // Billingo-export (xlsx) sorai → befizetések (csak az újak; sorszám alapján nem duplikál)
+  async billingo_import(b) {
+    const sorok = Array.isArray(b.sorok) ? b.sorok.slice(0, 2000) : [];
+    if (!sorok.length) throw hiba('Üres az export.');
+    const norm = (x) => String(x || '').trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const [tan, bef] = await Promise.all([
+      sb('tanitvanyok?select=id,nev,szamla_nev&szamla_nev=not.is.null'),
+      sb('befizetesek?select=szamlaszam&szamlaszam=not.is.null'),
+    ]);
+    const megvan = new Set(bef.map((x) => x.szamlaszam));
+    const tanNev = {}; tan.forEach((t) => { const k = norm(t.szamla_nev); (tanNev[k] = tanNev[k] || []).push(t); });
+    const uj = [], kihagyva = [], marVolt = [];
+    for (const r of sorok) {
+      const szam = szoveg(r.szamlaszam, 60), vevo = szoveg(r.vevo, 160), osszeg = egesz(r.osszeg), datum = szoveg(r.datum, 10);
+      if (!szam || !vevo || !osszeg || !/^\d{4}-\d{2}-\d{2}$/.test(datum || '')) continue;
+      if (megvan.has(szam)) { marVolt.push(szam); continue; }
+      if (/storn|helyesb/i.test(String(r.tipus || ''))) { kihagyva.push({ szam, vevo, ok: 'sztornó/helyesbítő – kézzel' }); continue; }
+      const t = tanNev[norm(vevo)] || [];
+      if (t.length !== 1) { kihagyva.push({ szam, vevo, osszeg, ok: t.length ? 'több tanítvány ugyanezzel a számlázási névvel' : 'nincs ilyen számlázási nevű tanítvány' }); continue; }
+      const megj = String(r.megj || '').split('\n').filter((x) => !/adómentesség/i.test(x)).join(' ').trim();
+      uj.push({ tanitvany_id: t[0].id, datum, osszeg, mod: ({ atutalas: 'atutalas', keszpenz: 'keszpenz', bankkartya: 'kartya', kartya: 'kartya' })[norm(r.mod).replace(/[^a-z]/g, '')] || 'egyeb', szamlazva: true, szamlaszam: szam, megjegyzes: (megj ? megj + ' · ' : '') + 'Billingo-export' });
+      megvan.add(szam);
+    }
+    if (uj.length) await sb('befizetesek', { method: 'POST', body: JSON.stringify(uj) });
+    return { felveve: uj.length, osszeg: uj.reduce((a, x) => a + x.osszeg, 0), mar_volt: marVolt.length, kihagyva };
+  },
+
   async szamlazando() {
     const [tan, orak, bef] = await Promise.all([
       sb('tanitvanyok?select=id,nev,szulo_nev,szulo_email,szamla_nev,szamla_irsz,szamla_varos,szamla_cim&order=nev'),

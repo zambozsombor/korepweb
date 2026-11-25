@@ -825,12 +825,40 @@ function vFeladatok() {
   }, hibaKezel);
 }
 
+/* --- Billingo-export (xlsx) feltöltése --- */
+function billingoFeltoltes() {
+  var inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.xlsx,.xls,.csv';
+  inp.onchange = function () {
+    var f = inp.files[0]; if (!f) return;
+    toast('Beolvasás…');
+    var xl = window.XLSX ? Promise.resolve() : new Promise(function (ok, nem) { var sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'; sc.onload = ok; sc.onerror = nem; document.head.appendChild(sc); });
+    Promise.all([xl, f.arrayBuffer()]).then(function (r) {
+      var wb = XLSX.read(r[1], { type: 'array', cellDates: false }), ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: '' });
+      var h = -1; for (var i = 0; i < Math.min(rows.length, 10); i++) if (rows[i].indexOf('Számla sorszáma') >= 0) { h = i; break; }
+      if (h < 0) throw { hiba: 'Nem Billingo-számlalista: nincs „Számla sorszáma” oszlop.' };
+      var H = rows[h], col = function (n) { return H.indexOf(n); };
+      var c = { sz: col('Számla sorszáma'), d: col('Telj. dátum'), k: col('Kelt'), m: col('Fiz. mód'), v: col('Vevő név'), b: col('Bruttó végösszeg'), mg: col('Megjegyzés'), t: col('Számla típusa') };
+      var datum = function (x) { x = String(x || '').trim(); var m = /^(\d{4})[.-](\d{1,2})[.-](\d{1,2})/.exec(x); if (m) return m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2); m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/.exec(x); if (m) { var y = m[3].length === 2 ? '20' + m[3] : m[3]; return y + '-' + ('0' + m[1]).slice(-2) + '-' + ('0' + m[2]).slice(-2); } return ''; };
+      var sorok = rows.slice(h + 1).filter(function (x) { return x[c.sz]; }).map(function (x) {
+        return { szamlaszam: x[c.sz], datum: datum(x[c.d] || x[c.k]), mod: x[c.m], vevo: x[c.v], osszeg: Number(String(x[c.b]).replace(/[^0-9-]/g, '')), megj: c.mg >= 0 ? x[c.mg] : '', tipus: c.t >= 0 ? x[c.t] : '' };
+      });
+      return api('billingo_import', { sorok: sorok });
+    }).then(function (x) {
+      var uz = x.felveve + ' új számla rögzítve (' + ft(x.osszeg) + ').\n' + x.mar_volt + ' már korábban bent volt.';
+      if (x.kihagyva.length) uz += '\n\nKihagyva (' + x.kihagyva.length + '):\n' + x.kihagyva.map(function (k) { return '• ' + k.szam + ' – ' + k.vevo + (k.osszeg ? ' – ' + ft(k.osszeg) : '') + ': ' + k.ok; }).join('\n') + '\n\nA hiányzó számlázási nevet az adatlapon pótolva a feltöltés megismételhető.';
+      alert(uz); frissit().then(vSzamlazas);
+    }, function (e) { hibaKezel(e && e.hiba ? e : { hiba: 'A fájl nem olvasható be.' }); });
+  };
+  inp.click();
+}
+
 /* --- számlázás --- */
 function vSzamlazas() {
   $app.innerHTML = '<p class="muted">Betöltés…</p>';
   api('szamlazando').then(function (s) {
     var blokk = function (t) { return [t.szamla_nev, [t.szamla_irsz, t.szamla_varos].filter(Boolean).join(' '), t.szamla_cim].filter(Boolean).join('\n'); };
-    $app.innerHTML = '<h1 class="t">Számlázás</h1><p class="muted" style="margin-top:-6px">A számlát a Billingóban állítod ki; itt látod, mit kell kiszámlázni. A számlázási adatokra kattintva kimásolod őket.</p>'
+    $app.innerHTML = '<div class="row"><h1 class="t" style="margin:0">Számlázás</h1><span class="sp"></span><button class="btn p" id="bimp">⬆ Billingo-export feltöltése</button></div><p class="muted">A számlát a Billingóban állítod ki; itt látod, mit kell kiszámlázni. A Billingóból letöltött számlalistát (xlsx) feltöltve az új számlák befizetésként, „kiszámlázva” jelöléssel bekerülnek.</p>'
       + '<h2 class="t">Kiszámlázandó befizetések</h2><div class="tbw"><table class="tb"><tr><th>Dátum</th><th>Tanítvány</th><th>Összeg</th><th>Mód</th><th>Számlázási adatok</th><th></th></tr>'
       + (s.szamlazatlan.length ? s.szamlazatlan.map(function (b) {
         var t = b.tanitvanyok || {}, bl = blokk(t);
@@ -838,6 +866,7 @@ function vSzamlazas() {
       }).join('') : '<tr><td colspan="6"><div class="empty" style="border:0">Minden befizetés ki van számlázva.</div></td></tr>') + '</table></div>'
       + '<h2 class="t">Tartozások (megtartott, de még nem fizetett órák)</h2><div class="tbw"><table class="tb"><tr><th>Tanítvány</th><th>Szülő</th><th style="text-align:right">Tartozás</th></tr>'
       + (s.tartozasok.length ? s.tartozasok.map(function (t) { return '<tr class="click" onclick="location.hash=\'#/t/' + t.id + '\'"><td><b>' + esc(t.nev) + '</b></td><td class="sm">' + esc(t.szulo_nev || '') + ' ' + esc(t.szulo_email || '') + '</td><td style="text-align:right">' + egyenlegHtml(t._e) + '</td></tr>'; }).join('') : '<tr><td colspan="3"><div class="empty" style="border:0">Nincs tartozás.</div></td></tr>') + '</table></div>';
+    document.getElementById('bimp').onclick = billingoFeltoltes;
     $app.querySelectorAll('[data-sz]').forEach(function (btn) {
       btn.onclick = function () {
         var szam = prompt('Billingo számlaszám (nem kötelező):', '');
