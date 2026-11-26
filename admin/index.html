@@ -92,6 +92,12 @@ label.f>input,label.f>select,label.f>textarea{margin-top:5px}
 .bm-h{font:800 16px/1 var(--serif);padding:10px 10px 8px}
 .bm-i{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border-radius:10px;text-decoration:none;font-size:14.5px;line-height:1.35;border-top:1px solid #ECEEE9}
 .bm-i:hover{background:var(--hover)}
+.fu-f{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:flex-end;padding:14px 16px}
+.fu-f label{display:flex;flex-direction:column;gap:5px;font:700 12.5px/1 var(--sans);color:var(--muted);letter-spacing:.03em;min-width:130px}
+.fu-f label.w{min-width:220px;flex:1}
+.fu-f label.ck{flex-direction:row;align-items:center;gap:7px;min-width:0;white-space:nowrap;letter-spacing:0;color:var(--ink);font-size:14px;padding-bottom:9px}
+.fu-f select,.fu-f input[type=search],.fu-f input[type=date]{font:500 14.5px/1.2 var(--sans);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;max-width:100%}
+.fu-d td{background:#FAFAF6}
 .bm-e{padding:12px 10px;color:var(--muted);font-size:14.5px}
 </style>
 </head>
@@ -114,6 +120,7 @@ label.f>input,label.f>select,label.f>textarea{margin-top:5px}
     <a href="#/orak" data-t="orak">Órák</a>
     <a href="#/feladatok" data-t="feladatok">Feladatok</a>
     <a href="#/jelentkezok" data-t="jelentkezok">Jelentkezők</a>
+    <a href="#/felhasznalok" data-t="felhasznalok">Felhasználók</a>
     <a href="#/szamlazas" data-t="szamlazas">Számlázás</a>
     <a href="#/szolgaltatasok" data-t="szolgaltatasok">Szolgáltatások</a>
   </nav>
@@ -929,6 +936,174 @@ function vSzolg() {
 }
 
 /* ---------- útválasztás ---------- */
+/* --- felhasználók (regisztráltak + feladatbank-aktivitás) --- */
+var HONAP = { jan: 'január', feb: 'február', mar: 'március', apr: 'április', maj: 'május', jun: 'június', jul: 'július', aug: 'augusztus', szep: 'szeptember', okt: 'október', nov: 'november', dec: 'december' };
+function erTargy(k) { var e = ERETTSEGI.filter(function (x) { return x[0] === k; })[0]; return e ? e[1] : k; }
+function vizsgaNev(id) { // 2005-maj28-k → 2005. május 28. · közép
+  var m = /^(\d{4})-([a-z]+?)(\d*)-([ke])$/.exec(id || '');
+  if (!m) return id;
+  return m[1] + '. ' + (HONAP[m[2]] || m[2]) + (m[3] ? ' ' + m[3] + '.' : '') + ' · ' + (m[4] === 'e' ? 'emelt' : 'közép');
+}
+// egy haladás-kulcs értelmezése
+function kulcsInfo(k) {
+  var m;
+  if ((m = /^t:(\d)_(\d{4})_(\d+)_(\d+)$/.exec(k))) return { tip: 'f', o: m[1], ev: m[2], lap: 'f:' + m[1] + '_' + m[2] + '_' + m[3], lapNev: 'Felvételi ' + m[1] + '. o. · ' + m[2] + ' · ' + m[3] + '. feladatlap', fel: m[4] + '. feladat' };
+  if ((m = /^s:(\d)_(\d{4})_(\d+)$/.exec(k))) return { tip: 'f', o: m[1], ev: m[2], lap: 'f:' + m[1] + '_' + m[2] + '_' + m[3], lapNev: 'Felvételi ' + m[1] + '. o. · ' + m[2] + ' · ' + m[3] + '. feladatlap', fel: 'teljes feladatlap', egesz: 1 };
+  if ((m = /^e:([a-z]+):v:(.+)$/.exec(k))) return { tip: 'e', t: m[1], ev: m[2].slice(0, 4), lap: 'e:' + m[1] + ':' + m[2], lapNev: erTargy(m[1]) + ' · ' + vizsgaNev(m[2]), fel: 'teljes feladatlap', egesz: 1 };
+  if ((m = /^e:([a-z]+):(.+)-(\d+)$/.exec(k))) return { tip: 'e', t: m[1], ev: m[2].slice(0, 4), lap: 'e:' + m[1] + ':' + m[2], lapNev: erTargy(m[1]) + ' · ' + vizsgaNev(m[2]), fel: m[3] + '. feladat' };
+  if ((m = /^k:(.+)$/.exec(k))) return { tip: 'k', lap: 'k:' + m[1], lapNev: 'Témakör: ' + m[1], fel: 'témakör kész', egesz: 1 };
+  return { tip: '?', lap: k, lapNev: k, fel: '' };
+}
+var FU = { adat: null, sz: null };
+function fuSzuroAlap() { return { ido: 'het', tol: '', ig: '', q: '', tip: '', o: '', ev: '', t: '', lap: '', kor: '', csakAktiv: true, rend: 'akt' }; }
+function idoHatar(sz) {
+  var most = new Date(), ma = new Date(most.getFullYear(), most.getMonth(), most.getDate());
+  if (sz.ido === 'ma') return [ma, null];
+  if (sz.ido === 'het') { var h = new Date(ma); h.setDate(h.getDate() - ((h.getDay() + 6) % 7)); return [h, null]; }
+  if (sz.ido === 'honap') return [new Date(most.getFullYear(), most.getMonth(), 1), null];
+  if (sz.ido === '30') { var t = new Date(ma); t.setDate(t.getDate() - 29); return [t, null]; }
+  if (sz.ido === 'egyedi') return [sz.tol ? new Date(sz.tol + 'T00:00') : null, sz.ig ? new Date(sz.ig + 'T23:59:59') : null];
+  return [null, null];
+}
+function vFelhasznalok() {
+  if (!FU.sz) { try { FU.sz = Object.assign(fuSzuroAlap(), JSON.parse(sessionStorage.getItem('adm_fu') || '{}')); } catch (e) { FU.sz = fuSzuroAlap(); } }
+  $app.innerHTML = '<div class="row"><h1 class="t" style="margin:0">Felhasználók</h1><span class="sp"></span><span class="muted sm" id="fuIdo"></span><button class="btn" id="fuCsv">CSV</button><button class="btn p" id="fuFr">↻ Frissítés</button></div><div id="fuBox"><p class="muted">Betöltés…</p></div>';
+  var tolt = function () {
+    document.getElementById('fuIdo').textContent = 'Betöltés…';
+    api('felhasznalok').then(function (a) {
+      var ki = a.users.map(function (u) { return { id: u[0], email: u[1], nev: u[2], evf: u[3], reg: u[4], belep: u[5], tan: u[6], tanNev: u[7], p: [] }; });
+      a.progress.forEach(function (r) { var u = ki[r[0]]; if (!u) return; var i = kulcsInfo(r[1]); i.k = r[1]; i.sc = r[2]; i.at = r[4]; u.p.push(i); });
+      FU.adat = ki;
+      document.getElementById('fuIdo').textContent = 'Adatok: ' + new Date(a.ido).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      fuRajz();
+    }, function (e) { document.getElementById('fuIdo').textContent = ''; hibaKezel(e); });
+  };
+  document.getElementById('fuFr').onclick = tolt;
+  document.getElementById('fuCsv').onclick = fuCsv;
+  tolt();
+}
+function fuSzur(sz) {
+  var h = idoHatar(sz), tol = h[0], ig = h[1], q = sz.q.trim().toLowerCase();
+  var ido = function (x) { var t = new Date(x); return (!tol || t >= tol) && (!ig || t <= ig); };
+  var illik = function (i) {
+    if (sz.tip && i.tip !== sz.tip) return false;
+    if (sz.o && i.o !== sz.o) return false;
+    if (sz.ev && i.ev !== sz.ev) return false;
+    if (sz.t && i.t !== sz.t) return false;
+    if (sz.lap && i.lap !== sz.lap) return false;
+    return true;
+  };
+  return FU.adat.map(function (u) {
+    var p = u.p.filter(function (i) { return illik(i) && ido(i.at); });
+    var utolso = u.p.length ? u.p[0].at : null; // a szerver időrendben (legújabb elöl) adja
+    var lapok = {};
+    p.forEach(function (i) { var l = lapok[i.lap] = lapok[i.lap] || { nev: i.lapNev, db: 0, at: i.at, f: [] }; l.db++; l.f.push(i); });
+    var aktivIdoben = !!p.length || ((tol || ig) && !sz.tip && !sz.lap && u.belep && ido(u.belep));
+    return Object.assign({}, u, { sp: p, lapok: lapok, lapDb: Object.keys(lapok).length, utolso: [utolso, u.belep].filter(Boolean).sort().pop() || null, aktiv: aktivIdoben });
+  }).filter(function (u) {
+    if (q && (u.nev + ' ' + u.email + ' ' + (u.tanNev || '')).toLowerCase().indexOf(q) < 0) return false;
+    if (sz.kor === 'tan' && !u.tan) return false;
+    if (sz.kor === 'nemtan' && u.tan) return false;
+    var szur = (tol || ig || sz.tip || sz.o || sz.ev || sz.t || sz.lap);
+    if (sz.csakAktiv && szur && !u.aktiv) return false;
+    return true;
+  });
+}
+function fuRajz() {
+  var sz = FU.sz; try { sessionStorage.setItem('adm_fu', JSON.stringify(sz)); } catch (e) {}
+  var A = FU.adat, box = document.getElementById('fuBox'); if (!box) return;
+  // KPI-k: mindig a teljes adatból (szűrőtől függetlenül)
+  var aktivDb = function (ido) { var h = idoHatar({ ido: ido }), t = h[0]; return A.filter(function (u) { return (u.belep && new Date(u.belep) >= t) || u.p.some(function (i) { return new Date(i.at) >= t; }); }).length; };
+  var ujDb = function (ido) { var t = idoHatar({ ido: ido })[0]; return A.filter(function (u) { return new Date(u.reg) >= t; }).length; };
+  var l = fuSzur(sz);
+  var rend = { akt: function (a, b) { return b.sp.length - a.sp.length || String(b.utolso).localeCompare(String(a.utolso)); }, utolso: function (a, b) { return String(b.utolso || '').localeCompare(String(a.utolso || '')); }, reg: function (a, b) { return String(b.reg).localeCompare(String(a.reg)); }, nev: function (a, b) { return (a.nev || a.email).localeCompare(b.nev || b.email, 'hu'); } }[sz.rend];
+  l.sort(rend);
+  var top = l.filter(function (u) { return u.sp.length; }).slice().sort(function (a, b) { return b.sp.length - a.sp.length; })[0];
+  // népszerű feladatlapok a szűrésben
+  var lapStat = {};
+  l.forEach(function (u) { Object.keys(u.lapok).forEach(function (k) { var s = lapStat[k] = lapStat[k] || { nev: u.lapok[k].nev, fo: 0, db: 0 }; s.fo++; s.db += u.lapok[k].db; }); });
+  var nepszeru = Object.keys(lapStat).map(function (k) { return lapStat[k]; }).sort(function (a, b) { return b.fo - a.fo || b.db - a.db; }).slice(0, 8);
+  // szűrő-opciók az adatokból
+  var evek = {}, lapOpc = {};
+  A.forEach(function (u) { u.p.forEach(function (i) { if ((!sz.tip || i.tip === sz.tip) && (!sz.o || i.o === sz.o) && (!sz.t || i.t === sz.t)) { if (i.ev) evek[i.ev] = 1; if (!sz.ev || i.ev === sz.ev) lapOpc[i.lap] = i.lapNev; } }); });
+  var opt = function (v, t, cur) { return '<option value="' + esc(v) + '"' + (String(cur) === String(v) ? ' selected' : '') + '>' + esc(t) + '</option>'; };
+  var IDO = [['ma', 'Ma'], ['het', 'Ezen a héten'], ['honap', 'Ebben a hónapban'], ['30', 'Utolsó 30 nap'], ['', 'Teljes időszak'], ['egyedi', 'Egyedi időszak…']];
+  var idoNev = (IDO.filter(function (x) { return x[0] === sz.ido; })[0] || ['', ''])[1];
+
+  var h = '<div class="grid g4" style="margin-top:14px">'
+    + '<div class="card kpi"><b>' + A.length + '</b><span>regisztrált felhasználó · ' + ujDb('het') + ' új a héten, ' + ujDb('honap') + ' a hónapban</span></div>'
+    + '<a class="card kpi" href="#" data-ido="ma" style="text-decoration:none"><b>' + aktivDb('ma') + '</b><span>aktív ma</span></a>'
+    + '<a class="card kpi" href="#" data-ido="het" style="text-decoration:none"><b>' + aktivDb('het') + '</b><span>aktív ezen a héten</span></a>'
+    + '<a class="card kpi" href="#" data-ido="honap" style="text-decoration:none"><b>' + aktivDb('honap') + '</b><span>aktív ebben a hónapban</span></a></div>';
+  h += '<div class="grid g2" style="margin-top:14px"><div class="card" style="border-left:4px solid #FFC21A"><div class="muted sm" style="font-weight:700;letter-spacing:.06em;text-transform:uppercase">Legaktívabb · ' + esc(idoNev) + (sz.tip || sz.lap ? ' · szűrve' : '') + '</div>'
+    + (top ? '<div style="font:800 24px/1.2 var(--serif);margin:8px 0 2px">' + esc(top.nev || top.email) + (top.tan ? ' <span class="chip kesz">tanítvány</span>' : '') + '</div><div class="muted sm">' + esc(top.email) + '</div><div style="margin-top:8px"><b>' + top.sp.length + '</b> feladat · <b>' + top.lapDb + '</b> feladatlap</div><div class="sm muted" style="margin-top:6px">' + Object.keys(top.lapok).map(function (k) { return top.lapok[k]; }).sort(function (a, b) { return b.db - a.db; }).slice(0, 3).map(function (x) { return esc(x.nev) + ' (' + x.db + ')'; }).join(' · ') + '</div>'
+      : '<p class="muted" style="margin:10px 0 0">Ebben az időszakban senki nem jelölt késznek feladatot.</p>')
+    + '</div><div class="card"><div class="muted sm" style="font-weight:700;letter-spacing:.06em;text-transform:uppercase">Legnépszerűbb feladatlapok · ' + esc(idoNev) + '</div>'
+    + (nepszeru.length ? '<ol style="margin:8px 0 0;padding-left:20px">' + nepszeru.map(function (x) { return '<li style="margin:3px 0">' + esc(x.nev) + ' <span class="muted sm">– ' + x.fo + ' fő, ' + x.db + ' feladat</span></li>'; }).join('') + '</ol>' : '<p class="muted" style="margin:10px 0 0">Nincs adat.</p>')
+    + '</div></div>';
+
+  h += '<div class="card fu-f" style="margin-top:14px">'
+    + '<label>Időszak<select data-k="ido">' + IDO.map(function (x) { return opt(x[0], x[1], sz.ido); }).join('') + '</select></label>'
+    + (sz.ido === 'egyedi' ? '<label>Ettől<input type="date" data-k="tol" value="' + esc(sz.tol) + '"></label><label>Eddig<input type="date" data-k="ig" value="' + esc(sz.ig) + '"></label>' : '')
+    + '<label class="w">Keresés<input type="search" data-k="q" placeholder="név vagy e-mail" value="' + esc(sz.q) + '"></label>'
+    + '<label>Feladatbank<select data-k="tip">' + opt('', 'Mind', sz.tip) + opt('f', 'Felvételi', sz.tip) + opt('e', 'Érettségi', sz.tip) + opt('k', 'Témakörök', sz.tip) + '</select></label>'
+    + (sz.tip === 'f' ? '<label>Osztály<select data-k="o">' + opt('', 'Mind', sz.o) + opt('4', '4. o.', sz.o) + opt('6', '6. o.', sz.o) + opt('8', '8. o.', sz.o) + '</select></label>' : '')
+    + (sz.tip === 'e' ? '<label>Tárgy<select data-k="t">' + opt('', 'Mind', sz.t) + ERETTSEGI.map(function (x) { return opt(x[0], x[1], sz.t); }).join('') + '</select></label>' : '')
+    + '<label>Év<select data-k="ev">' + opt('', 'Mind', sz.ev) + Object.keys(evek).sort().reverse().map(function (y) { return opt(y, y, sz.ev); }).join('') + '</select></label>'
+    + '<label class="w">Feladatlap<select data-k="lap">' + opt('', 'Mind', sz.lap) + Object.keys(lapOpc).sort(function (a, b) { return lapOpc[b].localeCompare(lapOpc[a], 'hu'); }).map(function (k) { return opt(k, lapOpc[k], sz.lap); }).join('') + '</select></label>'
+    + '<label>Kik<select data-k="kor">' + opt('', 'Mindenki', sz.kor) + opt('tan', 'Csak tanítványok', sz.kor) + opt('nemtan', 'Nem tanítványok', sz.kor) + '</select></label>'
+    + '<label>Rendezés<select data-k="rend">' + opt('akt', 'Legaktívabb elöl', sz.rend) + opt('utolso', 'Legutóbb aktív elöl', sz.rend) + opt('reg', 'Legújabb regisztráció', sz.rend) + opt('nev', 'Név szerint', sz.rend) + '</select></label>'
+    + '<label class="ck"><input type="checkbox" data-k="csakAktiv"' + (sz.csakAktiv ? ' checked' : '') + '> csak az időszakban aktívak</label>'
+    + '<button class="btn s" id="fuAlap" type="button">Szűrők törlése</button></div>';
+
+  h += '<p class="muted sm" style="margin:12px 2px 8px">' + l.length + ' felhasználó · ' + l.reduce(function (s, u) { return s + u.sp.length; }, 0) + ' feladat a szűrésben. Kattints egy sorra a részletekért.</p>';
+  h += '<div class="tbw card" style="padding:0"><table class="tb"><tr><th>#</th><th>Név</th><th>E-mail</th><th>Évf.</th><th>Regisztrált</th><th>Utoljára aktív</th><th>Feladat</th><th>Feladatlap</th><th>Leggyakoribb feladatlapok</th></tr>'
+    + (l.length ? l.slice(0, 500).map(function (u, i) {
+      var lp = Object.keys(u.lapok).map(function (k) { return u.lapok[k]; }).sort(function (a, b) { return b.db - a.db; });
+      return '<tr class="click" data-u="' + esc(u.id) + '"><td class="muted">' + (i + 1) + '</td><td><b>' + esc(u.nev || '–') + '</b>' + (u.tan ? ' <a class="chip kesz" href="#/t/' + u.tan + '" onclick="event.stopPropagation()">tanítvány</a>' : '') + '</td><td class="sm">' + esc(u.email) + '</td><td class="sm">' + esc(u.evf || '') + '</td><td class="sm">' + datum(u.reg) + '</td><td class="sm">' + (u.utolso ? datumIdo(u.utolso) : '–') + '</td><td><b>' + u.sp.length + '</b></td><td>' + u.lapDb + '</td><td class="sm">' + lp.slice(0, 2).map(function (x) { return esc(x.nev) + ' (' + x.db + ')'; }).join('<br>') + (lp.length > 2 ? '<br><span class="muted">+' + (lp.length - 2) + ' további</span>' : '') + '</td></tr>'
+        + '<tr class="fu-d" data-d="' + esc(u.id) + '" hidden><td></td><td colspan="8"></td></tr>';
+    }).join('') : '<tr><td colspan="9" class="muted" style="text-align:center;padding:22px">Nincs a szűrésnek megfelelő felhasználó.</td></tr>')
+    + '</table></div>' + (l.length > 500 ? '<p class="muted sm">Az első 500 sor látszik – szűkíts a szűrőkkel.</p>' : '');
+  box.innerHTML = h;
+  FU.lista = l;
+
+  box.querySelectorAll('[data-ido]').forEach(function (a) { a.onclick = function (e) { e.preventDefault(); sz.ido = a.dataset.ido; sz.csakAktiv = true; fuRajz(); }; });
+  box.querySelectorAll('.fu-f [data-k]').forEach(function (el) {
+    var k = el.dataset.k;
+    var valt = function () {
+      sz[k] = el.type === 'checkbox' ? el.checked : el.value;
+      if (k === 'tip') { sz.o = ''; sz.t = ''; sz.lap = ''; }
+      if (k === 'o' || k === 't' || k === 'ev') sz.lap = '';
+      if (k === 'q') { clearTimeout(FU.tq); FU.tq = setTimeout(function () { fuRajz(); var x = document.querySelector('.fu-f [data-k=q]'); if (x) { x.focus(); x.setSelectionRange(x.value.length, x.value.length); } }, 250); return; }
+      fuRajz();
+    };
+    el.addEventListener(el.type === 'search' ? 'input' : 'change', valt);
+  });
+  document.getElementById('fuAlap').onclick = function () { FU.sz = fuSzuroAlap(); fuRajz(); };
+  box.querySelectorAll('tr[data-u]').forEach(function (tr) {
+    tr.onclick = function () {
+      var id = tr.dataset.u, d = box.querySelector('tr[data-d="' + id + '"]'), u = l.filter(function (x) { return x.id === id; })[0];
+      if (!d.hidden) { d.hidden = true; return; }
+      var lp = Object.keys(u.lapok).map(function (k) { return u.lapok[k]; }).sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); });
+      var RT = PM.RATE || { colors: { 1: '#B3261E', 2: '#C25E1F', 3: '#9A6E1C', 4: '#3E8C7D', 5: '#1F6F64' }, short: { 1: 'nagyon nehéz', 2: 'nehéz', 3: 'közepes', 4: 'jól ment', 5: 'nagyon jól' } };
+      d.lastElementChild.innerHTML = '<div class="sm muted" style="margin-bottom:6px">Regisztrált: ' + datumIdo(u.reg) + ' · utolsó belépés: ' + (u.belep ? datumIdo(u.belep) : '–') + ' · összesen ' + u.p.length + ' mentett feladat (szűrés nélkül)</div>'
+        + (lp.length ? lp.map(function (x) {
+          return '<div style="margin:8px 0"><b>' + esc(x.nev) + '</b> <span class="muted sm">– ' + x.db + ' · utoljára ' + datumIdo(x.at) + '</span><div class="row" style="gap:6px;margin-top:5px">'
+            + x.f.slice().sort(function (a, b) { return (parseInt(a.fel) || 0) - (parseInt(b.fel) || 0); }).map(function (i) { return '<span class="chip" title="' + esc(datumIdo(i.at)) + '" style="' + (i.sc ? 'background:' + RT.colors[i.sc] + ';color:#fff' : '') + '">' + esc(i.fel) + (i.sc ? ' · ' + esc(RT.short[i.sc]) : '') + '</span>'; }).join('') + '</div></div>';
+        }).join('') : '<p class="muted">Ebben a szűrésben nincs mentett feladata.</p>');
+      d.hidden = false;
+    };
+  });
+}
+function fuCsv() {
+  var l = FU.lista || []; if (!l.length) return toast('Nincs mit letölteni.', true);
+  var q = function (v) { v = v == null ? '' : String(v); return /[";\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  var sor = [['Név', 'E-mail', 'Évfolyam', 'Tanítvány', 'Regisztrált', 'Utoljára aktív', 'Feladat (szűrésben)', 'Feladatlap (szűrésben)', 'Feladatlapok']];
+  l.forEach(function (u) { sor.push([u.nev, u.email, u.evf, u.tanNev || '', datumIdo(u.reg), u.utolso ? datumIdo(u.utolso) : '', u.sp.length, u.lapDb, Object.keys(u.lapok).map(function (k) { return u.lapok[k].nev + ' (' + u.lapok[k].db + ')'; }).join(' | ')]); });
+  var blob = new Blob(['﻿' + sor.map(function (r) { return r.map(q).join(';'); }).join('\n')], { type: 'text/csv;charset=utf-8' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'felhasznalok-' + new Date().toISOString().slice(0, 10) + '.csv'; a.click();
+}
+
 function route() {
   if (!ST.att) return;
   var h = location.hash.replace(/^#\/?/, '');
@@ -936,7 +1111,7 @@ function route() {
   $tabs.querySelectorAll('a').forEach(function (a) { a.classList.toggle('on', a.dataset.t === (tab === 't' ? 'tanitvanyok' : tab)); });
   window.scrollTo(0, 0);
   if (tab === 't') return vTanitvany(h.split('/')[1]);
-  var fn = { '': vAttekintes, feladatok: vFeladatok, tanitvanyok: vTanitvanyok, orak: vOrak, jelentkezok: vJelentkezok, szamlazas: vSzamlazas, szolgaltatasok: vSzolg }[tab] || vAttekintes;
+  var fn = { '': vAttekintes, feladatok: vFeladatok, tanitvanyok: vTanitvanyok, orak: vOrak, jelentkezok: vJelentkezok, szamlazas: vSzamlazas, szolgaltatasok: vSzolg, felhasznalok: vFelhasznalok }[tab] || vAttekintes;
   frissit().then(fn, hibaKezel);
 }
 window.addEventListener('hashchange', route);

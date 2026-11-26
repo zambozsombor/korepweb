@@ -471,6 +471,48 @@ const M = {
   },
 
   /* --- fiókok --- */
+  // regisztrált felhasználók + a teljes haladás-napló, mindig frissen (a szűrés a böngészőben történik)
+  async felhasznalok() {
+    const fejlec = kulcsFejlec();
+    const users = [];
+    for (let page = 1; page <= 50; page++) {
+      const r = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=1000`, { headers: fejlec });
+      if (!r.ok) throw new Error(`auth users ${r.status}`);
+      const j = await r.json();
+      const l = j.users || [];
+      users.push(...l);
+      if (l.length < 1000) break;
+    }
+    const lapoz = async (ut) => {
+      const ki = [];
+      for (let off = 0; off < 200000; off += 1000) {
+        const l = await sb(`${ut}&limit=1000&offset=${off}`);
+        ki.push(...l);
+        if (l.length < 1000) break;
+      }
+      return ki;
+    };
+    const [prof, prog, tan] = await Promise.all([
+      lapoz('profiles?select=id,display_name,evfolyam&order=id').catch(() => []),
+      lapoz('progress?select=user_id,item_key,status,score,updated_at&order=updated_at.desc,user_id,item_key'),
+      sb('tanitvanyok?user_id=not.is.null&select=id,nev,user_id'),
+    ]);
+    const P = Object.fromEntries(prof.map((x) => [x.id, x]));
+    const Tn = Object.fromEntries(tan.map((x) => [x.user_id, x]));
+    const idx = {};
+    const u = users.map((x, i) => {
+      idx[x.id] = i;
+      const m = x.user_metadata || {};
+      const pr = P[x.id] || {};
+      const t = Tn[x.id];
+      return [x.id, x.email || '', pr.display_name || m.full_name || m.name || '', pr.evfolyam || '', x.created_at, x.last_sign_in_at || null, t ? t.id : null, t ? t.nev : null];
+    });
+    // tömör forma: [felhasználó-index, kulcs, pontszám, státusz, időpont]
+    const p = prog.filter((x) => x.user_id in idx && (x.status === 'kesz' || x.score != null))
+      .map((x) => [idx[x.user_id], x.item_key, x.score, x.status || '', x.updated_at]);
+    return { users: u, progress: p, ido: new Date().toISOString() };
+  },
+
   async fiok_keres(b) {
     const email = szoveg(b.email, 160); if (!email) throw hiba('Adj meg e-mail-címet.');
     const p = await sb(`profiles?email=ilike.${enc(email)}&select=*`);
