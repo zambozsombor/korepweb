@@ -98,17 +98,18 @@ const M = {
     const [szolg, tan, orak, bef, cs, egy] = await Promise.all([
       sb('szolgaltatasok?select=*&order=sorrend,id'),
       sb('tanitvanyok?select=*&order=nev'),
-      sb('orak?select=id,tanitvany_id,kezdes,perc,statusz,fizetos,ar,tema,gcal_cim&order=kezdes'),
+      sb('orak?select=id,tanitvany_id,kezdes,perc,statusz,fizetos,ar,tema,gcal_cim,meet_link&order=kezdes'),
       sb('befizetesek?select=tanitvany_id,osszeg'),
       puha('csoport_jelentkezesek?select=id,statusz,teszt&teszt=is.false'),
       puha('jelentkezesek?select=id'),
     ]);
-    const [beadott, lejart, latott, csMax, egyMax] = await Promise.all([
+    const [beadott, lejart, latott, csMax, egyMax, kerelmek] = await Promise.all([
       sb('kiadasok?statusz=eq.beadva&select=id,cim,beadva_at,hatarido,tanitvany_id,tanitvanyok(nev)&order=beadva_at'),
       sb(`kiadasok?statusz=in.(kiadva,javitando)&hatarido=lt.${new Date().toISOString()}&select=id,cim,hatarido,tanitvany_id,tanitvanyok(nev)&order=hatarido`),
       sb('admin_beallitasok?kulcs=eq.latott_jelentkezes&select=ertek'),
       puha('csoport_jelentkezesek?select=id,diak_nev,teszt,statusz&order=id.desc&limit=200'),
       puha('jelentkezesek?select=id,nev&order=id.desc&limit=200'),
+      puha('ora_kerelmek?statusz=eq.uj&select=*,orak(*),tanitvanyok(nev)&order=created_at'),
     ]);
     const lat = (latott[0] && latott[0].ertek) || { cs: 0, egy: 0 };
     const ujCs = csMax.filter((x) => x.teszt !== true && x.id > (lat.cs || 0));
@@ -121,7 +122,10 @@ const M = {
       tanitvanyok: tan.map((t) => Object.assign({}, t, { _e: e[t.id] || { dij: 0, fizetve: 0, egyenleg: 0, orak_szama: 0, megtartott: 0 } })),
       kovetkezo_orak: orak.filter((o) => o.statusz === 'tervezett' && Date.parse(o.kezdes) >= most - 3600e3 && Date.parse(o.kezdes) <= het),
       hozzarendelendo: orak.filter((o) => !o.tanitvany_id),
-      beadott, lejart, uj_jelentkezok: { csoport: ujCs, egyeni: ujEgy },
+      beadott, lejart, uj_jelentkezok: { csoport: ujCs, egyeni: ujEgy }, kerelmek,
+      // online óra a következő 3 napban, amihez még nincs link
+      link_nelkul: orak.filter((o) => o.statusz === 'tervezett' && !o.meet_link && o.tanitvany_id && Date.parse(o.kezdes) > most && Date.parse(o.kezdes) < most + 3 * 864e5
+        && (tan.find((t) => t.id === o.tanitvany_id) || {}).helyszin === 'online'),
       lezaratlan: orak.filter((o) => o.tanitvany_id && o.statusz === 'tervezett' && Date.parse(o.kezdes) < most - 3600e3).length,
       jelentkezok: { csoport: cs.length, csoport_fizetve: cs.filter((x) => x.statusz === 'fizetve').length, egyeni: egy.length },
     };
@@ -213,11 +217,33 @@ const M = {
       const a = await oraAr(d.tanitvany_id); d.ar = a.ar; if (a.perc) d.perc = a.perc;
     }
     d.updated_at = new Date().toISOString();
+    const elotte = id && d.kezdes ? (await sb(`orak?id=eq.${id}&select=kezdes`))[0] : null;
     const ora = id
       ? (await sb(`orak?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(d) }))[0]
       : (await sb('orak', { method: 'POST', body: JSON.stringify(d) }))[0];
     const nap = ora ? await naptarba([ora.id]) : null;
-    return Object.assign({}, ora, { _naptar: nap });
+    // ha áttetted az órát, és a diák kért módosítást, a kérés lezárul, a diák e-mailt kap az új időpontról
+    let kerelem = null;
+    if (ora && elotte && Date.parse(elotte.kezdes) !== Date.parse(ora.kezdes)) {
+      const nyitott = await puha(`ora_kerelmek?ora_id=eq.${ora.id}&statusz=eq.uj&tipus=eq.modositas&select=id`);
+      if (nyitott.length) {
+        kerelem = await M.kerelem_lezaras({ id: nyitott[0].id, statusz: 'kesz', valasz: szoveg(b.kerelem_valasz, 1000) || 'Áttettem az órát az új időpontra.' }).catch((e) => ({ hiba: e.message }));
+      }
+    }
+    return Object.assign({}, ora, { _naptar: nap, _kerelem: kerelem });
+  },
+
+  async kerelem_lezaras(b) {
+    const id = uuid(b.id); if (!id) throw hiba('Hiányzó azonosító.');
+    const st = b.statusz === 'elutasitva' ? 'elutasitva' : 'kesz';
+    const k = (await sb(`ora_kerelmek?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ statusz: st, valasz: szoveg(b.valasz, 1000), lezarva_at: new Date().toISOString() }) }))[0];
+    if (!k) throw hiba('Nincs ilyen kérés.');
+    let ertesites = null;
+    if (k.tipus === 'modositas' && b.ertesit !== false) {
+      const [t, o] = await Promise.all([sb(`tanitvanyok?id=eq.${k.tanitvany_id}&select=*`), k.ora_id ? sb(`orak?id=eq.${k.ora_id}&select=kezdes`) : []]);
+      try { ertesites = await T.ertesitDiakKerelem(t[0], k, o[0]); } catch (e) { ertesites = { kuldve: false, ok: e.message.slice(0, 120) }; }
+    }
+    return Object.assign({}, k, { _ertesites: ertesites });
   },
 
   async ora_torles(b) {

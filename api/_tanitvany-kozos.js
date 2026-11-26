@@ -142,4 +142,40 @@ async function ertesitAdmin(t, k, fajlDb) {
   await K.level({ from: K.FELADO(), to: [K.CIMZETT()], subject: `Beadott feladat: ${t.nev} – ${k.cim}`, html });
 }
 
-module.exports = { SUPABASE_URL, ALAP_URL, BUCKET, kulcsFejlec, felhasznalo, tanitvanyJeloles, feltoltesiLink, letoltesiLink, fajlTorles, diakEmail, ertesitDiak, ertesitAdmin, sablon, gomb, hatarSzoveg };
+// óralemondás / időpontmódosítás-kérés a diák felületéről → e-mail neked
+async function ertesitAdminOra(t, ora, tipus, uzenet, javaslat) {
+  const mikor = new Date(ora.kezdes).toLocaleString('hu-HU', { timeZone: 'Europe/Budapest', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit' });
+  const lem = tipus === 'lemondas';
+  const html = sablon({
+    elonezet: `${t.nev} ${lem ? 'lemondta' : 'módosítást kér'}: ${mikor}`,
+    felirat: lem ? 'ÓRALEMONDÁS' : 'IDŐPONTMÓDOSÍTÁS',
+    cim: lem ? `${t.nev} lemondta az órát` : `${t.nev} időpontmódosítást kér`,
+    belso: p(`<b>Óra:</b> ${K.esc(mikor)}`) + (javaslat ? doboz(`<b>Javasolt időpont:</b><br>${K.esc(javaslat).replace(/\n/g, '<br>')}`, '#C9A227') : '') + (uzenet ? doboz(`<b>Üzenet:</b><br>${K.esc(uzenet).replace(/\n/g, '<br>')}`) : '')
+      + p(lem ? 'Az óra az adminban automatikusan „lemondott” lett (díjmentes), és kikerült a naptárból. Ha mégis fizetős, jelöld az óránál.' : 'Az óra időpontját az adminban módosíthatod – a kérés ezzel automatikusan lezárul.'),
+    gombUrl: `${ALAP_URL}/admin/#/orak`, gombSzoveg: 'Megnyitás az adminban', labjegyzet: 'Automatikus értesítő a papaimatek.hu admin felületéről.',
+  });
+  await K.level({ from: K.FELADO(), to: [K.CIMZETT()], subject: `${lem ? 'Óralemondás' : 'Időpontmódosítás'}: ${t.nev} – ${mikor}`, html });
+}
+
+// válasz a diák időpontmódosítás-kérésére
+async function ertesitDiakKerelem(t, ker, ora) {
+  const cim = await diakEmail(t);
+  if (!cim) return { kuldve: false, ok: 'nincs e-mail-cím' };
+  const nevek = String(t.nev || '').trim().split(/\s+/);
+  const keresztnev = nevek.length > 1 ? nevek.slice(1).join(' ') : nevek[0] || '';
+  const fmt = (x) => new Date(x).toLocaleString('hu-HU', { timeZone: 'Europe/Budapest', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit' });
+  const atrakva = ora && ker.eredeti_kezdes && Date.parse(ora.kezdes) !== Date.parse(ker.eredeti_kezdes);
+  const ok = ker.statusz === 'kesz';
+  const html = sablon({
+    elonezet: atrakva ? `Az órád új időpontja: ${fmt(ora.kezdes)}` : 'Válaszoltam az időpontmódosítás-kérésedre.',
+    felirat: 'ÓRAIDŐPONT', cim: atrakva ? 'Új időpont' : (ok ? 'Válasz a kérésedre' : 'Most nem tudom áttenni az órát'),
+    belso: p(`Szia ${K.esc(keresztnev)}!`)
+      + (atrakva ? doboz(`<b>Új időpont:</b> ${K.esc(fmt(ora.kezdes))}<br><span style="color:#5b6670">Korábban: ${K.esc(fmt(ker.eredeti_kezdes))}</span>`, '#FFC21A') : '')
+      + (ker.valasz ? doboz(`${K.esc(ker.valasz).replace(/\n/g, '<br>')}`, ok ? '#1F6F64' : '#C8432F') : ''),
+    gombUrl: `${ALAP_URL}/feladataim.html#orak`, gombSzoveg: 'Óráim megnyitása',
+  });
+  await K.level({ from: K.FELADO(), to: [cim], reply_to: K.CIMZETT(), subject: atrakva ? `Új időpont: ${fmt(ora.kezdes)}` : 'Válasz az időpontmódosítás-kérésedre', html });
+  return { kuldve: true, cim };
+}
+
+module.exports = { SUPABASE_URL, ALAP_URL, BUCKET, kulcsFejlec, felhasznalo, tanitvanyJeloles, feltoltesiLink, letoltesiLink, fajlTorles, diakEmail, ertesitDiak, ertesitAdmin, ertesitAdminOra, ertesitDiakKerelem, sablon, gomb, hatarSzoveg };

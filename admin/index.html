@@ -219,7 +219,6 @@ function tanMezok() {
     { n: 'egyedi_ar', l: 'Egyedi óradíj (Ft) – üresen az árlista szerinti', t: 'number' },
     { n: 'helyszin', l: 'Helyszín', t: 'select', o: [['', '–'], ['papa', 'Pápa'], ['ugod', 'Ugod'], ['online', 'Online']] },
     { n: 'statusz', l: 'Státusz', t: 'select', o: [['aktiv', 'Aktív'], ['szunetel', 'Szünetel'], ['befejezett', 'Befejezett']] },
-    { n: 'meet_link', l: 'Online óra linkje (Google Meet) – a diák a felületén látja, ha a helyszín Online', ph: 'https://meet.google.com/…', w: 1 },
     { l: 'Számlázási adatok', t: 'h' },
     { n: 'szamla_nev', l: 'Számlázási név' }, { n: 'szamla_irsz', l: 'Irányítószám' },
     { n: 'szamla_varos', l: 'Település' }, { n: 'szamla_cim', l: 'Utca, házszám' },
@@ -231,12 +230,12 @@ function oraMezok(tanFix) {
   if (!tanFix) m.push({ n: 'tanitvany_id', l: 'Tanítvány', t: 'select', w: 1, o: [['', '– válassz –']].concat(ST.tan.filter(function (t) { return t.statusz !== 'befejezett'; }).map(function (t) { return [t.id, t.nev]; })) });
   return m.concat([
     { n: 'kezdes', l: 'Időpont *', t: 'datetime' }, { n: 'perc', l: 'Időtartam (perc) – üresen a szolgáltatás szerint', t: 'number' },
+    { n: 'meet_link', l: 'Óralink (Google Meet) – a diák a felületén ennél az óránál látja', ph: 'https://meet.google.com/…', w: 1 },
     { n: 'statusz', l: 'Státusz', t: 'select', o: [['tervezett', 'Tervezett'], ['megtartott', 'Megtartott'], ['lemondott', 'Lemondott'], ['elmaradt', 'Elmaradt']] },
     { n: 'ar', l: 'Díj (Ft) – üresen az árlista szerint', t: 'number' },
     { n: 'fizetos', l: 'Lemondott/elmaradt óránál is fizetős', t: 'check', w: 1 },
     { n: 'tema', l: 'Téma (a diák is látja)', w: 1 },
     { n: 'diak_megjegyzes', l: 'Üzenet a diáknak (pl. mit hozzon, mit nézzen át) – a diák is látja', t: 'textarea', w: 1 },
-    { n: 'meet_link', l: 'Egyedi óralink – üresen a tanítvány saját linkje', ph: 'https://meet.google.com/…', w: 1 },
     { n: 'jegyzet', l: 'Jegyzet (csak te látod)', t: 'textarea', w: 1 },
   ]);
 }
@@ -287,12 +286,15 @@ function oraGyors(id, statusz, utana) {
   if (statusz === 'megtartott') a.fizetos = true;
   api('ora_mentes', a).then(function () { toast(STATUSZ[statusz]); utana(); }, hibaKezel);
 }
+function tanHely(id) { var t = (ST.tan || []).filter(function (x) { return x.id === id; })[0]; return t && t.helyszin; }
 function oraSor(o, utana, nevvel) {
   var div = document.createElement('div'); div.className = 'ora';
   var nev = nevvel ? (o.tanitvany_id ? '<a class="nev" href="#/t/' + o.tanitvany_id + '">' + esc((o.tanitvanyok && o.tanitvanyok.nev) || tanNev(o.tanitvany_id)) + '</a>' : '<span class="nev neg">Hozzárendelendő: ' + esc(o.gcal_cim || '') + '</span>') : '';
   var dij = (o.statusz === 'megtartott' || ((o.statusz === 'lemondott' || o.statusz === 'elmaradt') && o.fizetos)) ? ft(o.ar) : '<span class="muted">díjmentes</span>';
   div.innerHTML = '<span class="ido">' + ido(o.kezdes) + '</span>' + (nevvel ? '' : '<span class="muted sm">' + datum(o.kezdes) + '</span>') + nev
-    + '<span class="muted sm">' + (o.perc || '?') + ' perc' + (o.tema ? ' · ' + esc(o.tema) : '') + '</span><span class="sp"></span>'
+    + '<span class="muted sm">' + (o.perc || '?') + ' perc' + (o.tema ? ' · ' + esc(o.tema) : '') + '</span>'
+    + (o.meet_link ? '<a class="sm" href="' + esc(o.meet_link) + '" target="_blank" rel="noopener" title="Óralink" onclick="event.stopPropagation()">🔗 link</a>' : (o.statusz === 'tervezett' && tanHely(o.tanitvany_id) === 'online' && d(o.kezdes) > new Date() ? '<span class="chip" style="background:#F7E1DC;color:#8A2E1F">nincs link</span>' : ''))
+    + '<span class="sp"></span>'
     + chip(o.statusz) + '<span class="sm" style="min-width:76px;text-align:right">' + (o.statusz === 'tervezett' ? '<span class="muted">' + ft(o.ar) + '</span>' : dij) + '</span>'
     + '<span class="qs"></span>';
   var qs = div.querySelector('.qs');
@@ -315,10 +317,11 @@ function frissit() {
     ST.att = a; ST.szolg = a.szolgaltatasok; ST.tan = a.tanitvanyok;
     var j = a.jelentkezok || {};
     var jel = function (t, nev, n) { $tabs.querySelector('[data-t="' + t + '"]').innerHTML = nev + (n ? '<span class="cnt">' + n + '</span>' : ''); };
-    jel('orak', 'Órák', a.lezaratlan + a.hozzarendelendo.length);
+    var oraTeendo = a.lezaratlan + a.hozzarendelendo.length + (a.kerelmek || []).length + (a.link_nelkul || []).length;
+    jel('orak', 'Órák', oraTeendo);
     jel('feladatok', 'Feladatok', (a.beadott || []).length);
     jel('jelentkezok', 'Jelentkezők', a.uj_jelentkezok ? a.uj_jelentkezok.csoport.length + a.uj_jelentkezok.egyeni.length : 0);
-    var ossz = a.lezaratlan + a.hozzarendelendo.length + (a.beadott || []).length + (a.lejart || []).length + (a.uj_jelentkezok ? a.uj_jelentkezok.csoport.length + a.uj_jelentkezok.egyeni.length : 0);
+    var ossz = oraTeendo + (a.beadott || []).length + (a.lejart || []).length + (a.uj_jelentkezok ? a.uj_jelentkezok.csoport.length + a.uj_jelentkezok.egyeni.length : 0);
     jel('', 'Áttekintés', 0);
     document.title = (ossz ? '(' + ossz + ') ' : '') + 'Admin | papaimatek.hu';
     harang();
@@ -333,6 +336,8 @@ function ertesitesek(a) {
   uj.csoport.forEach(function (x) { ert.push(['fizetesre_var', 'Új jelentkező (8 hét): <b>' + esc(x.diak_nev) + '</b>' + (x.statusz === 'fizetve' ? ' – fizetett' : ''), '#/jelentkezok']); });
   uj.egyeni.forEach(function (x) { ert.push(['fizetesre_var', 'Új jelentkező (egyéni óra): <b>' + esc(x.nev) + '</b>', '#/jelentkezok']); });
   (a.lejart || []).forEach(function (k) { ert.push(['lemondott', 'Lejárt határidő, még nincs beadva: <b>' + esc((k.tanitvanyok && k.tanitvanyok.nev) || '') + '</b> – ' + esc(k.cim), '#/t/' + k.tanitvany_id, k.hatarido]); });
+  (a.kerelmek || []).forEach(function (k) { var o = k.orak || {}; ert.push(['lemondott', (k.tipus === 'lemondas' ? 'Lemondta az órát: ' : 'Időpontmódosítást kér: ') + '<b>' + esc((k.tanitvanyok && k.tanitvanyok.nev) || '') + '</b> – ' + esc(datumIdo(k.eredeti_kezdes || o.kezdes)), '#/orak', k.created_at, k.tipus === 'lemondas' ? 'Lemondás' : 'Módosítás']); });
+  if ((a.link_nelkul || []).length) ert.push(['tervezett', '<b>' + a.link_nelkul.length + '</b> online óra a következő 3 napban még óralink nélkül', '#/orak']);
   if (a.lezaratlan) ert.push(['tervezett', '<b>' + a.lezaratlan + '</b> lezáratlan múltbeli óra (megtartva / lemondva?)', '#/orak']);
   if (a.hozzarendelendo.length) ert.push(['tervezett', '<b>' + a.hozzarendelendo.length + '</b> naptárból jött óra vár tanítványra', '#/orak']);
   return ert;
@@ -344,7 +349,7 @@ function harang() {
   b.hidden = !ST.att;
   c.textContent = ert.length; c.hidden = !ert.length;
   m.innerHTML = '<div class="bm-h">Értesítések</div>' + (ert.length ? ert.map(function (e) {
-    return '<a class="bm-i" href="' + e[2] + '">' + chip(e[0]).replace(/>[^<]*</, '>' + ({ beadva: 'Átnézendő', fizetesre_var: 'Új', lemondott: 'Lejárt', tervezett: 'Órák' }[e[0]]) + '<') + '<span>' + e[1] + (e[3] ? '<br><span class="muted sm">' + datumIdo(e[3]) + '</span>' : '') + '</span></a>';
+    return '<a class="bm-i" href="' + e[2] + '">' + chip(e[0]).replace(/>[^<]*</, '>' + (e[4] || { beadva: 'Átnézendő', fizetesre_var: 'Új', lemondott: 'Lejárt', tervezett: 'Órák' }[e[0]]) + '<') + '<span>' + e[1] + (e[3] ? '<br><span class="muted sm">' + datumIdo(e[3]) + '</span>' : '') + '</span></a>';
   }).join('') : '<div class="bm-e">Nincs új értesítés. ✓</div>');
 }
 function vAttekintes() {
@@ -425,7 +430,6 @@ function vTanitvany(id) {
       + kv('Évfolyam', t.evfolyam) + kv('Iskola', t.iskola) + kv('Célzott iskola', t.cel_iskola) + kv('Diák e-mail', t.diak_email, 1) + kv('Diák telefon', t.diak_telefon, 1)
       + kv('Szülő', t.szulo_nev) + kv('Szülő e-mail', t.szulo_email, 1) + kv('Szülő telefon', t.szulo_telefon, 1)
       + kv('Helyszín', { papa: 'Pápa', ugod: 'Ugod', online: 'Online' }[t.helyszin] || '')
-      + (t.meet_link ? kv('Óralink', t.meet_link, 1) : '')
       + '<dt>Számlázás</dt><dd>' + (szamla ? '<div class="billblock copy" onclick="__copy(this.innerText)">' + esc(szamla) + '</div>' : '<span class="muted">–</span>') + '</dd>'
       + (t.megjegyzes ? '<dt>Megjegyzés</dt><dd style="white-space:pre-line">' + esc(t.megjegyzes) + '</dd>' : '') + '</dl></div>'
       + '<div class="card" id="fiok"></div></div>'
@@ -703,13 +707,36 @@ function fiokPanel(t, fiok, ujra) {
 }
 
 /* --- órák heti nézet --- */
+function kerelmekDoboz(box, l, ujra) {
+  if (!l.length) return;
+  box.innerHTML = '<h2 class="t">Diákok kérései <span class="tabs" style="display:inline;border:0;padding:0"><span class="cnt">' + l.length + '</span></span></h2>';
+  l.forEach(function (k) {
+    var o = k.orak || {}, lem = k.tipus === 'lemondas';
+    var c = document.createElement('div'); c.className = 'card'; c.style.cssText = 'margin:0 0 10px;padding:14px 16px;border-left:4px solid ' + (lem ? '#C8432F' : '#C9A227');
+    c.innerHTML = '<div class="row" style="gap:10px;flex-wrap:wrap"><b>' + (lem ? 'Lemondás' : 'Időpontmódosítás') + '</b><a href="#/t/' + k.tanitvany_id + '">' + esc((k.tanitvanyok && k.tanitvanyok.nev) || '') + '</a><span class="muted sm">óra: ' + esc(datumIdo(k.eredeti_kezdes || o.kezdes)) + (o.kezdes && k.eredeti_kezdes && Date.parse(o.kezdes) !== Date.parse(k.eredeti_kezdes) ? ' → most: ' + esc(datumIdo(o.kezdes)) : '') + '</span><span class="sp"></span><span class="muted sm">' + esc(datumIdo(k.created_at)) + '</span></div>'
+      + (k.javaslat ? '<div style="margin-top:8px"><b>Javasolt időpont:</b> ' + esc(k.javaslat) + '</div>' : '')
+      + (k.uzenet ? '<div class="muted" style="margin-top:6px;white-space:pre-line">„' + esc(k.uzenet) + '”</div>' : '')
+      + '<div class="row" style="gap:8px;margin-top:10px;flex-wrap:wrap"></div>';
+    var gk = c.querySelector('.row:last-child');
+    function gomb(t, cls, fn) { var b = document.createElement('button'); b.className = 'btn s ' + (cls || ''); b.textContent = t; b.onclick = fn; gk.appendChild(b); }
+    if (lem) {
+      gomb('✓ Tudomásul vettem', 'p', function () { api('kerelem_lezaras', { id: k.id, statusz: 'kesz', ertesit: false }).then(function () { toast('Lezárva'); ujra(); }, hibaKezel); });
+      if (o.id) gomb('Mégis fizetős / szerkesztés', '', function () { oraAblak(o, null, ujra); });
+    } else {
+      if (o.id) gomb('Időpont módosítása', 'p', function () { oraAblak(o, null, function () { toast('Mentve – ha az időpont változott, a kérés lezárult és a diák e-mailt kapott.'); ujra(); }); });
+      gomb('Válasz és lezárás', '', function () { var v = prompt('Válasz a diáknak (e-mailben megkapja és a felületén is látja):', ''); if (v === null) return; api('kerelem_lezaras', { id: k.id, statusz: 'kesz', valasz: v }).then(function (r) { toast(r._ertesites && r._ertesites.kuldve ? 'Lezárva, a diák e-mailt kapott' : 'Lezárva'); ujra(); }, hibaKezel); });
+      gomb('Elutasítás', 'd', function () { var v = prompt('Miért nem lehet áttenni? (a diák megkapja):', 'Sajnos ezekben az időpontokban nem tudom vállalni, maradjon az eredeti időpont.'); if (v === null) return; api('kerelem_lezaras', { id: k.id, statusz: 'elutasitva', valasz: v }).then(function () { toast('Elutasítva'); ujra(); }, hibaKezel); });
+    }
+    box.appendChild(c);
+  });
+}
 function vOrak() {
   var ofs = Number(sessionStorage.getItem('adm_het') || 0);
   var kezd = hetfo(new Date()); kezd.setDate(kezd.getDate() + ofs * 7);
   var veg = new Date(kezd); veg.setDate(veg.getDate() + 7);
   var a = ST.att;
   $app.innerHTML = '<div class="row"><h1 class="t" style="margin:0">Órák</h1><span class="sp"></span><button class="btn" id="elo">‹</button><b>' + datum(kezd) + ' – ' + datum(new Date(veg - 1)) + '</b><button class="btn" id="kov">›</button><button class="btn" id="ma">Ez a hét</button><button class="btn" id="npr" title="Google Naptár kapcsolat ellenőrzése">📅 Naptár</button><button class="btn p" id="uj">+ Új óra</button></div>'
-    + '<div id="lez"></div><div id="hl"></div>';
+    + '<div id="ker"></div><div id="lez"></div><div id="hl"></div>';
   document.getElementById('elo').onclick = function () { sessionStorage.setItem('adm_het', ofs - 1); vOrak(); };
   document.getElementById('kov').onclick = function () { sessionStorage.setItem('adm_het', ofs + 1); vOrak(); };
   document.getElementById('ma').onclick = function () { sessionStorage.setItem('adm_het', 0); vOrak(); };
@@ -730,6 +757,11 @@ function vOrak() {
     }, hibaKezel);
   };
   var ujra = function () { frissit().then(vOrak); };
+  kerelmekDoboz(document.getElementById('ker'), a.kerelmek || [], ujra);
+  if ((a.link_nelkul || []).length) {
+    var lb = document.getElementById('ker'); var h2 = document.createElement('h2'); h2.className = 't'; h2.textContent = 'Óralink hiányzik (következő 3 nap)'; lb.appendChild(h2);
+    a.link_nelkul.forEach(function (o) { var r = oraSor(o, ujra, true); r.querySelector('.ido').insertAdjacentHTML('afterend', '<span class="muted sm">' + datum(o.kezdes) + '</span>'); lb.appendChild(r); });
+  }
   if (a.lezaratlan || a.hozzarendelendo.length) {
     api('orak', { ig: new Date(Date.now() - 3600e3).toISOString() }).then(function (l) {
       var lz = l.filter(function (o) { return o.statusz === 'tervezett' && o.tanitvany_id; });

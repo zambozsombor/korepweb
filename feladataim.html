@@ -55,6 +55,20 @@ main{max-width:920px;margin:0 auto;padding:36px 22px 80px}
 .mini{font:700 14px/1 var(--sans);text-decoration:none;padding:10px 13px;border-radius:999px;background:var(--patina);color:#fff;white-space:nowrap}
 .tag{font:700 12.5px/1 var(--sans);padding:5px 8px;border-radius:999px;background:#F7E1DC;color:#8A2E1F;white-space:nowrap}
 .more{display:block;margin:6px auto 0;font:700 14.5px/1 var(--sans);background:none;border:0;color:var(--patina);cursor:pointer;padding:10px}
+.acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.lnk{font:700 13.5px/1 var(--sans);background:none;border:1px solid var(--line);border-radius:999px;padding:8px 11px;cursor:pointer;color:var(--ink)}
+.lnk:hover{border-color:var(--patina);color:var(--patina)}.lnk.r:hover{border-color:#C8432F;color:#B53A27}
+.hero .lnk{color:#E8F1EE;border-color:rgba(255,255,255,.28)}.hero .lnk:hover{color:#fff;border-color:#fff}
+.kr{margin-top:8px;font-size:14.5px;border-radius:10px;padding:8px 11px;background:#FFF6D6;color:#5B4708;white-space:pre-line}
+.kr.ok{background:var(--patina-soft);color:#164F47}.kr.no{background:#F7E1DC;color:#8A2E1F}
+.hero .kr{background:rgba(255,209,38,.16);color:#FFE8A3}
+.ov{position:fixed;inset:0;background:rgba(20,24,22,.45);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
+.dlg{background:var(--paper);border-radius:20px;max-width:460px;width:100%;padding:22px 22px 18px;box-shadow:0 30px 60px rgba(0,0,0,.25)}
+.dlg h3{margin:0 0 4px;font-size:22px}.dlg .sub{color:var(--muted);margin:0 0 14px}
+.dlg label{display:block;font:700 14.5px/1.3 var(--sans);margin:12px 0 6px}
+.dlg textarea{width:100%;min-height:84px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:16px/1.4 var(--sans);resize:vertical;background:#fff}
+.dlg .btns{justify-content:flex-end;margin-top:16px}
+.b.r{background:#B53A27;border-color:#B53A27;color:#fff}
 h2.sec{font-size:22px;margin:30px 0 12px;scroll-margin-top:70px}
 h3.sub{font:800 14px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:18px 0 10px}
 @media(max-width:600px){.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:1/-1}.hero h2{font-size:24px}.hello h1{font-size:28px}.lrow{flex-wrap:wrap}.lrow .i{flex:1 1 calc(100% - 90px)}.lrow .mini,.lrow .tag{margin-left:76px}}
@@ -194,8 +208,10 @@ function rajzol() {
       + '<h2>' + esc(nap(elso.kezdes)) + ' · ' + esc(ido(elso.kezdes)) + '<span class="rel" data-rel="0">' + esc(relativ(elso)) + '</span></h2>'
       + '<div class="meta">' + elso.perc + ' perc' + (elso.hely ? ' · ' + esc(elso.hely) : '') + (elso.tema ? ' · ' + esc(elso.tema) : '') + '</div>'
       + (elso.uzenet ? '<div class="uz">' + esc(elso.uzenet) + '</div>' : '')
+      + kerelemSzoveg(elso)
       + '<div class="act">' + (elso.link ? '<a class="join' + (live ? ' live' : '') + '" href="' + esc(elso.link) + '" target="_blank" rel="noopener">' + MEET_IKON + 'Belépés az órára</a>'
-        : (elso.online ? '<span class="nolink">Az óra linkjét hamarosan itt találod.</span>' : '')) + '</div></div>';
+        : (elso.online ? '<span class="nolink">Az óra linkjét hamarosan itt találod.</span>' : ''))
+      + (elso.kezelheto ? (elso.kerelem && elso.kerelem.statusz === 'uj' ? '' : '<button class="lnk" type="button" data-mod="' + esc(elso.id) + '">Időpontmódosítás kérése</button>') + '<button class="lnk r" type="button" data-lem="' + esc(elso.id) + '">Lemondás</button>' : '') + '</div></div>';
   } else {
     h += '<div class="ures" style="margin-bottom:8px">Jelenleg nincs beírt következő órád.</div>';
   }
@@ -205,6 +221,7 @@ function rajzol() {
   h += '<h2 class="sec" id="orak">Óráid</h2><h3 class="sub">Következő órák</h3><div id="ko"></div><h3 class="sub" id="korabbi">Korábbi órák</h3><div id="mu"></div>';
   h += '<h2 class="sec" id="lezart">Beadott és lezárt feladatok</h2><div id="tb"></div>';
   $app.innerHTML = h;
+  [].forEach.call($app.querySelectorAll('.hero [data-mod], .hero [data-lem]'), function (b) { b.onclick = function () { kerelemAblak(elso, b.hasAttribute('data-lem')); }; });
 
   var ny = document.getElementById('ny'), tb = document.getElementById('tb');
   if (!nyitott.length) ny.innerHTML = '<div class="ures">Most nincs megoldásra váró feladatod. 🎉</div>';
@@ -226,14 +243,50 @@ function rajzol() {
   }
 }
 
+function kerelemSzoveg(o) {
+  var k = o.kerelem; if (!k) return '';
+  if (k.statusz === 'uj') return '<div class="kr">⏳ Időpontmódosítást kértél (' + esc(k.javaslat || '') + ') – válaszra vár.</div>';
+  if (k.statusz === 'elutasitva') return '<div class="kr no">A módosítást most nem tudtam vállalni' + (k.valasz ? ': ' + esc(k.valasz) : '.') + '</div>';
+  return k.valasz ? '<div class="kr ok">✓ ' + esc(k.valasz) + '</div>' : '';
+}
+function kerelemAblak(o, lemondas) {
+  if (!lemondas && o.kerelem && o.kerelem.statusz === 'uj') return toast('Ehhez az órához már kértél módosítást – még válaszra vár.', true);
+  var ov = document.createElement('div'); ov.className = 'ov';
+  ov.innerHTML = '<div class="dlg" role="dialog" aria-modal="true"><h3>' + (lemondas ? 'Óra lemondása' : 'Időpontmódosítás kérése') + '</h3>'
+    + '<p class="sub">' + esc(nap(o.kezdes)) + ' · ' + esc(ido(o.kezdes)) + '</p>'
+    + (lemondas ? '<label for="ku">Miért mondod le? *</label><textarea id="ku" maxlength="1000" placeholder="pl. beteg vagyok / iskolai program"></textarea><p class="prog" style="margin:8px 0 0">A lemondás azonnal érvényes, és e-mailben értesítést kapok róla.</p>'
+      : '<label for="kj">Mikor lenne jó helyette? *</label><textarea id="kj" maxlength="500" placeholder="pl. csütörtök 16:00 után vagy szombat délelőtt"></textarea><label for="ku">Üzenet (nem kötelező)</label><textarea id="ku" maxlength="1000" style="min-height:60px"></textarea><p class="prog" style="margin:8px 0 0">Amíg nem válaszolok, az óra az eredeti időpontban marad.</p>')
+    + '<div class="btns"><button class="b" type="button" data-x>Mégse</button><button class="b ' + (lemondas ? 'r' : 'p') + '" type="button" data-ok>' + (lemondas ? 'Lemondom az órát' : 'Kérés elküldése') + '</button></div></div>';
+  document.body.appendChild(ov);
+  var zar = function () { ov.remove(); };
+  ov.onclick = function (e) { if (e.target === ov) zar(); };
+  ov.querySelector('[data-x]').onclick = zar;
+  var ok = ov.querySelector('[data-ok]');
+  ov.querySelector('textarea').focus();
+  ok.onclick = function () {
+    var u = ov.querySelector('#ku').value.trim(), j = ov.querySelector('#kj') ? ov.querySelector('#kj').value.trim() : '';
+    if (lemondas && !u) return toast('Írd meg röviden, miért mondod le az órát.', true);
+    if (!lemondas && !j) return toast('Írd meg, mikor lenne jó helyette.', true);
+    ok.disabled = true;
+    api(lemondas ? 'ora_lemondas' : 'ora_modositas', { ora_id: o.id, uzenet: u, javaslat: j }).then(function () {
+      zar(); toast(lemondas ? 'Az órát lemondtad – értesítést kaptam róla.' : 'Elküldve – hamarosan válaszolok.'); betolt();
+    }, function (er) { ok.disabled = false; toast(er.hiba, true); });
+  };
+}
+
 function oraSor(o, mult) {
   var e = document.createElement('div'); var dd = new Date(o.kezdes);
   var lem = o.statusz === 'lemondott';
   e.className = 'lrow' + (mult ? ' mult' : '') + (lem ? ' lem' : '');
   e.innerHTML = '<div class="d"><b>' + dd.getDate() + '</b><span>' + esc(dd.toLocaleDateString('hu-HU', { month: 'short' }).replace('.', '')) + '<br>' + esc(NAP[dd.getDay()].slice(0, 3)) + '</span></div>'
     + '<div class="i"><b>' + esc(ido(o.kezdes)) + '</b> <span class="prog">· ' + o.perc + ' perc' + (o.hely ? ' · ' + esc(o.hely) : '') + '</span>'
-    + (o.tema ? '<div>' + esc(o.tema) + '</div>' : '') + (o.uzenet && !mult ? '<div class="u">' + esc(o.uzenet) + '</div>' : '') + '</div>'
+    + (o.tema ? '<div>' + esc(o.tema) + '</div>' : '') + (o.uzenet && !mult ? '<div class="u">' + esc(o.uzenet) + '</div>' : '')
+    + (!mult ? kerelemSzoveg(o) : '')
+    + (o.kezelheto ? '<div class="acts">' + (o.kerelem && o.kerelem.statusz === 'uj' ? '' : '<button class="lnk" type="button" data-mod>Időpontmódosítás kérése</button>') + '<button class="lnk r" type="button" data-lem>Lemondás</button></div>' : '') + '</div>'
     + (lem ? '<span class="tag">Elmarad</span>' : (o.link ? '<a class="mini" href="' + esc(o.link) + '" target="_blank" rel="noopener">Belépés</a>' : ''));
+  var bm = e.querySelector('[data-mod]'), bl = e.querySelector('[data-lem]');
+  if (bm) bm.onclick = function () { kerelemAblak(o, false); };
+  if (bl) bl.onclick = function () { kerelemAblak(o, true); };
   return e;
 }
 
