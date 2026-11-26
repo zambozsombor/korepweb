@@ -11,7 +11,7 @@
   gtag('config', 'G-VRWQHDJE0Y');
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Feladataim | papaimatek.hu</title>
+<title>Irányítópult | papaimatek.hu</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#F6F5EF">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
@@ -23,7 +23,41 @@
 <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700;800&family=Alegreya+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/pm.css?v=20261027s">
 <style>
-main{max-width:860px;margin:0 auto;padding:36px 22px 80px}
+main{max-width:920px;margin:0 auto;padding:36px 22px 80px}
+.hello{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:6px 0 18px}
+.hello h1{margin:0;font-size:34px;line-height:1.1}.hello p{margin:4px 0 0;color:var(--muted)}
+.qk{display:flex;gap:8px;flex-wrap:wrap}.qk a{font:700 14px/1 var(--sans);text-decoration:none;padding:10px 13px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}.qk a:hover{border-color:var(--patina);color:var(--patina)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 18px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:14px 16px;text-decoration:none;color:inherit;display:block}
+.stat b{display:block;font:800 30px/1.05 var(--serif)}.stat span{color:var(--muted);font-size:14.5px}
+.stat.hot{border-color:#E7B7AE;background:#FCF1EE}.stat.hot b{color:#B53A27}
+.hero{position:relative;background:#173C36;color:#F4F1E6;border-radius:24px;padding:24px 24px 22px;margin:0 0 8px;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-70px;width:220px;height:220px;border-radius:50%;background:rgba(255,209,38,.14)}
+.hero .k{font:700 13px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:#9FE3D3}
+.hero h2{margin:10px 0 4px;font-size:30px;line-height:1.15;color:#fff}
+.hero .rel{display:inline-block;margin-left:6px;font:700 14px/1 var(--sans);background:#FFD126;color:#1d1d1d;padding:6px 10px;border-radius:999px;vertical-align:4px}
+.hero .meta{color:#CFE3DD;font-size:16px}
+.hero .uz{margin:12px 0 0;background:rgba(255,255,255,.08);border-left:3px solid #FFD126;padding:10px 12px;border-radius:0 10px 10px 0;white-space:pre-line}
+.hero .act{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:relative;z-index:1}
+.join{display:inline-flex;align-items:center;gap:9px;font:800 16px/1 var(--sans);text-decoration:none;padding:13px 18px;border-radius:999px;background:#FFD126;color:#1d1d1d}
+.join.live{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,209,38,.6)}50%{box-shadow:0 0 0 10px rgba(255,209,38,0)}}
+.hero .nolink{color:#CFE3DD;font-size:14.5px}
+.nav{position:sticky;top:0;z-index:5;display:flex;gap:6px;background:var(--bg);padding:12px 0 10px;margin:14px 0 4px;border-bottom:1px solid var(--line)}
+.nav a{font:700 15px/1 var(--sans);text-decoration:none;padding:9px 14px;border-radius:999px;color:var(--ink)}.nav a:hover{background:var(--paper)}
+.nav .cnt{display:inline-block;min-width:20px;padding:3px 6px;margin-left:4px;border-radius:999px;background:#C8432F;color:#fff;font-size:12px;text-align:center}
+.lrow{display:flex;gap:14px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.lrow .d{min-width:62px;text-align:center;border-right:1px solid var(--line);padding-right:12px}
+.lrow .d b{display:block;font:800 26px/1 var(--serif)}.lrow .d span{font:700 12px/1.3 var(--sans);text-transform:uppercase;color:var(--muted)}
+.lrow .i{flex:1;min-width:0}.lrow .i b{font-size:16.5px}.lrow .i div{color:var(--muted);font-size:14.5px;overflow:hidden;text-overflow:ellipsis}
+.lrow .i .u{color:var(--ink);white-space:pre-line;margin-top:4px}
+.lrow.mult{opacity:.82}.lrow.lem{opacity:.6}.lrow.lem b{text-decoration:line-through}
+.mini{font:700 14px/1 var(--sans);text-decoration:none;padding:10px 13px;border-radius:999px;background:var(--patina);color:#fff;white-space:nowrap}
+.tag{font:700 12.5px/1 var(--sans);padding:5px 8px;border-radius:999px;background:#F7E1DC;color:#8A2E1F;white-space:nowrap}
+.more{display:block;margin:6px auto 0;font:700 14.5px/1 var(--sans);background:none;border:0;color:var(--patina);cursor:pointer;padding:10px}
+h2.sec{font-size:22px;margin:30px 0 12px;scroll-margin-top:70px}
+h3.sub{font:800 14px/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:18px 0 10px}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}.stats .stat:last-child{grid-column:1/-1}.hero h2{font-size:24px}.hello h1{font-size:28px}.lrow{flex-wrap:wrap}.lrow .i{flex:1 1 calc(100% - 90px)}.lrow .mini,.lrow .tag{margin-left:76px}}
 .gate{max-width:480px;margin:30px auto;background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:30px 26px;text-align:center}
 .gate h2{margin:0 0 10px;font-size:22px}.gate p{color:var(--muted);margin:0 0 6px}
 .fk{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px 22px;margin:0 0 16px;box-shadow:var(--shadow)}
@@ -80,7 +114,6 @@ h2.sec{font-size:22px;margin:30px 0 12px}
 </header>
 
 <main>
-  <div class="page-head" style="padding-top:20px"><span class="pill solo">Feladataim</span><p id="alcim">Itt találod a tőlem kapott feladatokat. A megoldásodat lefényképezve vagy PDF-ben töltheted fel.</p></div>
   <div id="app"><div class="gate"><p>Betöltés…</p></div></div>
 </main>
 
@@ -91,7 +124,7 @@ h2.sec{font-size:22px;margin:30px 0 12px}
   document.addEventListener('click',function(e){if(!sm.contains(e.target)&&!tg.contains(e.target)){sm.classList.remove('open');tg.classList.remove('open');}}); })();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=23"></script>
+<script src="auth.js?v=24"></script>
 <script src="/cookie-consent.js?v=3"></script>
 <script>
 (function () {
@@ -115,29 +148,96 @@ function gate(cim, szoveg, login) {
   var b = document.getElementById('lg'); if (b) b.onclick = function () { var x = document.querySelector('#authArea .pm-login'); if (x) x.click(); };
 }
 
+var NAP = ['vasárnap', 'hétfő', 'kedd', 'szerda', 'csütörtök', 'péntek', 'szombat'];
+function ido(x) { return new Date(x).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }); }
+function nap(x) { var d = new Date(x); return NAP[d.getDay()].replace(/^./, function (c) { return c.toUpperCase(); }) + ', ' + d.toLocaleDateString('hu-HU', { month: 'long', day: 'numeric' }); }
+function napKul(x) { var a = new Date(); a.setHours(0, 0, 0, 0); var b = new Date(x); b.setHours(0, 0, 0, 0); return Math.round((b - a) / 864e5); }
+function relativ(o) {
+  var k = Date.parse(o.kezdes), v = k + o.perc * 60e3, m = Date.now();
+  if (m >= k && m < v) return 'Most zajlik';
+  if (m >= k - 15 * 60e3 && m < k) return Math.max(1, Math.ceil((k - m) / 60e3)) + ' perc múlva';
+  var n = napKul(o.kezdes);
+  if (n === 0) return 'Ma'; if (n === 1) return 'Holnap'; return n + ' nap múlva';
+}
+function belephet(o) { var k = Date.parse(o.kezdes); return Date.now() >= k - 15 * 60e3 && Date.now() < k + o.perc * 60e3; }
+var MEET_IKON = '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15 8.5V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-1.5l4.3 3.1c.66.48 1.7.01 1.7-.81V6.21c0-.82-1.04-1.29-1.7-.81z"/></svg>';
+
 function betolt() {
   api('lista').then(function (d) {
-    if (d.nincs) return gate('Még nincs kiadott feladatod', 'Ez az oldal a tanítványaimnak szól. Ha nálam tanulsz, szólj, és összekötöm a fiókodat – utána itt látod a feladataidat.');
-    ST.kesz = {}; (d.kesz || []).forEach(function (k) { ST.kesz[k] = 1; });
-    var nyitott = d.kiadasok.filter(function (k) { return k.statusz === 'kiadva' || k.statusz === 'javitando'; });
-    var tobbi = d.kiadasok.filter(function (k) { return k.statusz === 'beadva' || k.statusz === 'kesz'; });
-    var most = Date.now();
-    var kov = d.orak.filter(function (o) { return o.statusz === 'tervezett' && Date.parse(o.kezdes) > most - 3600e3; }).reverse();
-    $app.innerHTML = '<h2 class="sec" style="margin-top:6px">Megoldásra váró feladatok' + (nyitott.length ? ' (' + nyitott.length + ')' : '') + '</h2><div id="ny"></div>'
-      + (kov.length ? '<h2 class="sec">Következő óráid</h2><div id="ko"></div>' : '')
-      + '<h2 class="sec">Beadott és lezárt feladatok</h2><div id="tb"></div>';
-    var ny = document.getElementById('ny'), tb = document.getElementById('tb');
-    if (!nyitott.length) ny.innerHTML = '<div class="ures">Most nincs megoldásra váró feladatod. 🎉</div>';
-    nyitott.forEach(function (k) { ny.appendChild(kartya(k, true)); });
-    if (!tobbi.length) tb.innerHTML = '<div class="ures">Még nincs beadott feladatod.</div>';
-    tobbi.forEach(function (k) { tb.appendChild(kartya(k, false)); });
-    var ko = document.getElementById('ko');
-    if (ko) kov.forEach(function (o) { var e = document.createElement('div'); e.className = 'ora'; e.innerHTML = '<b>' + esc(dt(o.kezdes)) + '</b><span class="prog">' + (o.perc || 60) + ' perc' + (o.tema ? ' · ' + esc(o.tema) : '') + '</span>'; ko.appendChild(e); });
+    if (d.nincs) return gate('Még nincs saját felületed', 'Ez az oldal a tanítványaimnak szól. Ha nálam tanulsz, szólj, és összekötöm a fiókodat – utána itt látod a feladataidat és az óráidat.');
+    ST.d = d; rajzol();
   }, function (e) {
-    if (e && e.kod === 401) return gate('Lépj be', 'A feladataidat a fiókodba belépve látod.', true);
+    if (e && e.kod === 401) return gate('Lépj be', 'A saját felületedet a fiókodba belépve látod.', true);
     gate('Hiba', esc((e && e.hiba) || 'Nem sikerült betölteni.'));
   });
 }
+
+function rajzol() {
+  var d = ST.d;
+  ST.kesz = {}; (d.kesz || []).forEach(function (k) { ST.kesz[k] = 1; });
+  var nyitott = d.kiadasok.filter(function (k) { return k.statusz === 'kiadva' || k.statusz === 'javitando'; });
+  var tobbi = d.kiadasok.filter(function (k) { return k.statusz === 'beadva' || k.statusz === 'kesz'; });
+  var kov = d.jovobeli.filter(function (o) { return o.statusz === 'tervezett'; });
+  var elso = kov[0];
+  var lejart = nyitott.filter(function (k) { return k.hatarido && Date.parse(k.hatarido) < Date.now(); }).length;
+
+  var h = '<div class="hello"><div><h1>Szia, ' + esc(d.nev) + '!</h1><p>Itt találod a feladataidat és az óráidat.</p></div>'
+    + '<div class="qk"><a href="/feladatadatbazis.html">Felvételi feladatok</a><a href="/erettsegi/">Érettségi feladatok</a><a href="/haladas.html">Haladásom</a></div></div>';
+  h += '<div class="stats">'
+    + '<a class="stat' + (nyitott.length ? ' hot' : '') + '" href="#feladatok"><b>' + nyitott.length + '</b><span>megoldásra váró feladat' + (lejart ? ' · ' + lejart + ' lejárt' : '') + '</span></a>'
+    + '<a class="stat" href="#orak"><b>' + kov.length + '</b><span>következő óra</span></a>'
+    + '<a class="stat" href="#korabbi"><b>' + d.megtartott_db + '</b><span>eddigi óra</span></a></div>';
+
+  if (elso) {
+    var live = belephet(elso);
+    h += '<div class="hero"><div class="k">' + (live ? (Date.now() < Date.parse(elso.kezdes) ? 'Hamarosan kezdődik az órád' : 'Az órád most zajlik') : 'Következő órád') + '</div>'
+      + '<h2>' + esc(nap(elso.kezdes)) + ' · ' + esc(ido(elso.kezdes)) + '<span class="rel" data-rel="0">' + esc(relativ(elso)) + '</span></h2>'
+      + '<div class="meta">' + elso.perc + ' perc' + (elso.hely ? ' · ' + esc(elso.hely) : '') + (elso.tema ? ' · ' + esc(elso.tema) : '') + '</div>'
+      + (elso.uzenet ? '<div class="uz">' + esc(elso.uzenet) + '</div>' : '')
+      + '<div class="act">' + (elso.link ? '<a class="join' + (live ? ' live' : '') + '" href="' + esc(elso.link) + '" target="_blank" rel="noopener">' + MEET_IKON + 'Belépés az órára</a>'
+        : (elso.online ? '<span class="nolink">Az óra linkjét hamarosan itt találod.</span>' : '')) + '</div></div>';
+  } else {
+    h += '<div class="ures" style="margin-bottom:8px">Jelenleg nincs beírt következő órád.</div>';
+  }
+
+  h += '<nav class="nav"><a href="#feladatok">Feladatok' + (nyitott.length ? '<span class="cnt">' + nyitott.length + '</span>' : '') + '</a><a href="#orak">Órák</a><a href="#lezart">Lezárt feladatok</a></nav>';
+  h += '<h2 class="sec" id="feladatok">Megoldásra váró feladatok</h2><div id="ny"></div>';
+  h += '<h2 class="sec" id="orak">Óráid</h2><h3 class="sub">Következő órák</h3><div id="ko"></div><h3 class="sub" id="korabbi">Korábbi órák</h3><div id="mu"></div>';
+  h += '<h2 class="sec" id="lezart">Beadott és lezárt feladatok</h2><div id="tb"></div>';
+  $app.innerHTML = h;
+
+  var ny = document.getElementById('ny'), tb = document.getElementById('tb');
+  if (!nyitott.length) ny.innerHTML = '<div class="ures">Most nincs megoldásra váró feladatod. 🎉</div>';
+  nyitott.forEach(function (k) { ny.appendChild(kartya(k, true)); });
+  if (!tobbi.length) tb.innerHTML = '<div class="ures">Még nincs beadott feladatod.</div>';
+  tobbi.forEach(function (k) { tb.appendChild(kartya(k, false)); });
+
+  var ko = document.getElementById('ko');
+  if (!d.jovobeli.length) ko.innerHTML = '<div class="ures">Nincs beírt következő órád.</div>';
+  d.jovobeli.forEach(function (o) { ko.appendChild(oraSor(o, false)); });
+  var mu = document.getElementById('mu');
+  if (!d.korabbi.length) mu.innerHTML = '<div class="ures">Még nem volt órád.</div>';
+  var LATSZIK = 6;
+  d.korabbi.forEach(function (o, i) { var e = oraSor(o, true); if (i >= LATSZIK) e.hidden = true; mu.appendChild(e); });
+  if (d.korabbi.length > LATSZIK) {
+    var mb = document.createElement('button'); mb.className = 'more'; mb.type = 'button'; mb.textContent = 'Összes korábbi óra (' + d.korabbi.length + ')';
+    mb.onclick = function () { [].forEach.call(mu.querySelectorAll('.lrow[hidden]'), function (x) { x.hidden = false; }); mb.remove(); };
+    mu.appendChild(mb);
+  }
+}
+
+function oraSor(o, mult) {
+  var e = document.createElement('div'); var dd = new Date(o.kezdes);
+  var lem = o.statusz === 'lemondott';
+  e.className = 'lrow' + (mult ? ' mult' : '') + (lem ? ' lem' : '');
+  e.innerHTML = '<div class="d"><b>' + dd.getDate() + '</b><span>' + esc(dd.toLocaleDateString('hu-HU', { month: 'short' }).replace('.', '')) + '<br>' + esc(NAP[dd.getDay()].slice(0, 3)) + '</span></div>'
+    + '<div class="i"><b>' + esc(ido(o.kezdes)) + '</b> <span class="prog">· ' + o.perc + ' perc' + (o.hely ? ' · ' + esc(o.hely) : '') + '</span>'
+    + (o.tema ? '<div>' + esc(o.tema) + '</div>' : '') + (o.uzenet && !mult ? '<div class="u">' + esc(o.uzenet) + '</div>' : '') + '</div>'
+    + (lem ? '<span class="tag">Elmarad</span>' : (o.link ? '<a class="mini" href="' + esc(o.link) + '" target="_blank" rel="noopener">Belépés</a>' : ''));
+  return e;
+}
+
+setInterval(function () { var r = document.querySelector('.hero .rel'); if (!r || !ST.d) return; var e = ST.d.jovobeli.filter(function (o) { return o.statusz === 'tervezett'; })[0]; if (!e) return; r.textContent = relativ(e); var j = document.querySelector('.hero .join'); if (j) j.classList.toggle('live', belephet(e)); var k = document.querySelector('.hero .k'); if (k) k.textContent = belephet(e) ? (Date.now() < Date.parse(e.kezdes) ? 'Hamarosan kezdődik az órád' : 'Az órád most zajlik') : 'Következő órád'; }, 30e3);
 
 function kartya(k, nyitott) {
   var c = document.createElement('div'); c.className = 'fk' + (nyitott ? ' uj' : '');
@@ -214,7 +314,7 @@ function kartya(k, nyitott) {
 
 var indult = false;
 function indit(u) {
-  if (!u) { indult = false; return gate('Lépj be', 'A feladataidat a fiókodba belépve látod.', true); }
+  if (!u) { indult = false; return gate('Lépj be', 'A saját felületedet a fiókodba belépve látod.', true); }
   if (indult) return; indult = true; betolt();
 }
 PM.onChange(indit);

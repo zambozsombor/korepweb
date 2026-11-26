@@ -121,7 +121,7 @@ label.f>input,label.f>select,label.f>textarea{margin-top:5px}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/auth.js?v=23"></script>
+<script src="/auth.js?v=24"></script>
 <script>
 (function () {
 'use strict';
@@ -219,6 +219,7 @@ function tanMezok() {
     { n: 'egyedi_ar', l: 'Egyedi óradíj (Ft) – üresen az árlista szerinti', t: 'number' },
     { n: 'helyszin', l: 'Helyszín', t: 'select', o: [['', '–'], ['papa', 'Pápa'], ['ugod', 'Ugod'], ['online', 'Online']] },
     { n: 'statusz', l: 'Státusz', t: 'select', o: [['aktiv', 'Aktív'], ['szunetel', 'Szünetel'], ['befejezett', 'Befejezett']] },
+    { n: 'meet_link', l: 'Online óra linkje (Google Meet) – a diák a felületén látja, ha a helyszín Online', ph: 'https://meet.google.com/…', w: 1 },
     { l: 'Számlázási adatok', t: 'h' },
     { n: 'szamla_nev', l: 'Számlázási név' }, { n: 'szamla_irsz', l: 'Irányítószám' },
     { n: 'szamla_varos', l: 'Település' }, { n: 'szamla_cim', l: 'Utca, házszám' },
@@ -233,7 +234,10 @@ function oraMezok(tanFix) {
     { n: 'statusz', l: 'Státusz', t: 'select', o: [['tervezett', 'Tervezett'], ['megtartott', 'Megtartott'], ['lemondott', 'Lemondott'], ['elmaradt', 'Elmaradt']] },
     { n: 'ar', l: 'Díj (Ft) – üresen az árlista szerint', t: 'number' },
     { n: 'fizetos', l: 'Lemondott/elmaradt óránál is fizetős', t: 'check', w: 1 },
-    { n: 'tema', l: 'Téma', w: 1 }, { n: 'jegyzet', l: 'Jegyzet', t: 'textarea', w: 1 },
+    { n: 'tema', l: 'Téma (a diák is látja)', w: 1 },
+    { n: 'diak_megjegyzes', l: 'Üzenet a diáknak (pl. mit hozzon, mit nézzen át) – a diák is látja', t: 'textarea', w: 1 },
+    { n: 'meet_link', l: 'Egyedi óralink – üresen a tanítvány saját linkje', ph: 'https://meet.google.com/…', w: 1 },
+    { n: 'jegyzet', l: 'Jegyzet (csak te látod)', t: 'textarea', w: 1 },
   ]);
 }
 var befMezok = [
@@ -421,6 +425,7 @@ function vTanitvany(id) {
       + kv('Évfolyam', t.evfolyam) + kv('Iskola', t.iskola) + kv('Célzott iskola', t.cel_iskola) + kv('Diák e-mail', t.diak_email, 1) + kv('Diák telefon', t.diak_telefon, 1)
       + kv('Szülő', t.szulo_nev) + kv('Szülő e-mail', t.szulo_email, 1) + kv('Szülő telefon', t.szulo_telefon, 1)
       + kv('Helyszín', { papa: 'Pápa', ugod: 'Ugod', online: 'Online' }[t.helyszin] || '')
+      + (t.meet_link ? kv('Óralink', t.meet_link, 1) : '')
       + '<dt>Számlázás</dt><dd>' + (szamla ? '<div class="billblock copy" onclick="__copy(this.innerText)">' + esc(szamla) + '</div>' : '<span class="muted">–</span>') + '</dd>'
       + (t.megjegyzes ? '<dt>Megjegyzés</dt><dd style="white-space:pre-line">' + esc(t.megjegyzes) + '</dd>' : '') + '</dl></div>'
       + '<div class="card" id="fiok"></div></div>'

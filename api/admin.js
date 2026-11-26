@@ -45,6 +45,7 @@ function szur(b, mezok) {
     else if (Array.isArray(t)) { if (t.includes(v)) o[k] = v; }
     else o[k] = szoveg(v, t);
   }
+  if (o.meet_link && !/^https:\/\/\S+$/i.test(o.meet_link)) throw hiba('Az óralink https://-sel kezdődjön (pl. https://meet.google.com/...).');
   return o;
 }
 
@@ -52,9 +53,9 @@ const TANITVANY = {
   nev: 120, evfolyam: 40, iskola: 160, cel_iskola: 200, diak_email: 160, diak_telefon: 40,
   szulo_nev: 120, szulo_email: 160, szulo_telefon: 40, szamla_nev: 160, szamla_irsz: 10, szamla_varos: 80, szamla_cim: 200,
   szolgaltatas_id: 'int', egyedi_ar: 'int', helyszin: ['papa', 'ugod', 'online', null], statusz: ['aktiv', 'szunetel', 'befejezett'],
-  csoport_jelentkezes_id: 'int', megjegyzes: 4000,
+  csoport_jelentkezes_id: 'int', megjegyzes: 4000, meet_link: 300,
 };
-const ORA = { tanitvany_id: 40, kezdes: 'ts', perc: 'int', statusz: ['tervezett', 'megtartott', 'lemondott', 'elmaradt'], fizetos: 'bool', ar: 'int', tema: 300, jegyzet: 4000 };
+const ORA = { tanitvany_id: 40, kezdes: 'ts', perc: 'int', statusz: ['tervezett', 'megtartott', 'lemondott', 'elmaradt'], fizetos: 'bool', ar: 'int', tema: 300, jegyzet: 4000, meet_link: 300, diak_megjegyzes: 2000 };
 const BEFIZETES = { tanitvany_id: 40, datum: 'date', osszeg: 'int', mod: ['keszpenz', 'atutalas', 'kartya', 'egyeb'], szamlazva: 'bool', szamlaszam: 60, megjegyzes: 1000 };
 const SZOLGALTATAS = { nev: 120, perc: 'int', ar: 'int', aktiv: 'bool', sorrend: 'int' };
 const KIADAS = { tanitvany_id: 40, cim: 200, leiras: 4000, feladatok: 'json', hatarido: 'ts', statusz: ['kiadva', 'beadva', 'javitando', 'kesz'], visszajelzes: 4000 };
@@ -148,7 +149,16 @@ const M = {
     if ('nev' in d && !d.nev) throw hiba('A név kötelező.');
     d.updated_at = new Date().toISOString();
     const id = uuid(b.id);
-    if (id) return (await sb(`tanitvanyok?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(d) }))[0];
+    if (id) {
+      const elotte = ('meet_link' in d || 'helyszin' in d || 'nev' in d) ? (await sb(`tanitvanyok?id=eq.${id}&select=meet_link,helyszin,nev`))[0] : null;
+      const t = (await sb(`tanitvanyok?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(d) }))[0];
+      // ha a naptáreseményben látszó adat változott, a jövőbeli naptárbeli órák frissüljenek
+      if (elotte && t && (elotte.meet_link !== t.meet_link || elotte.helyszin !== t.helyszin || elotte.nev !== t.nev) && G.beallitva()) {
+        const jovo = await puha(`orak?tanitvany_id=eq.${id}&naptar_id=not.is.null&kezdes=gte.${enc(new Date().toISOString())}&select=id`);
+        if (jovo.length) t._naptar = await naptarba(jovo.map((o) => o.id));
+      }
+      return t;
+    }
     if (!d.nev) throw hiba('A név kötelező.');
     return (await sb('tanitvanyok', { method: 'POST', body: JSON.stringify(d) }))[0];
   },
@@ -536,7 +546,7 @@ async function naptarba(idk, mind) {
   try {
     // alapból csak az adminban felvett (vagy már a naptárban lévő) órák; „mind” esetén az importáltak is
     const szuro = mind ? '' : '&or=(gcal_event_id.is.null,naptar_id.not.is.null)';
-    orak = await sb(`orak?id=in.(${idk.join(',')})${szuro}&select=*,tanitvanyok(id,nev,evfolyam,helyszin,szulo_nev,szulo_telefon,szolgaltatasok(nev))`);
+    orak = await sb(`orak?id=in.(${idk.join(',')})${szuro}&select=*,tanitvanyok(id,nev,evfolyam,helyszin,meet_link,szulo_nev,szulo_telefon,szolgaltatasok(nev))`);
   } catch (e) { return { ok: 0, hibak: ['Adatbázis: ' + e.message.slice(0, 200)] }; }
   let ok = 0; const hibak = [];
   for (const o of orak) {

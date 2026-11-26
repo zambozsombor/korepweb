@@ -21,14 +21,38 @@ const M = {
   async lista(b, t) {
     const [kiad, orak] = await Promise.all([
       sb(`kiadasok?tanitvany_id=eq.${t.id}&select=*,beadas_fajlok(id,nev,meret,tipus,created_at,tanartol)&order=created_at.desc`),
-      sb(`orak?tanitvany_id=eq.${t.id}&select=kezdes,perc,statusz,tema&statusz=in.(tervezett,megtartott)&order=kezdes.desc&limit=40`),
+      sb(`orak?tanitvany_id=eq.${t.id}&select=id,kezdes,perc,statusz,tema,meet_link,diak_megjegyzes&order=kezdes.desc&limit=300`),
     ]);
     const kulcsok = [...new Set(kiad.flatMap((k) => (k.feladatok || []).map((f) => f.kulcs)).filter(Boolean))];
     let kesz = [];
     if (kulcsok.length && t.user_id) {
       kesz = await sb(`progress?user_id=eq.${t.user_id}&item_key=in.(${kulcsok.map((k) => `"${k}"`).join(',')})&select=item_key,status,score`).catch(() => []);
     }
-    return { nev: t.nev, kiadasok: kiad, orak, kesz: kesz.filter((p) => p.status === 'kesz' || p.status === 'done' || p.score).map((p) => p.item_key) };
+    const most = Date.now();
+    const HELY = { papa: 'Pápa', ugod: 'Ugod', online: 'Online' };
+    const ora = (o) => {
+      const link = o.meet_link || (t.helyszin === 'online' ? t.meet_link : null);
+      const vege = Date.parse(o.kezdes) + (o.perc || 60) * 60e3;
+      return {
+        id: o.id, kezdes: o.kezdes, perc: o.perc || 60, statusz: o.statusz, tema: o.tema, uzenet: o.diak_megjegyzes,
+        online: !!link || t.helyszin === 'online',
+        hely: link ? 'Online' : (HELY[t.helyszin] || null),
+        // az óralinket csak a még le nem zárult, tervezett óráknál adjuk ki
+        link: o.statusz === 'tervezett' && vege > most ? link : null,
+        mult: vege <= most,
+      };
+    };
+    const lista = orak.filter((o) => o.statusz !== 'elmaradt').map(ora);
+    return {
+      nev: t.nev, evfolyam: t.evfolyam,
+      hely: HELY[t.helyszin] || null,
+      alap_link: t.helyszin === 'online' ? t.meet_link : null,
+      kiadasok: kiad,
+      jovobeli: lista.filter((o) => !o.mult && o.statusz !== 'megtartott').reverse(),
+      korabbi: lista.filter((o) => o.mult && (o.statusz === 'megtartott' || o.statusz === 'tervezett')),
+      megtartott_db: orak.filter((o) => o.statusz === 'megtartott' || (o.statusz === 'tervezett' && Date.parse(o.kezdes) < most)).length,
+      kesz: kesz.filter((p) => p.status === 'kesz' || p.status === 'done' || p.score).map((p) => p.item_key),
+    };
   },
 
   async feltoltes_link(b, t) {
@@ -90,7 +114,7 @@ module.exports = async function handler(req, res) {
   try {
     const u = await T.felhasznalo(req);
     if (!u) return res.status(401).json({ ok: false, hiba: 'Lépj be a fiókodba.' });
-    const t = (await sb(`tanitvanyok?user_id=eq.${u.id}&select=id,nev,user_id`))[0];
+    const t = (await sb(`tanitvanyok?user_id=eq.${u.id}&select=id,nev,user_id,evfolyam,helyszin,meet_link`))[0];
     if (!t) return res.status(200).json({ ok: true, adat: { nincs: true } });
     const fn = M[b.muvelet];
     if (!fn) return res.status(400).json({ ok: false, hiba: 'Ismeretlen művelet.' });

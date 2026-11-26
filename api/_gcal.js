@@ -43,10 +43,12 @@ function esemeny(ora, t, szolgNev) {
   if (szolgNev) sor.push(szolgNev);
   if (ora.tema) sor.push(`Téma: ${ora.tema}`);
   if (t && t.szulo_nev) sor.push(`Szülő: ${t.szulo_nev}${t.szulo_telefon ? ', ' + t.szulo_telefon : ''}`);
+  const link = ora.meet_link || (t && t.helyszin === 'online' ? t.meet_link : null);
+  if (link) sor.push(`Óralink: ${link}`);
   if (t && t.id) sor.push(`Adatlap: https://www.papaimatek.hu/admin/#/t/${t.id}`);
   return {
     summary: `${(t && t.nev) || 'Óra'}${t && t.evfolyam ? ' · ' + t.evfolyam + ' o.' : ''}${t && t.helyszin === 'online' ? ' · online' : ''}`,
-    location: (t && HELY[t.helyszin]) || undefined,
+    location: (ora.meet_link || (t && t.helyszin === 'online' && t.meet_link)) || (t && HELY[t.helyszin]) || undefined,
     description: sor.join('\n'),
     start: { dateTime: kezd.toISOString(), timeZone: 'Europe/Budapest' },
     end: { dateTime: veg.toISOString(), timeZone: 'Europe/Budapest' },
