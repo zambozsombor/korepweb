@@ -281,6 +281,12 @@ function oraAblak(ora, tanId, utana) {
     delete a.ism; delete a.ism_ig; delete a.ism_db;
     return api('ora_mentes', a).then(function (r) { naptarJelzes(r); if (r && r._db > 1) toast(r._db + ' óra felvéve'); utana(); });
   }, torles.length ? torles : null);
+  // lemondott/elmaradt státusznál alapból díjmentes, megtartottnál fizetős (a jelölő ezután kézzel átírható)
+  var stSel = dlg.querySelector('[name=statusz]'), fzt = dlg.querySelector('[name=fizetos]');
+  if (stSel && fzt) stSel.addEventListener('change', function () {
+    if (stSel.value === 'lemondott' || stSel.value === 'elmaradt') fzt.checked = false;
+    else if (stSel.value === 'megtartott' || stSel.value === 'tervezett') fzt.checked = true;
+  });
   if (uj) {
     var sel = dlg.querySelector('[name=ism]'), egyeb = [dlg.querySelector('[name=ism_ig]').parentNode, dlg.querySelector('[name=ism_db]').parentNode];
     var valt = function () { egyeb.forEach(function (x) { x.style.display = sel.value ? '' : 'none'; }); };
@@ -319,9 +325,11 @@ function gate(msg, login) {
   if (b) b.onclick = function () { var x = document.querySelector('#authArea .pm-login'); if (x) x.click(); };
 }
 
-function frissit() {
+// lusta=true: fülváltáskor 20 mp-en belül nem tölti le újra az áttekintést (mentések után mindig friss)
+function frissit(lusta) {
+  if (lusta && ST.att && ST.attIdo && Date.now() - ST.attIdo < 20e3) return Promise.resolve(ST.att);
   return api('attekintes').then(function (a) {
-    ST.att = a; ST.szolg = a.szolgaltatasok; ST.tan = a.tanitvanyok;
+    ST.att = a; ST.attIdo = Date.now(); ST.szolg = a.szolgaltatasok; ST.tan = a.tanitvanyok;
     var j = a.jelentkezok || {};
     var jel = function (t, nev, n) { $tabs.querySelector('[data-t="' + t + '"]').innerHTML = nev + (n ? '<span class="cnt">' + n + '</span>' : ''); };
     var oraTeendo = a.lezaratlan + a.hozzarendelendo.length + (a.kerelmek || []).length + (a.link_nelkul || []).length;
@@ -751,16 +759,16 @@ function vOrak() {
   document.getElementById('npr').onclick = function () {
     api('naptar_proba').then(function (r) {
       if (!r.ok) return toast(r.hiba, true);
-      if (!confirm('A Google Naptár kapcsolat rendben (' + r.fiok + ').\n\nFeltöltsem a „PápaiMatek órák” naptárba a mai naptól MINDEN tervezett órát (a régi naptárból importáltakat is)? A már feltöltötteket nem duplikálja.')) return;
+      if (!confirm('A Google Naptár kapcsolat rendben (' + r.fiok + ').\n\nSzinkronizáljam a „PápaiMatek órák” naptárral a mai naptól MINDEN tervezett órát (a hiányzókat felveszem, a meglévőket frissítem; a régi naptárból importáltakat is)? A már feltöltötteket nem duplikálja.')) return;
       toast('Feltöltés folyamatban…');
-      (function kor(ossz) {
-        api('naptar_feltoltes').then(function (x) {
+      (function kor(ossz, offset) {
+        api('naptar_feltoltes', { offset: offset }).then(function (x) {
           ossz += x.ok || 0;
           if (x.hibak) return toast('Google Naptár: ' + x.hibak.join(' | '), true);
-          if (x.maradt > 0 && x.ok > 0) { toast('Feltöltve: ' + ossz + ', még ' + x.maradt + '…'); return kor(ossz); }
-          toast('📅 Kész: ' + ossz + ' óra a naptárban' + (x.maradt ? ' (' + x.maradt + ' nem sikerült)' : ''));
+          if (x.maradt > 0 && x.offset > offset) { toast('Szinkronizálva: ' + ossz + ', még ' + x.maradt + '…'); return kor(ossz, x.offset); }
+          toast('📅 Kész: ' + ossz + ' óra szinkronban a naptárral');
         }, hibaKezel);
-      })(0);
+      })(0, 0);
     }, hibaKezel);
   };
   var ujra = function () { frissit().then(vOrak); };
@@ -1112,7 +1120,7 @@ function route() {
   window.scrollTo(0, 0);
   if (tab === 't') return vTanitvany(h.split('/')[1]);
   var fn = { '': vAttekintes, feladatok: vFeladatok, tanitvanyok: vTanitvanyok, orak: vOrak, jelentkezok: vJelentkezok, szamlazas: vSzamlazas, szolgaltatasok: vSzolg, felhasznalok: vFelhasznalok }[tab] || vAttekintes;
-  frissit().then(fn, hibaKezel);
+  frissit(true).then(fn, hibaKezel);
 }
 window.addEventListener('hashchange', route);
 document.getElementById('bell').addEventListener('click', function (e) { e.stopPropagation(); var m = document.getElementById('bellMenu'); m.hidden = !m.hidden; });

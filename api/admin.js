@@ -218,6 +218,10 @@ const M = {
       const a = await oraAr(d.tanitvany_id); d.ar = a.ar; if (a.perc) d.perc = a.perc;
     }
     if (id && 'perc' in d && d.perc == null) delete d.perc; // üres mező szerkesztéskor: marad a régi időtartam
+    if (id && 'ar' in d && d.ar == null) { // üres díjmező: az árlista szerinti ár (a mező címkéje szerint)
+      const tid = d.tanitvany_id || ((await sb(`orak?id=eq.${id}&select=tanitvany_id`))[0] || {}).tanitvany_id;
+      if (tid) { const a = await oraAr(tid); if (a.ar != null) d.ar = a.ar; else delete d.ar; } else delete d.ar;
+    }
     d.updated_at = new Date().toISOString();
     const elotte = id && d.kezdes ? (await sb(`orak?id=eq.${id}&select=kezdes`))[0] : null;
     const ora = id
@@ -271,15 +275,19 @@ const M = {
   // a mai naptól (vagy megadott dátumtól) minden tervezett óra feltöltése a „PápaiMatek órák” naptárba (az importáltak is)
   async naptar_feltoltes(b) {
     const tol = b.tol ? new Date(b.tol).toISOString() : new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
-    const l = await sb(`orak?kezdes=gte.${enc(tol)}&statusz=eq.tervezett&tanitvany_id=not.is.null&naptar_id=is.null&select=id&order=kezdes&limit=1000`);
-    const hatar = Date.now() + 45e3; let ok = 0; const hibak = [];
+    const szuro = `orak?kezdes=gte.${enc(tol)}&statusz=eq.tervezett&tanitvany_id=not.is.null`;
+    const kezd = Math.max(0, egesz(b.offset) || 0);
+    const l = await sb(`${szuro}&select=id&order=kezdes,id&limit=1000&offset=${kezd}`);
+    const hatar = Date.now() + 45e3; let ok = 0, kesz = 0; const hibak = [];
     for (let i = 0; i < l.length && Date.now() < hatar; i += 10) {
       const r = await naptarba(l.slice(i, i + 10).map((x) => x.id), true);
-      ok += r.ok || 0; (r.hibak || []).forEach((h) => hibak.push(h));
+      ok += r.ok || 0; kesz = i + 10; (r.hibak || []).forEach((h) => hibak.push(h));
       if (hibak.length > 5) break;
     }
-    const maradt = (await sb(`orak?kezdes=gte.${enc(tol)}&statusz=eq.tervezett&tanitvany_id=not.is.null&naptar_id=is.null&select=id&limit=1000`)).length;
-    return { ok, maradt, hibak: hibak.length ? [...new Set(hibak)] : undefined };
+    kesz = Math.min(kesz, l.length);
+    // a hátralévők száma (a következő hívás innen folytatja)
+    const maradt = Math.max(0, l.length - kesz);
+    return { ok, maradt, offset: kezd + kesz, hibak: hibak.length ? [...new Set(hibak)] : undefined };
   },
 
   async orak(b) {

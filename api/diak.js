@@ -111,6 +111,7 @@ const M = {
   async beadas(b, t) {
     const k = await sajatKiadas(t, b.kiadas_id);
     if (k.statusz === 'kesz') throw hiba('Ez a feladat már le van zárva.');
+    if (k.statusz === 'beadva') throw hiba('Ezt a feladatot már beadtad – átnézés után jelzek.');
     if (!(k.beadas_fajlok || []).filter((x) => !x.tanartol).length) throw hiba('Előbb tölts fel legalább egy képet vagy PDF-et.');
     const most = new Date().toISOString();
     const u = (await sb(`kiadasok?id=eq.${k.id}`, { method: 'PATCH', body: JSON.stringify({ statusz: 'beadva', beadva_at: most, updated_at: most }) }))[0];
@@ -125,7 +126,9 @@ const M = {
     const uzenet = String(b.uzenet || '').trim().slice(0, 1000);
     if (!uzenet) throw hiba('Írd meg röviden, miért mondod le az órát.');
     const most = new Date().toISOString();
-    const u = (await sb(`orak?id=eq.${o.id}`, { method: 'PATCH', body: JSON.stringify({ statusz: 'lemondott', fizetos: false, updated_at: most }) }))[0];
+    // csak akkor mondja le, ha még tervezett (párhuzamos dupla kattintás ellen atomi feltétel)
+    const u = (await sb(`orak?id=eq.${o.id}&statusz=eq.tervezett`, { method: 'PATCH', body: JSON.stringify({ statusz: 'lemondott', fizetos: false, updated_at: most }) }))[0];
+    if (!u) throw hiba('Ezt az órát már lemondtad.');
     // nyitott módosítás-kérés erre az órára: okafogyott
     await sb(`ora_kerelmek?ora_id=eq.${o.id}&statusz=eq.uj&tipus=eq.modositas`, { method: 'PATCH', body: JSON.stringify({ statusz: 'kesz', valasz: 'Az órát lemondtad.', lezarva_at: most }) }).catch(() => []);
     await sb('ora_kerelmek', { method: 'POST', body: JSON.stringify({ ora_id: o.id, tanitvany_id: t.id, tipus: 'lemondas', uzenet, eredeti_kezdes: o.kezdes }) });
@@ -143,7 +146,12 @@ const M = {
     if (!javaslat) throw hiba('Írd meg, mikor lenne jó helyette (akár több időpontot is).');
     const nyitott = await sb(`ora_kerelmek?ora_id=eq.${o.id}&statusz=eq.uj&tipus=eq.modositas&select=id`);
     if (nyitott.length) throw hiba('Ehhez az órához már kértél módosítást – még válaszra vár.');
-    await sb('ora_kerelmek', { method: 'POST', body: JSON.stringify({ ora_id: o.id, tanitvany_id: t.id, tipus: 'modositas', uzenet: uzenet || null, javaslat, eredeti_kezdes: o.kezdes }) });
+    try {
+      await sb('ora_kerelmek', { method: 'POST', body: JSON.stringify({ ora_id: o.id, tanitvany_id: t.id, tipus: 'modositas', uzenet: uzenet || null, javaslat, eredeti_kezdes: o.kezdes }) });
+    } catch (e) { // egyedi index: már van nyitott kérés (párhuzamos kattintás)
+      if (/23505/.test(e.message)) throw hiba('Ehhez az órához már kértél módosítást – még válaszra vár.');
+      throw e;
+    }
     try { await T.ertesitAdminOra(t, o, 'modositas', uzenet, javaslat); } catch (e) { console.error('[diak] értesítő', e.message); }
     return { ok: true };
   },
