@@ -189,6 +189,7 @@ const M = {
         if (d.ar == null) d.ar = a.ar;
         if (d.perc == null && a.perc) d.perc = a.perc;
       }
+      if (d.perc == null) d.perc = 60; // a perc kötelező (NOT NULL): ha se megadva, se szolgáltatásból nem jön, 60 perc
       if (d.statusz === 'lemondott' && !('fizetos' in b)) d.fizetos = false;
       const ism = b.ismetles || {};
       const lepes = ism.gyakorisag === 'het' ? 7 : (ism.gyakorisag === '2het' ? 14 : 0);
@@ -216,6 +217,7 @@ const M = {
     } else if (d.tanitvany_id && b.ar_ujra) {
       const a = await oraAr(d.tanitvany_id); d.ar = a.ar; if (a.perc) d.perc = a.perc;
     }
+    if (id && 'perc' in d && d.perc == null) delete d.perc; // üres mező szerkesztéskor: marad a régi időtartam
     d.updated_at = new Date().toISOString();
     const elotte = id && d.kezdes ? (await sb(`orak?id=eq.${id}&select=kezdes`))[0] : null;
     const ora = id
