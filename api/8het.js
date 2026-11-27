@@ -45,6 +45,7 @@ function ellenoriz(b) {
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ ok: false, hiba: 'Csak POST kérés engedélyezett.' }); }
+  if (!K.JELENTKEZES_NYITVA) return res.status(410).json({ ok: false, hiba: 'A jelentkezés erre a programra lezárult.' });
   const origin = req.headers.origin || '';
   const elonezet = /^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origin);
   if (origin && !ENGEDETT.includes(origin) && !elonezet) return res.status(403).json({ ok: false, hiba: 'Nem engedélyezett forrás.' });

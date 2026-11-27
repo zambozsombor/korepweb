@@ -5,7 +5,8 @@
   var PROG_VEGE = Date.UTC(2027, 0, 22, 16, 0);
   var feladatoldal = /^\/(felveteli|temakor)\//.test(p);
   var bank = p === '/feladatadatbazis.html';
-  var program = (feladatoldal || bank) && Date.now() < PROG_VEGE;
+  var PROGRAM_AKTIV = false; // a 8 alkalmas program ajánlója kikapcsolva (újraindításkor: true + új PROG_VEGE)
+  var program = PROGRAM_AKTIV && (feladatoldal || bank) && Date.now() < PROG_VEGE;
   function esemeny(hely) { try { if (window.gtag) gtag('event', 'program_cta', { program: '8het', hely: hely }); } catch (e) {} }
   function stilus(css, id) { if (document.getElementById(id)) return; var st = document.createElement('style'); st.id = id; st.textContent = css; document.head.appendChild(st); }
 

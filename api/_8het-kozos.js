@@ -3,6 +3,9 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://duiskdduecldmkuylckb.s
 const PROGRAM = '8het-2027';
 const PROGRAM_NEV = '8 hét – 8 felvételi feladatsor';
 const AR_FT = 19990;
+// JELENTKEZÉS KAPCSOLÓ: amíg false, az API nem fogad új jelentkezést (a már befizetettek, a Stripe-webhook és az admin változatlanul működik).
+// Újranyitás: true-ra állítod (és a vercel.json-ból kiveszed a /8het-8feladatsor átirányítást, a promo.js-ben a PROGRAM_AKTIV-ot true-ra).
+const JELENTKEZES_NYITVA = false;
 const IDOPONTOK = 'Minden alkalom 60 perces, 17:00–18:00: 2026. nov. 27. (P), dec. 4. (P), dec. 11. (P), dec. 18. (P), 2027. jan. 8. (P), jan. 15. (P), jan. 19. (K), jan. 22. (P)';
 
 const tesztMod = () => /^(sk|rk)_test_/.test(String(process.env.STRIPE_SECRET_KEY || ''));
@@ -65,4 +68,4 @@ const td = 'border-bottom:1px solid #E6E9E2';
 const tabla = (s) => `<table cellpadding="7" style="border-collapse:collapse">${s.map(([k, v]) => `<tr><td style="vertical-align:top;color:#5B6672;white-space:nowrap;${td}"><b>${esc(k)}</b></td><td style="${td}">${esc(v).replace(/\n/g, '<br>')}</td></tr>`).join('')}</table>`;
 const keret = (cim, belso) => `<div style="font-family:Arial,sans-serif;font-size:15px;color:#1D2733;line-height:1.5"><h2 style="margin:0 0 12px;color:#1F6F64">${esc(cim)}</h2>${belso}</div>`;
 
-module.exports = { PROGRAM, PROGRAM_NEV, AR_FT, IDOPONTOK, tesztMod, esc, supabase, stripe, level, FELADO, CIMZETT, sorok, tabla, keret };
+module.exports = { PROGRAM, PROGRAM_NEV, AR_FT, JELENTKEZES_NYITVA, IDOPONTOK, tesztMod, esc, supabase, stripe, level, FELADO, CIMZETT, sorok, tabla, keret };

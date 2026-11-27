@@ -28,6 +28,16 @@
   ],
   "redirects": [
     {
+      "source": "/8het-8feladatsor",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/8het-8feladatsor.html",
+      "destination": "/",
+      "permanent": false
+    },
+    {
       "source": "/erettsegi/hang/:path*",
       "destination": "https://erettsegi-hang.vercel.app/:path*",
       "permanent": false
